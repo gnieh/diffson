@@ -1,4 +1,4 @@
-Gnieh Diffson https://travis-ci.org/gnieh/diffson.png
+Gnieh Diffson [![Build Status](https://travis-ci.org/gnieh/diffson.png)](https://travis-ci.org/gnieh/diffson.png)
 =============
 
 A [scala][6] implementation of the [RFC-6901][1] and [RFC-6902][2].
