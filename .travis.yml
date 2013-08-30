@@ -1,0 +1,7 @@
+language: scala
+
+# only trigger builds on master
+branches:
+  only:
+    - master
+
