@@ -7,7 +7,7 @@ import net.liftweb.json._
 
 class TestJsonPointer extends FlatSpec with ShouldMatchers {
 
-  val pointer = new JsonPointer()
+  val pointer = JsonPointer
 
   "an empty string" should "be parsed as an empty pointer" in {
     pointer.parse("") should be(Nil)

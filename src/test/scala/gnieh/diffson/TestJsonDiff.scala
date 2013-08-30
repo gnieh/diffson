@@ -7,7 +7,7 @@ import net.liftweb.json._
 
 class TestJsonDiff extends FlatSpec with ShouldMatchers {
 
-  val pointer = new JsonPointer()
+  val pointer = JsonPointer
 
   import JsonDiff._
 

@@ -12,7 +12,7 @@ class TestJsonPatch extends FlatSpec
                     with TestReplacePatch
                     with TestMovePatch {
 
-  val pointer = new JsonPointer()
+  val pointer = JsonPointer
 
 }
 
