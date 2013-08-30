@@ -1,7 +1,7 @@
-Gnieh Diffson
+Gnieh Diffson https://travis-ci.org/gnieh/diffson.png
 =============
 
-A [scala](http://scala-lang.org) implementation of the [RFC-6901][1] and [RFC-6902][2].
+A [scala][6] implementation of the [RFC-6901][1] and [RFC-6902][2].
 It also provides methods to compute _diffs_ between two Json values that produce valid Json patches.
 
 Basic Usage
@@ -108,3 +108,4 @@ then use `diff` in lieu of `JsonDiff` in the first usage example.
 [3]: https://github.com/lift/framework/tree/master/core/json
 [4]: http://alfedenzo.livejournal.com/170301.html
 [5]: https://en.wikipedia.org/wiki/Longest_common_subsequence_problem
+[6]: http://scala-lang.org
