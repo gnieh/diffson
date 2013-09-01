@@ -14,7 +14,7 @@ libraryDependencies += "org.gnieh" %% "diffson" % "0.1"
 ```
 
 If you are using maven, add the following dependency to your `pom.xml`:
-```scala
+```xml
 <dependency>
   <groupId>org.gnieh</groupId>
   <artifactId>diffson_${scala.version}</artifactId>
