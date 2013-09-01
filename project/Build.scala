@@ -5,32 +5,30 @@ import Keys._
 import com.typesafe.sbt.osgi.SbtOsgi._
 import com.typesafe.sbt.osgi.OsgiKeys
 
-import java.io.File
-
 object DiffsonBuild extends Build {
 
   lazy val diffson = (Project(id = "diffson",
     base = file(".")) settings (
     organization := "org.gnieh",
     name := "diffson",
-    version := "0.1-SNAPSHOT",
+    version := "0.1",
     scalaVersion := "2.10.2",
     crossScalaVersions := Seq("2.9.3", "2.10.2"),
     libraryDependencies ++= dependencies,
     parallelExecution := false,
-    fork in test := true,
+    fork in test := true)
+    settings(osgiSettings: _*)
+    settings(
     resourceDirectories in Compile := List(),
     OsgiKeys.exportPackage := Seq(
-      "gnieh.diffson",
-      "gnieh.diffson.*"
+      "gnieh.diffson"
     ),
     OsgiKeys.additionalHeaders := Map (
-      "Bundle-Name" -> "Gnieh Json JsonPatch"
+      "Bundle-Name" -> "Gnieh Diffson"
     ),
     OsgiKeys.bundleSymbolicName := "org.gnieh.diffson",
     OsgiKeys.privatePackage := Seq(),
     compileOptions)
-    settings(osgiSettings: _*)
     settings(publishSettings: _*)
   )
 

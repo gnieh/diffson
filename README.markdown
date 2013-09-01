@@ -7,6 +7,21 @@ It also provides methods to compute _diffs_ between two Json values that produce
 Basic Usage
 -----------
 
+This library is published in the [Maven][7] [Central Repository][8] and is compiled against scala 2.9.3 and 2.10.
+You can add it to your sbt project by putting this line to your build description:
+```scala
+libraryDependencies += "org.gnieh" %% "diffson" % "0.1"
+```
+
+If you are using maven, add the following dependency to your `pom.xml`:
+```scala
+<dependency>
+  <groupId>org.gnieh</groupId>
+  <artifactId>diffson_${scala.version}</artifactId>
+  <version>0.1</version>
+</dependency>
+```
+
 Although the library is quite small and easy to use, here comes a summary of its basic usage.
 
 There are three different entities living in the `gnieh.diffson` package:
@@ -109,3 +124,5 @@ then use `diff` in lieu of `JsonDiff` in the first usage example.
 [4]: http://alfedenzo.livejournal.com/170301.html
 [5]: https://en.wikipedia.org/wiki/Longest_common_subsequence_problem
 [6]: http://scala-lang.org
+[7]: http://maven.apache.org/
+[8]: http://search.maven.org/
