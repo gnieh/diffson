@@ -11,7 +11,7 @@ object DiffsonBuild extends Build {
     base = file(".")) settings (
     organization := "org.gnieh",
     name := "diffson",
-    version := "0.1",
+    version := "0.2-SNAPSHOT",
     scalaVersion := "2.10.2",
     crossScalaVersions := Seq("2.9.3", "2.10.2"),
     libraryDependencies ++= dependencies,
