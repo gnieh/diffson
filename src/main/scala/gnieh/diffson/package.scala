@@ -23,7 +23,7 @@ package object diffson {
 
   type Pointer = List[String]
 
-  implicit private[diffson] val formats = DefaultFormats
+  implicit private[diffson] val formats = DefaultFormats + JsonPatchSerializer
 
   implicit def s2path(s: String) = List(s)
 

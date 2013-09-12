@@ -63,20 +63,8 @@ object JsonPatch {
     new JsonPatch(ops.toList)
 
   /** Parses a Json patch as per http://tools.ietf.org/html/rfc6902 */
-  def parse(patch: String): JsonPatch = {
-    val raw = JsonParser.parse(patch).extract[List[JObject]]
-    JsonPatch(raw map (extractOp _))
-  }
-
-  private def extractOp(raw: JObject): Operation = raw \ "op" match {
-    case JString("add")     => raw.extract[RawAdd].resolve
-    case JString("remove")  => raw.extract[RawRemove].resolve
-    case JString("replace") => raw.extract[RawReplace].resolve
-    case JString("move")    => raw.extract[RawMove].resolve
-    case JString("copy")    => raw.extract[RawCopy].resolve
-    case JString("test")    => raw.extract[RawTest].resolve
-    case op                 => throw new PatchException("unknown operation '" + pp(op))
-  }
+  def parse(patch: String): JsonPatch =
+    JsonParser.parse(patch).extract[JsonPatch]
 
 }
 
@@ -92,12 +80,12 @@ private case class RawReplace(path: String, value: JValue) {
   val resolve = Replace(pointer.parse(path), value)
 }
 
-private case class RawCopy(path: String, to: String) {
-  val resolve = Copy(pointer.parse(path), pointer.parse(to))
+private case class RawCopy(from: String, path: String) {
+  val resolve = Copy(pointer.parse(from), pointer.parse(path))
 }
 
-private case class RawMove(path: String, to: String) {
-  val resolve = Move(pointer.parse(path), pointer.parse(to))
+private case class RawMove(from: String, path: String) {
+  val resolve = Move(pointer.parse(from), pointer.parse(path))
 }
 
 private case class RawTest(path: String, value: JValue) {
