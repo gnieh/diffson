@@ -52,4 +52,22 @@ class TestSerialization extends FlatSpec with ShouldMatchers {
     Extraction.decompose(json) should be(parsed)
   }
 
+  "a pacth" should "be applicable to a serializable Scala object if the shape is kept" in {
+    val json1 = Json(1, true, "test", List(1, 2, 4))
+    val json2 = Json(10, false, "toto", List(1, 2, 3, 4, 5))
+    val patch = JsonDiff.diff(json1, json2)
+
+    patch(json1) should be(json2)
+
+  }
+
+  "applying a patch" should "raise an exception if it changes the shape" in {
+    val json = Json(1, true, "test", Nil)
+    val patch = JsonPatch(Replace(Nil, JBool(true)))
+    evaluating { patch(json) } should produce[MappingException]
+  }
+
 }
+
+case class Json(a: Int, b: Boolean, c: String, d: List[Int])
+

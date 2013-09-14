@@ -41,6 +41,18 @@ package object diffson {
 
   val pointer = new JsonPointer(nothingHandler)
 
+  private[diffson] def serialize(obj: Any) = obj match {
+    case i: Int => JInt(i)
+    case i: BigInt => JInt(i)
+    case l: Long => JInt(l)
+    case d: Double => JDouble(d)
+    case f: Float => JDouble(f)
+    case d: BigDecimal => JDouble(d.doubleValue)
+    case b: Boolean => JBool(b)
+    case s: String => JString(s)
+    case _ => Extraction.decompose(obj)
+  }
+
   private[diffson] def pp(v: JValue) = v match {
     case JNothing => "<nothing>"
     case _        => pretty(render(v))

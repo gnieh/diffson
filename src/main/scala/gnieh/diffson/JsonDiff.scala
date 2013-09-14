@@ -39,6 +39,10 @@ class JsonDiff(lcsalg: Lcs[JValue]) {
   def diff(json1: JValue, json2: JValue): JsonPatch =
     JsonPatch(diff(json1, json2, Nil))
 
+  /** Computes the patch from `json1` to `json2` */
+  def diff(json1: Any, json2: Any): JsonPatch =
+    diff(serialize(json1), serialize(json2))
+
   private def diff(json1: JValue, json2: JValue, pointer: Pointer): List[Operation] = (json1, json2) match {
     case (v1, v2) if v1 == v2                 => Nil // if they are equal, this one is easy...
     case (JObject(fields1), JObject(fields2)) => fieldsDiff(fields1, fields2, pointer)

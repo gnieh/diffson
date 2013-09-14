@@ -46,6 +46,12 @@ final case class JsonPatch(ops: List[Operation]) {
       op(acc)
     }
 
+  /** Applies this patch to the given Json value, and returns the patched value.
+   *  It assumes that the shape of the patched object is the same as the input one.
+   *  If it is not the case, an exception will be raised */
+  def apply[T: Manifest](value: T): T =
+    apply(serialize(value)).extract[T]
+
   /** Create a patch that applies `this` patch and then `that` patch */
   def andThen(that: JsonPatch): JsonPatch =
     JsonPatch(this.ops ++ that.ops)
