@@ -158,7 +158,7 @@ final case class Add(path: Pointer, value: JValue) extends Operation {
       // insert the value at the end of the array
       JArray(arr ::: List(value))
     case (JArray(arr), List(IntIndex(idx))) =>
-      if(idx >= arr.size)
+      if(idx > arr.size)
         throw new PatchException("Index out of bounds " + idx)
       else
         // insert the value at the specified index
