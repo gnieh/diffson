@@ -132,7 +132,7 @@ sealed abstract class Operation {
       }
       JObject(fields1)
     case (JArray(elems), IntIndex(idx) :: tl) =>
-      if (idx >= elems.size)
+      if (idx > elems.size)
         throw new PatchException("index out of bounds " + idx)
       val elems1 = elems.take(idx) ::: List(action(elems(idx), tl)) ::: elems.drop(idx + 1)
       JArray(elems1)
