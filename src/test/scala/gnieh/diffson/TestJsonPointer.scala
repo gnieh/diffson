@@ -30,13 +30,13 @@ class TestJsonPointer extends FlatSpec with ShouldMatchers {
   }
 
   "occurrences of ~" should "be directly followed by either 0 or 1" in {
-    evaluating { pointer.parse("/~") } should produce[PointerException]
-    evaluating { pointer.parse("/~3") } should produce[PointerException]
-    evaluating { pointer.parse("/~d") } should produce[PointerException]
+    a [PointerException] should be thrownBy { pointer.parse("/~") }
+    a [PointerException] should be thrownBy { pointer.parse("/~3") }
+    a [PointerException] should be thrownBy { pointer.parse("/~d") }
   }
 
   "a non empty pointer" should "start with a /" in {
-    evaluating { pointer.parse("test") } should produce[PointerException]
+    a [PointerException] should be thrownBy { pointer.parse("test") }
   }
 
   "a pointer to a label" should "be evaluated to the label value if it is one level deep" in {
@@ -52,7 +52,7 @@ class TestJsonPointer extends FlatSpec with ShouldMatchers {
   }
 
   it should "produce an error if there is an unknown element in the middle of the pointer" in {
-    evaluating { pointer.evaluate("{}", "/lbl/test") } should produce[PointerException]
+    a [PointerException] should be thrownBy { pointer.evaluate("{}", "/lbl/test") }
   }
 
   "a pointer to an array element" should "be evaluated to the value at the given index" in {
@@ -61,11 +61,11 @@ class TestJsonPointer extends FlatSpec with ShouldMatchers {
   }
 
   it should "produce an error if it is out of the array bounds" in {
-    evaluating { pointer.evaluate("[1]", "/4") } should produce[PointerException]
+    a [PointerException] should be thrownBy { pointer.evaluate("[1]", "/4") }
   }
 
   it should "produce an error if it is the '-' element" in {
-    evaluating { pointer.evaluate("[1]", "/-") } should produce[PointerException]
+    a [PointerException] should be thrownBy { pointer.evaluate("[1]", "/-") }
   }
 
 }

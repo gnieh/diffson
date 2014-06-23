@@ -64,7 +64,7 @@ class TestSerialization extends FlatSpec with ShouldMatchers {
   "applying a patch" should "raise an exception if it changes the shape" in {
     val json = Json(1, true, "test", Nil)
     val patch = JsonPatch(Replace(Nil, JBool(true)))
-    evaluating { patch(json) } should produce[MappingException]
+    a [MappingException] should be thrownBy { patch(json) }
   }
 
 }

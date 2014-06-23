@@ -45,11 +45,11 @@ trait TestAddPatch {
   }
 
   it should "throw an error if some element is missing in the middle of the path" in {
-    evaluating { Add(pointer.parse("/lbl/lbl"), JInt(17))(parse("{}")) } should produce[PatchException]
+    a [PatchException] should be thrownBy { Add(pointer.parse("/lbl/lbl"), JInt(17))(parse("{}")) }
   }
 
   it should "throw an error if adding an element out of the array boundaries" in {
-    evaluating { Add(pointer.parse("/178"), JInt(17))(parse("[1, 2]")) } should produce[PatchException]
+    a [PatchException] should be thrownBy { Add(pointer.parse("/178"), JInt(17))(parse("[1, 2]")) }
   }
 
 }
@@ -66,19 +66,19 @@ trait TestRemovePatch {
   }
 
   "removing the '-' element of an array" should "result in an error being thrown" in {
-    evaluating { Remove(pointer.parse("/-"))(parse("[1, 2, 3, 4]")) } should produce[PatchException]
+    a [PatchException] should be thrownBy { Remove(pointer.parse("/-"))(parse("[1, 2, 3, 4]")) }
   }
 
   "removing an element out of the array boundaries" should "result in an error being thrown" in {
-    evaluating { Remove(pointer.parse("/20"))(parse("[1, 2, 3, 4]")) } should produce[PatchException]
+    a [PatchException] should be thrownBy { Remove(pointer.parse("/20"))(parse("[1, 2, 3, 4]")) }
   }
 
   "removing an unknown label from an object" should "result in an error being thrown" in {
-    evaluating { Remove(pointer.parse("/toto"))(parse("{}")) } should produce[PatchException]
+    a [PatchException] should be thrownBy { Remove(pointer.parse("/toto"))(parse("{}")) }
   }
 
   "removing the root" should "result in an error being thrown" in {
-    evaluating { Remove(pointer.parse("/"))(parse("{}")) } should produce[PatchException]
+    a [PatchException] should be thrownBy { Remove(pointer.parse("/"))(parse("{}")) }
   }
 }
 
@@ -99,21 +99,15 @@ trait TestReplacePatch {
   }
 
   "replacing a non existing element in an object" should "result in an error being thrown" in {
-    evaluating {
-      Replace(pointer.parse("/1/lbl"), JInt(17))(parse("[1, {}, true]"))
-    } should produce[PatchException]
+    a [PatchException] should be thrownBy { Replace(pointer.parse("/1/lbl"), JInt(17))(parse("[1, {}, true]")) }
   }
 
   "replacing the '-' element of an array" should "result in an error being thrown" in {
-    evaluating {
-      Replace(pointer.parse("/-"), JInt(17))(parse("[1, 2, 3, 4]"))
-    } should produce[PatchException]
+    a [PatchException] should be thrownBy { Replace(pointer.parse("/-"), JInt(17))(parse("[1, 2, 3, 4]")) }
   }
 
   "replacing an element out of the array boundaries" should "result in an error being thrown" in {
-    evaluating {
-      Replace(pointer.parse("/20"), JInt(17))(parse("[1, 2, 3, 4]"))
-    } should produce[PatchException]
+    a [PatchException] should be thrownBy { Replace(pointer.parse("/20"), JInt(17))(parse("[1, 2, 3, 4]")) }
   }
 
 }
@@ -128,14 +122,10 @@ trait TestMovePatch {
   }
 
   "moving a value in a sub element" should "result in an error being thrown" in {
-    evaluating {
-      Move(pointer.parse("/0"), pointer.parse("/0/toto"))(parse(""))
-    } should produce[PatchException]
+    a [PatchException] should be thrownBy { Move(pointer.parse("/0"), pointer.parse("/0/toto"))(parse("")) }
   }
 
   "moving the root" should "result in an error being thrown" in {
-    evaluating {
-      Move(pointer.parse("/"), pointer.parse("/toto"))(parse(""))
-    } should produce[PatchException]
+    a [PatchException] should be thrownBy { Move(pointer.parse("/"), pointer.parse("/toto"))(parse("")) }
   }
 }
