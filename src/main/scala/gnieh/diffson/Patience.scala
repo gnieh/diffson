@@ -109,6 +109,17 @@ class Patience[T] extends Lcs[T] {
     if(seq1.isEmpty || seq2.isEmpty) {
       // shortcut if at least on sequence is empty, the lcs, is empty as well
       Nil
+    } else if(seq1 == seq2) {
+      // both sequences are equal, the lcs is either of them
+      seq1.indices.map(i => (i, i)).toList
+    } else if(seq1.startsWith(seq2)) {
+      // the second sequence is a prefix of the first one
+      // the lcs is the second sequence
+      seq2.indices.map(i => (i, i)).toList
+    } else if(seq2.startsWith(seq1)) {
+      // the first sequence is a prefix of the second one
+      // the lcs is the first sequence
+      seq1.indices.map(i => (i, i)).toList
     } else {
       // the lcs of common elements that appear only once in each sequence
       val longestUniques = longest(uniqueCommons(seq1, seq2))
