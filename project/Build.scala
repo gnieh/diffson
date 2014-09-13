@@ -11,7 +11,7 @@ object DiffsonBuild extends Build {
     base = file(".")) settings (
     organization := "org.gnieh",
     name := "diffson",
-    version := "0.3-SNAPSHOT",
+    version := "0.3",
     scalaVersion := "2.11.2",
     description := "Json diff/patch library",
     licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
