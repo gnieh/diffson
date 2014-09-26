@@ -107,7 +107,7 @@ patch(json2) // throws PatchException
 Technical Details
 -----------------
 
-The implementation uses [lift-json][3] to manipulate Json objects.
+The implementation uses [spray-json][3] to manipulate Json objects.
 
 The _diff_ between two arrays is computed by using the [Patience Diff][4] algorithm to compute the [LCS][5] between both arrays, which is quite simple to implement.
 
@@ -120,7 +120,7 @@ then use `diff` in lieu of `JsonDiff` in the first usage example.
 
 [1]: http://tools.ietf.org/html/rfc6901
 [2]: http://tools.ietf.org/html/rfc6902
-[3]: https://github.com/lift/framework/tree/master/core/json
+[3]: https://github.com/spray/spray-json
 [4]: http://alfedenzo.livejournal.com/170301.html
 [5]: https://en.wikipedia.org/wiki/Longest_common_subsequence_problem
 [6]: http://scala-lang.org
