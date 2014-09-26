@@ -17,7 +17,7 @@ package gnieh.diffson
 
 import scala.annotation.tailrec
 
-import net.liftweb.json._
+import spray.json._
 
 /** Thrown whenever a problem is encountered when parsing or evaluating a Json Pointer */
 class PointerException(msg: String) extends Exception(msg)
@@ -34,9 +34,9 @@ object JsonPointer extends JsonPointer(allError)
  *
  *  @author Lucas Satabin
  */
-class JsonPointer(errorHandler: PartialFunction[(JValue, String), JValue]) {
+class JsonPointer(errorHandler: PartialFunction[(JsValue, String), JsValue]) {
 
-  private def handle(value: JValue, pointer: String): JValue =
+  private def handle(value: JsValue, pointer: String): JsValue =
     errorHandler.orElse(allError)(value, pointer)
 
   /** Parses a JSON pointer and returns the resolved path. */
@@ -70,22 +70,22 @@ class JsonPointer(errorHandler: PartialFunction[(JValue, String), JValue]) {
   /** Evaluates the given path in the given JSON object.
    *  Upon missing elements in value, the error handler is called with the current value and element */
   @inline
-  def evaluate(value: String, path: String): JValue =
-    evaluate(JsonParser.parse(value), parse(path))
+  def evaluate(value: String, path: String): JsValue =
+    evaluate(JsonParser(value), parse(path))
 
   /** Evaluates the given path in the given JSON object.
    *  Upon missing elements in value, the error handler is called with the current value and element */
   @tailrec
-  final def evaluate(value: JValue, path: Pointer): JValue = (value, path) match {
-    case (obj: JObject, elem :: tl) =>
-      evaluate(obj \ elem, tl)
-    case (JArray(arr), (p @ IntIndex(idx)) :: tl) =>
+  final def evaluate(value: JsValue, path: Pointer): JsValue = (value, path) match {
+    case (JsObject(obj), elem :: tl) =>
+      evaluate(obj.getOrElse(elem, JsNull), tl)
+    case (JsArray(arr), (p @ IntIndex(idx)) :: tl) =>
       if(idx >= arr.size)
         // we know (by construction) that the index is greater or equal to zero
         evaluate(handle(value, p), tl)
       else
         evaluate(arr(idx), tl)
-    case (arr: JArray, "-" :: tl) =>
+    case (arr: JsArray, "-" :: tl) =>
       evaluate(handle(value, "-"), tl)
     case (_, Nil) =>
       value

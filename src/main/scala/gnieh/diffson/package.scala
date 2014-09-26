@@ -15,7 +15,7 @@
 */
 package gnieh
 
-import net.liftweb.json._
+import spray.json._
 
 /** This package contains an implementation of Json JsonPatch, according to [RFC-6902](http://tools.ietf.org/html/rfc6902)
  */
@@ -23,40 +23,21 @@ package object diffson {
 
   type Pointer = List[String]
 
-  implicit private[diffson] val formats = DefaultFormats + JsonPatchSerializer
-
   implicit def s2path(s: String) = List(s)
 
   implicit def i2path(i: Int) = List(i.toString)
 
-  private[diffson] val allError: PartialFunction[(JValue, String), JValue] = {
+  private[diffson] val allError: PartialFunction[(JsValue, String), JsValue] = {
     case (value, pointer) =>
-      throw new PointerException("Non existent value '" + pointer + "' in " + pp(value))
+      throw new PointerException(s"Non existent value '$pointer' in ${value.prettyPrint}")
   }
 
-  val nothingHandler: PartialFunction[(JValue, String), JValue] = {
+  val nothingHandler: PartialFunction[(JsValue, String), JsValue] = {
     case (value, elem) =>
-      JNothing
+      JsNull
   }
 
   val pointer = new JsonPointer(nothingHandler)
-
-  private[diffson] def serialize(obj: Any) = obj match {
-    case i: Int => JInt(i)
-    case i: BigInt => JInt(i)
-    case l: Long => JInt(l)
-    case d: Double => JDouble(d)
-    case f: Float => JDouble(f)
-    case d: BigDecimal => JDouble(d.doubleValue)
-    case b: Boolean => JBool(b)
-    case s: String => JString(s)
-    case _ => Extraction.decompose(obj)
-  }
-
-  private[diffson] def pp(v: JValue) = v match {
-    case JNothing => "<nothing>"
-    case _        => pretty(render(v))
-  }
 
   def pointerString(path: Pointer): String =
     path.map(_.replace("~", "~0").replace("/", "~1")).mkString("/", "/", "")
