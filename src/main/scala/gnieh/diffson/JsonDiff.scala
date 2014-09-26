@@ -17,51 +17,51 @@ package gnieh.diffson
 
 import scala.annotation.tailrec
 
-import net.liftweb.json._
+import spray.json._
 
 /** Default `JsonDiff` instance that uses the patience algorithm to compute lcs for arrays
  *
  *  @author Lucas Satabin
  */
-object JsonDiff extends JsonDiff(new Patience[JValue])
+object JsonDiff extends JsonDiff(new Patience[JsValue])
 
 /** Methods to compute diffs between two Json values
  *
  *  @author Lucas Satabin
  */
-class JsonDiff(lcsalg: Lcs[JValue]) {
+class JsonDiff(lcsalg: Lcs[JsValue]) {
 
   /** Computes the patch from `json1` to `json2` */
   def diff(json1: String, json2: String): JsonPatch =
-    diff(JsonParser.parse(json1), JsonParser.parse(json2))
+    diff(JsonParser(json1), JsonParser(json2))
 
   /** Computes the patch from `json1` to `json2` */
-  def diff(json1: JValue, json2: JValue): JsonPatch =
+  def diff(json1: JsValue, json2: JsValue): JsonPatch =
     JsonPatch(diff(json1, json2, Nil))
 
   /** Computes the patch from `json1` to `json2` */
-  def diff(json1: Any, json2: Any): JsonPatch =
-    diff(serialize(json1), serialize(json2))
+  def diff[T1: JsonFormat, T2: JsonFormat](json1: T1, json2: T2): JsonPatch =
+    diff(json1.toJson, json2.toJson)
 
-  private def diff(json1: JValue, json2: JValue, pointer: Pointer): List[Operation] = (json1, json2) match {
-    case (v1, v2) if v1 == v2                 => Nil // if they are equal, this one is easy...
-    case (JObject(fields1), JObject(fields2)) => fieldsDiff(fields1, fields2, pointer)
-    case (JArray(arr1), JArray(arr2))         => arraysDiff(arr1, arr2, pointer)
-    case (_, _)                               => List(Replace(pointer, json2))
+  private def diff(json1: JsValue, json2: JsValue, pointer: Pointer): List[Operation] = (json1, json2) match {
+    case (v1, v2) if v1 == v2                   => Nil // if they are equal, this one is easy...
+    case (JsObject(fields1), JsObject(fields2)) => fieldsDiff(fields1.toList, fields2.toList, pointer)
+    case (JsArray(arr1), JsArray(arr2))         => arraysDiff(arr1.toList, arr2.toList, pointer)
+    case (_, _)                                 => List(Replace(pointer, json2))
   }
 
-  private def fieldsDiff(fields1: List[JField], fields2: List[JField], path: Pointer): List[Operation] = {
+  private def fieldsDiff(fields1: List[(String,JsValue)], fields2: List[(String,JsValue)], path: Pointer): List[Operation] = {
     // sort fields by name in both objects
-    val sorted1 = fields1.sortBy(_.name)
-    val sorted2 = fields2.sortBy(_.name)
+    val sorted1 = fields1.sortBy(_._1)
+    val sorted2 = fields2.sortBy(_._1)
     @tailrec
-    def associate(fields1: List[JField],
-                  fields2: List[JField],
-                  acc: List[(Option[JField], Option[JField])]): List[(Option[JField], Option[JField])] = (fields1, fields2) match {
-      case (f1 :: t1, f2 :: t2) if f1.name == f2.name =>
+    def associate(fields1: List[(String, JsValue)],
+                  fields2: List[(String, JsValue)],
+                  acc: List[(Option[(String, JsValue)], Option[(String, JsValue)])]): List[(Option[(String, JsValue)], Option[(String, JsValue)])] = (fields1, fields2) match {
+      case (f1 :: t1, f2 :: t2) if f1._1 == f2._1 =>
         // same name, associate both
         associate(t1, t2, (Some(f1), Some(f2)) :: acc)
-      case (f1 :: t1, f2 :: _) if f1.name < f2.name =>
+      case (f1 :: t1, f2 :: _) if f1._1 < f2._1 =>
         // the first field is not present in the second object
         associate(t1, fields2, (Some(f1), None) :: acc)
       case (f1 :: _, f2 :: t2) =>
@@ -73,26 +73,26 @@ class JsonDiff(lcsalg: Lcs[JValue]) {
         fields2.map(None -> Some(_)) reverse_::: acc
     }
     @tailrec
-    def fields(fs: List[(Option[JField], Option[JField])], acc: List[Operation]): List[Operation] = fs match {
+    def fields(fs: List[(Option[(String, JsValue)], Option[(String, JsValue)])], acc: List[Operation]): List[Operation] = fs match {
       case (Some(f1), Some(f2)) :: tl if f1 == f2 =>
         // allright, nothing changed
         fields(tl, acc)
       case (Some(f1), Some(f2)) :: tl =>
         // same field name, different values
-        fields(tl, diff(f1.value, f2.value, path :+ f1.name) reverse_::: acc)
+        fields(tl, diff(f1._2, f2._2, path :+ f1._1) reverse_::: acc)
       case (Some(f1), None) :: tl =>
         // the field was deleted
-        fields(tl, Remove(path :+ f1.name) :: acc)
+        fields(tl, Remove(path :+ f1._1) :: acc)
       case (None, Some(f2)) :: tl =>
         // the field was added
-        fields(tl, Add(path :+ f2.name, f2.value) :: acc)
+        fields(tl, Add(path :+ f2._1, f2._2) :: acc)
       case _ =>
         acc
     }
     fields(associate(sorted1, sorted2, Nil), Nil)
   }
 
-  private def arraysDiff(arr1: List[JValue], arr2: List[JValue], path: Pointer): List[Operation] = {
+  private def arraysDiff(arr1: List[JsValue], arr2: List[JsValue], path: Pointer): List[Operation] = {
     // get the longest common subsequence in the array
     val lcs = lcsalg.lcs(arr1, arr2)
 
@@ -110,7 +110,7 @@ class JsonDiff(lcsalg: Lcs[JValue]) {
 
     // add a bunch of values to an array starting at the specified index
     @tailrec
-    def add(arr: List[JValue], idx: Int, acc: List[Operation]): List[Operation] = arr match {
+    def add(arr: List[JsValue], idx: Int, acc: List[Operation]): List[Operation] = arr match {
       case v :: tl => add(tl, idx + 1, Add(path ::: List(idx.toString), v) :: acc)
       case Nil     => acc.reverse
     }
@@ -122,8 +122,8 @@ class JsonDiff(lcsalg: Lcs[JValue]) {
 
     // now iterate over the first array to computes what was added, what was removed and what was modified
     @tailrec
-    def loop(arr1: List[JValue], // the first array
-             arr2: List[JValue], // the second array
+    def loop(arr1: List[JsValue], // the first array
+             arr2: List[JsValue], // the second array
              idx1: Int, // current index in the first array
              shift1: Int, // current index shift in the first array (due to elements being add or removed)
              idx2: Int, // current index in the second array

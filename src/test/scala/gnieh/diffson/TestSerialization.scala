@@ -3,9 +3,13 @@ package test
 
 import org.scalatest._
 
-import net.liftweb.json._
+import spray.json._
 
 class TestSerialization extends FlatSpec with ShouldMatchers {
+
+  import DiffsonProtocol._
+
+  implicit val testJsonFormat = jsonFormat4(Json)
 
   val patch = """[{
                 |  "op":"replace",
@@ -24,7 +28,7 @@ class TestSerialization extends FlatSpec with ShouldMatchers {
                 |  "value":false
                 |},{
                 |  "op":"copy",
-                |  "from":"/c"
+                |  "from":"/c",
                 |  "path":"/e"
                 |},{
                 |  "op":"move",
@@ -33,23 +37,23 @@ class TestSerialization extends FlatSpec with ShouldMatchers {
                 |}]""".stripMargin
 
   val parsed =
-    JsonParser.parse(patch)
+    JsonParser(patch)
 
   val json = JsonPatch(
-    Replace(List("a"), JInt(6)),
+    Replace(List("a"), JsNumber(6)),
     Remove(List("b")),
-    Add(List("c"), JString("test2")),
-    Test(List("d"), JBool(false)),
+    Add(List("c"), JsString("test2")),
+    Test(List("d"), JsBoolean(false)),
     Copy(List("c"), List("e")),
     Move(List("d"), List("f"))
   )
 
   "a patch json" should "be correctly deserialized from a Json object" in {
-    parsed.extract[JsonPatch] should be(json)
+    parsed.convertTo[JsonPatch] should be(json)
   }
 
   "a patch object" should "be correctly serialized to a Json object" in {
-    Extraction.decompose(json) should be(parsed)
+    json.toJson should be(parsed)
   }
 
   "a pacth" should "be applicable to a serializable Scala object if the shape is kept" in {
@@ -63,8 +67,8 @@ class TestSerialization extends FlatSpec with ShouldMatchers {
 
   "applying a patch" should "raise an exception if it changes the shape" in {
     val json = Json(1, true, "test", Nil)
-    val patch = JsonPatch(Replace(Nil, JBool(true)))
-    a [MappingException] should be thrownBy { patch(json) }
+    val patch = JsonPatch(Replace(Nil, JsBoolean(true)))
+    a [DeserializationException] should be thrownBy { patch(json) }
   }
 
 }
