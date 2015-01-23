@@ -11,13 +11,13 @@ object DiffsonBuild extends Build {
     base = file(".")) settings (
     organization := "org.gnieh",
     name := "diffson",
-    version := "0.3",
-    scalaVersion := "2.11.2",
+    version := "0.3.1",
+    scalaVersion := "2.11.5",
     description := "Json diff/patch library",
     licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     homepage := Some(url("https://github.com/gnieh/diffson")),
-    crossScalaVersions := Seq("2.11.2", "2.10.4"),
-    libraryDependencies <++= scalaVersion(dependencies _),
+    crossScalaVersions := Seq("2.11.5", "2.10.4"),
+    libraryDependencies ++= dependencies,
     parallelExecution := false,
     fork in test := true)
     settings(osgiSettings: _*)
@@ -35,10 +35,9 @@ object DiffsonBuild extends Build {
     settings(publishSettings: _*)
   )
 
-  def dependencies(v: String) = Seq(
-    "org.scalatest" %% "scalatest" % "2.2.0" % "test",
-    "net.liftweb" %% "lift-json" % (if(v.startsWith("2.11")) "2.6-RC1" else "2.5")
-  )
+  def dependencies = Seq(
+    "org.scalatest" %% "scalatest" % "2.2.1" % "test",
+    "net.liftweb" %% "lift-json" % "2.6")
 
   lazy val compileOptions = scalacOptions ++=
     Seq("-deprecation", "-language:_")
