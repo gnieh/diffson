@@ -50,14 +50,14 @@ class JsonDiff(lcsalg: Lcs[JsValue]) {
     case (_, _)                                 => List(Replace(pointer, json2))
   }
 
-  private def fieldsDiff(fields1: List[(String,JsValue)], fields2: List[(String,JsValue)], path: Pointer): List[Operation] = {
+  private def fieldsDiff(fields1: List[(String, JsValue)], fields2: List[(String, JsValue)], path: Pointer): List[Operation] = {
     // sort fields by name in both objects
     val sorted1 = fields1.sortBy(_._1)
     val sorted2 = fields2.sortBy(_._1)
     @tailrec
     def associate(fields1: List[(String, JsValue)],
-                  fields2: List[(String, JsValue)],
-                  acc: List[(Option[(String, JsValue)], Option[(String, JsValue)])]): List[(Option[(String, JsValue)], Option[(String, JsValue)])] = (fields1, fields2) match {
+      fields2: List[(String, JsValue)],
+      acc: List[(Option[(String, JsValue)], Option[(String, JsValue)])]): List[(Option[(String, JsValue)], Option[(String, JsValue)])] = (fields1, fields2) match {
       case (f1 :: t1, f2 :: t2) if f1._1 == f2._1 =>
         // same name, associate both
         associate(t1, t2, (Some(f1), Some(f2)) :: acc)
@@ -67,7 +67,7 @@ class JsonDiff(lcsalg: Lcs[JsValue]) {
       case (f1 :: _, f2 :: t2) =>
         // the second field is not present in the first object
         associate(fields1, t2, (None, Some(f2)) :: acc)
-      case (_ , Nil) =>
+      case (_, Nil) =>
         fields1.map(Some(_) -> None) reverse_::: acc
       case (Nil, _) =>
         fields2.map(None -> Some(_)) reverse_::: acc
@@ -117,19 +117,19 @@ class JsonDiff(lcsalg: Lcs[JsValue]) {
 
     // remove a bunch of array elements starting by the last one in the range
     def remove(from: Int, until: Int): List[Operation] =
-      (for(idx <- until to from by -1)
+      (for (idx <- until to from by -1)
         yield Remove(path ::: List(idx.toString))).toList
 
     // now iterate over the first array to computes what was added, what was removed and what was modified
     @tailrec
     def loop(arr1: List[JsValue], // the first array
-             arr2: List[JsValue], // the second array
-             idx1: Int, // current index in the first array
-             shift1: Int, // current index shift in the first array (due to elements being add or removed)
-             idx2: Int, // current index in the second array
-             lcs: List[(Int, Int)], // the list of remaining matching indices
-             acc: List[Operation] // the already accumulated result
-            ): List[Operation] = (arr1, arr2) match {
+      arr2: List[JsValue], // the second array
+      idx1: Int, // current index in the first array
+      shift1: Int, // current index shift in the first array (due to elements being add or removed)
+      idx2: Int, // current index in the second array
+      lcs: List[(Int, Int)], // the list of remaining matching indices
+      acc: List[Operation] // the already accumulated result
+      ): List[Operation] = (arr1, arr2) match {
       case (_ :: tl1, _) if isCommon1(idx1, lcs) =>
         // all values in arr2 were added until the index of common value
         val until = lcs.head._2
@@ -138,8 +138,8 @@ class JsonDiff(lcsalg: Lcs[JsValue]) {
       case (_, _ :: tl2) if isCommon2(idx2, lcs) =>
         // all values in arr1 were removed until the index of common value
         val until = lcs.head._1
-         loop(arr1.drop(until - idx1 + 1), tl2, until + 1, shift1 - (until - idx1), idx2 + 1, lcs.tail,
-           remove(idx1 + shift1, until - 1 + shift1) reverse_::: acc)
+        loop(arr1.drop(until - idx1 + 1), tl2, until + 1, shift1 - (until - idx1), idx2 + 1, lcs.tail,
+          remove(idx1 + shift1, until - 1 + shift1) reverse_::: acc)
       case (v1 :: tl1, v2 :: tl2) =>
         // values are different, recursively compute the diff of these values
         loop(tl1, tl2, idx1 + 1, shift1, idx2 + 1, lcs, diff(v1, v2, path ::: List(idx1.toString)) reverse_::: acc)

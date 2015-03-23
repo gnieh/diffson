@@ -68,7 +68,7 @@ class TestSerialization extends FlatSpec with ShouldMatchers {
   "applying a patch" should "raise an exception if it changes the shape" in {
     val json = Json(1, true, "test", Nil)
     val patch = JsonPatch(Replace(Nil, JsBoolean(true)))
-    a [DeserializationException] should be thrownBy { patch(json) }
+    a[DeserializationException] should be thrownBy { patch(json) }
   }
 
 }

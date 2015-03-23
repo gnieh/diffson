@@ -77,7 +77,7 @@ object DiffsonProtocol extends DefaultJsonProtocol {
     }
   }
 
-  implicit object JsonPatchFormat extends JsonFormat[JsonPatch]  {
+  implicit object JsonPatchFormat extends JsonFormat[JsonPatch] {
 
     def write(patch: JsonPatch): JsArray =
       JsArray(patch.ops.toJson)
@@ -89,6 +89,5 @@ object DiffsonProtocol extends DefaultJsonProtocol {
     }
 
   }
-
 
 }
