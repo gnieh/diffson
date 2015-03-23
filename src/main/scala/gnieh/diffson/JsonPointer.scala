@@ -19,25 +19,16 @@ import scala.annotation.tailrec
 
 import spray.json._
 
-/** Thrown whenever a problem is encountered when parsing or evaluating a Json Pointer */
-class PointerException(msg: String) extends Exception(msg)
-
-/** Default `JsonPointer` instance that throws an exception for each invalid or inexistent pointer
- *
- *  @author Lucas Satabin
- */
-object JsonPointer extends JsonPointer(allError)
-
 /** A class to work with Json pointers according to http://tools.ietf.org/html/rfc6901.
  *  The behavior in case of invalid pointer is customizable by passing an error handler
  *  when instantiating.
  *
  *  @author Lucas Satabin
  */
-class JsonPointer(errorHandler: PartialFunction[(JsValue, String), JsValue]) {
+class JsonPointer(errorHandler: PartialFunction[(JsValue, String, Pointer), JsValue]) {
 
-  private def handle(value: JsValue, pointer: String): JsValue =
-    errorHandler.orElse(allError)(value, pointer)
+  private def handle(value: JsValue, pointer: String, parent: Pointer): JsValue =
+    errorHandler.orElse(allError)(value, pointer, parent)
 
   /** Parses a JSON pointer and returns the resolved path. */
   def parse(input: String): Pointer = {
@@ -77,22 +68,25 @@ class JsonPointer(errorHandler: PartialFunction[(JsValue, String), JsValue]) {
   /** Evaluates the given path in the given JSON object.
    *  Upon missing elements in value, the error handler is called with the current value and element
    */
+  final def evaluate(value: JsValue, path: Pointer): JsValue =
+    evaluate(value, path, Nil)
+
   @tailrec
-  final def evaluate(value: JsValue, path: Pointer): JsValue = (value, path) match {
+  private def evaluate(value: JsValue, path: Pointer, parent: Pointer): JsValue = (value, path) match {
     case (JsObject(obj), elem :: tl) =>
-      evaluate(obj.getOrElse(elem, JsNull), tl)
+      evaluate(obj.getOrElse(elem, JsNull), tl, elem :: parent)
     case (JsArray(arr), (p @ IntIndex(idx)) :: tl) =>
       if (idx >= arr.size)
         // we know (by construction) that the index is greater or equal to zero
-        evaluate(handle(value, p), tl)
+        evaluate(handle(value, p, parent.reverse), tl, p :: parent)
       else
-        evaluate(arr(idx), tl)
+        evaluate(arr(idx), tl, p :: parent)
     case (arr: JsArray, "-" :: tl) =>
-      evaluate(handle(value, "-"), tl)
+      evaluate(handle(value, "-", parent.reverse), tl, "-" :: parent)
     case (_, Nil) =>
       value
     case (_, elem :: tl) =>
-      evaluate(handle(value, elem), tl)
+      evaluate(handle(value, elem, parent.reverse), tl, elem :: parent)
   }
 
 }

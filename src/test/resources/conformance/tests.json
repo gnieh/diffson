@@ -72,11 +72,11 @@
 
     { "doc": {"bar": [1, 2]},
       "patch": [{"op": "add", "path": "/bar/8", "value": "5"}],
-      "error": "Out of bounds (upper)" },
+      "error": "element 8 does not exist at path /bar" },
 
     { "doc": {"bar": [1, 2]},
       "patch": [{"op": "add", "path": "/bar/-1", "value": "5"}],
-      "error": "Out of bounds (lower)" },
+      "error": "element -1 does not exist at path /bar" },
 
     { "doc": {"foo": 1},
       "patch": [{"op": "add", "path": "/bar", "value": true}],
@@ -119,11 +119,11 @@
     { "comment": "test with bad number should fail",
       "doc": ["foo", "bar"],
       "patch": [{"op": "test", "path": "/1e0", "value": "bar"}],
-      "error": "test op shouldn't get array element 1" },
+      "error": "element 1e0 does not exist at path /" },
 
     { "doc": ["foo", "sil"],
       "patch": [{"op": "add", "path": "/bar", "value": 42}],
-      "error": "Object operation on array target" },
+      "error": "element bar does not exist at path /" },
 
     { "doc": ["foo", "sil"],
       "patch": [{"op": "add", "path": "/1", "value": ["bar", "baz"]}],
@@ -199,7 +199,7 @@
 
     { "doc": {"foo": {"bar": [1, 2, 5, 4]}},
       "patch": [{"op": "test", "path": "/foo", "value": [1, 2]}],
-      "error": "test op should fail" },
+      "error": "test failed at path /foo" },
 
     { "comment": "Whole document",
       "doc": { "foo": 1 },
@@ -269,7 +269,7 @@
     { "comment": "test remove with bad number should fail",
       "doc": {"foo": 1, "baz": [{"qux": "hello"}]},
       "patch": [{"op": "remove", "path": "/baz/1e0/qux"}],
-      "error": "remove op shouldn't remove from array with bad number" },
+      "error": "element 1e0 does not exist at path /baz" },
 
     { "comment": "test remove on array",
       "doc": [1, 2, 3, 4],
@@ -285,57 +285,57 @@
     { "comment": "test remove with bad index should fail",
       "doc": [1, 2, 3, 4],
       "patch": [{"op": "remove", "path": "/1e0"}],
-      "error": "remove op shouldn't remove from array with bad number" },
+      "error": "element 1e0 does not exist at path /" },
 
     { "comment": "test replace with bad number should fail",
       "doc": [""],
       "patch": [{"op": "replace", "path": "/1e0", "value": false}],
-      "error": "replace op shouldn't replace in array with bad number" },
+      "error": "element 1e0 does not exist at path /" },
 
     { "comment": "test copy with bad number should fail",
       "doc": {"baz": [1,2,3], "bar": 1},
       "patch": [{"op": "copy", "from": "/baz/1e0", "path": "/boo"}],
-      "error": "copy op shouldn't work with bad number" },
+      "error": "element 1e0 does not exist at path /baz" },
 
     { "comment": "test move with bad number should fail",
       "doc": {"foo": 1, "baz": [1,2,3,4]},
       "patch": [{"op": "move", "from": "/baz/1e0", "path": "/foo"}],
-      "error": "move op shouldn't work with bad number" },
+      "error": "element 1e0 does not exist at path /baz" },
 
     { "comment": "test add with bad number should fail",
       "doc": ["foo", "sil"],
       "patch": [{"op": "add", "path": "/1e0", "value": "bar"}],
-      "error": "add op shouldn't add to array with bad number" },
+      "error": "element 1e0 does not exist at path /" },
 
     { "comment": "missing 'value' parameter to add",
       "doc": [ 1 ],
       "patch": [ { "op": "add", "path": "/-" } ],
-      "error": "missing 'value' parameter" },
+      "error": "missing 'path' or 'value' field" },
 
     { "comment": "missing 'value' parameter to replace",
       "doc": [ 1 ],
       "patch": [ { "op": "replace", "path": "/0" } ],
-      "error": "missing 'value' parameter" },
+      "error": "missing 'path' or 'value' field" },
 
     { "comment": "missing 'value' parameter to test",
       "doc": [ null ],
       "patch": [ { "op": "test", "path": "/0" } ],
-      "error": "missing 'value' parameter" },
+      "error": "missing 'path' or 'value' field" },
 
     { "comment": "missing value parameter to test - where undef is falsy",
       "doc": [ false ],
       "patch": [ { "op": "test", "path": "/0" } ],
-      "error": "missing 'value' parameter" },
+      "error": "missing 'path' or 'value' field" },
 
     { "comment": "missing from parameter to copy",
       "doc": [ 1 ],
       "patch": [ { "op": "copy", "path": "/-" } ],
-      "error": "missing 'from' parameter" },
+      "error": "missing 'from' or 'path' field" },
 
     { "comment": "missing from parameter to move",
       "doc": { "foo": 1 },
       "patch": [ { "op": "move", "path": "" } ],
-      "error": "missing 'from' parameter" },
+      "error": "missing 'from' or 'path' field" },
 
     { "comment": "duplicate ops",
       "doc": { "foo": "bar" },
@@ -347,5 +347,5 @@
     { "comment": "unrecognized op should fail",
       "doc": {"foo": 1},
       "patch": [{"op": "spam", "path": "/foo", "value": 1}],
-      "error": "Unrecognized op 'spam'" }
+      "error": "Unknown operation \"spam\"" }
 ]

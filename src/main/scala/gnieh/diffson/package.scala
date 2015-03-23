@@ -23,21 +23,18 @@ package object diffson {
 
   type Pointer = List[String]
 
+  type PointerErrorHandler = PartialFunction[(JsValue, String, Pointer), JsValue]
+
   implicit def s2path(s: String) = List(s)
 
   implicit def i2path(i: Int) = List(i.toString)
 
-  private[diffson] val allError: PartialFunction[(JsValue, String), JsValue] = {
-    case (value, pointer) =>
-      throw new PointerException(s"Non existent value '$pointer' in ${value.prettyPrint}")
+  private[diffson] val allError: PointerErrorHandler = {
+    case (value, pointer, parent) =>
+      throw new PointerException(s"element $pointer does not exist at path ${pointerString(parent)}")
   }
 
-  val nothingHandler: PartialFunction[(JsValue, String), JsValue] = {
-    case (value, elem) =>
-      JsNull
-  }
-
-  val pointer = new JsonPointer(nothingHandler)
+  implicit val pointer = new JsonPointer(allError)
 
   def pointerString(path: Pointer): String =
     path.map(_.replace("~", "~0").replace("/", "~1")).mkString("/", "/", "")
