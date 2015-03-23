@@ -7,14 +7,12 @@ import spray.json._
 
 class TestJsonPointer extends FlatSpec with ShouldMatchers {
 
-  val pointer = JsonPointer
-
   "an empty string" should "be parsed as an empty pointer" in {
     pointer.parse("") should be(Nil)
   }
 
-  "the root pointer" should "be parsed as an empty pointer" in {
-    pointer.parse("/") should be(Nil)
+  "the root pointer" should "be parsed as the pointer to empty element at root" in {
+    pointer.parse("/") should be(List(""))
   }
 
   "a pointer string with one chunk" should "be parsed as a pointer with one element" in {

@@ -4,7 +4,7 @@
     "doc": { "q": { "bar": 2 } },
     "patch": [ {"op": "add", "path": "/a/b", "value": 1} ],
     "error":
-       "path /a does not exist -- missing objects are not created recursively"
+       "element a does not exist at path /"
   },
 
   {
@@ -139,7 +139,7 @@
     "patch": [
   { "op": "test", "path": "/baz", "value": "bar" }
 ],
-    "error": "string not equivalent"
+    "error": "test failed at path /baz"
   },
 
   {
@@ -181,7 +181,7 @@
     "patch": [
   { "op": "add", "path": "/baz/bat", "value": "qux" }
 ],
-    "error": "add to a non-existent target"
+    "error": "element baz does not exist at path /"
   },
 
  {
@@ -216,7 +216,7 @@
        "~1": 10
     },
     "patch": [{"op": "test", "path": "/~01", "value": "10"}],
-    "error": "number is not equal to string"
+    "error": "test failed at path /~01"
   },
 
   {

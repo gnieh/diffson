@@ -12,8 +12,6 @@ class TestJsonPatch extends FlatSpec
     with TestReplacePatch
     with TestMovePatch {
 
-  val pointer = JsonPointer
-
 }
 
 trait TestAddPatch {
@@ -24,7 +22,7 @@ trait TestAddPatch {
   }
 
   it should "replace the value if the pointer is the root" in {
-    Add(pointer.parse("/"), JsNumber(17))(JsonParser("[1, 2, 3, 4]")) should be(JsNumber(17))
+    Add(pointer.parse(""), JsNumber(17))(JsonParser("[1, 2, 3, 4]")) should be(JsNumber(17))
   }
 
   it should "replace the field value if it does exist" in {
@@ -95,7 +93,7 @@ trait TestReplacePatch {
   }
 
   "replacing the root" should "result in the value being completely replaced" in {
-    Replace(pointer.parse("/"), JsNumber(17))(JsonParser("[1, 2, 3]")) should be(JsNumber(17))
+    Replace(pointer.parse(""), JsNumber(17))(JsonParser("[1, 2, 3]")) should be(JsNumber(17))
   }
 
   "replacing a non existing element in an object" should "result in an error being thrown" in {
