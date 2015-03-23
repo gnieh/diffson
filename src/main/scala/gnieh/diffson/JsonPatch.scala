@@ -33,7 +33,7 @@ final case class JsonPatch(ops: List[Operation]) {
   /** Applies this patch to the given Json valued and returns the patched value */
   def apply(json: String, compacted: Boolean = false): String = {
     val patched = apply(JsonParser(json))
-    if(compacted)
+    if (compacted)
       patched.compactPrint
     else
       patched.prettyPrint
@@ -47,7 +47,8 @@ final case class JsonPatch(ops: List[Operation]) {
 
   /** Applies this patch to the given Json value, and returns the patched value.
    *  It assumes that the shape of the patched object is the same as the input one.
-   *  If it is not the case, an exception will be raised */
+   *  If it is not the case, an exception will be raised
+   */
   def apply[T: JsonFormat](value: T): T =
     apply(value.toJson).convertTo[T]
 
@@ -84,7 +85,7 @@ sealed abstract class Operation {
   /** Applies this operation to the given Json value */
   def apply(json: String, compacted: Boolean = false): String = {
     val patched = apply(JsonParser(json))
-    if(compacted)
+    if (compacted)
       patched.compactPrint
     else
       patched.prettyPrint
@@ -135,14 +136,14 @@ final case class Add(path: Pointer, value: JsValue) extends Operation {
       // insert the value at the end of the array
       JsArray(arr ++ Vector(value))
     case (JsArray(arr), List(IntIndex(idx))) =>
-      if(idx > arr.size)
+      if (idx > arr.size)
         throw new PatchException(s"Index out of bounds $idx")
       else
         // insert the value at the specified index
         JsArray(arr.take(idx) ++ Vector(value) ++ arr.drop(idx))
     case (JsObject(obj), List(lbl)) =>
       // remove the label if it is present
-      val cleaned = obj filter(_._1 != lbl)
+      val cleaned = obj filter (_._1 != lbl)
       // insert the new label
       JsObject(cleaned.updated(lbl, value))
     case _ =>
@@ -161,7 +162,7 @@ final case class Remove(path: Pointer) extends Operation {
   override def action(original: JsValue, pointer: Pointer): JsValue =
     (original, pointer) match {
       case (JsArray(arr), List(IntIndex(idx))) =>
-        if(idx >= arr.size)
+        if (idx >= arr.size)
           // we know thanks to the extractor that the index cannot be negative
           throw new PatchException(s"Index out of bounds $idx")
         else
@@ -172,7 +173,7 @@ final case class Remove(path: Pointer) extends Operation {
         throw new PatchException("Index out of bounds -")
       case (JsObject(obj), List(lbl)) if obj.contains(lbl) =>
         // remove the field from the object if present, otherwise, ignore it
-        JsObject(obj filter(_._1 != lbl ))
+        JsObject(obj filter (_._1 != lbl))
       case (_, Nil) =>
         throw new PatchException("Cannot delete an empty path")
       case _ =>
@@ -195,14 +196,14 @@ final case class Replace(path: Pointer, value: JsValue) extends Operation {
         // simply replace the root value by the replacement value
         value
       case (JsArray(arr), List(IntIndex(idx))) =>
-        if(idx >= arr.size)
+        if (idx >= arr.size)
           throw new PatchException(s"Index out of bounds $idx")
         else
           JsArray(arr.take(idx) ++ Vector(value) ++ arr.drop(idx + 1))
       case (JsArray(_), List("-")) =>
         throw new PatchException("Index out of bounds -")
       case (JsObject(obj), List(lbl)) if obj.contains(lbl) =>
-        val cleaned = obj filter(_._1 != lbl)
+        val cleaned = obj filter (_._1 != lbl)
         JsObject(cleaned.updated(lbl, value))
       case (JsObject(_), List(lbl)) =>
         throw new PatchException(s"element $lbl does not exist in ${original.prettyPrint}")
@@ -228,7 +229,7 @@ final case class Move(from: Pointer, path: Pointer) extends Operation {
       case (Nil, _ :: _)                      => true
       case (_, _)                             => false
     }
-    if(prefix(from, path))
+    if (prefix(from, path))
       throw new PatchException("The path were to move cannot be a descendent of the from path")
 
     val cleaned = Remove(from)(original)
@@ -260,8 +261,8 @@ final case class Test(path: Pointer, value: JsValue) extends Operation {
       "value" -> value)
 
   override def apply(original: JsValue): JsValue = {
-    val orig  = JsonPointer.evaluate(original, path)
-    if(value != orig)
+    val orig = JsonPointer.evaluate(original, path)
+    if (value != orig)
       throw new PatchException(s"${orig.prettyPrint} is not equal to ${value.prettyPrint}")
     else
       original
