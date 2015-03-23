@@ -41,19 +41,23 @@ class JsonPointer(errorHandler: PartialFunction[(JsValue, String, Pointer), JsVa
     } else {
       // first gets the different parts of the pointer
       val parts = input.split("/")
-        // easier to work with lists in scala
-        .toList
         // the first element is always empty as the path starts with a '/'
         .drop(1)
-      // check that an occurrence of '~' is followed by '0' or '1'
-      if (parts.exists(_.replace("~0", "").replace("~1", "").contains("~"))) {
-        throw new PointerException("Occurrences of '~' must be followed by '0' or '1'")
+      if (parts.size == 0) {
+        // the pointer was simply "/"
+        List("")
       } else {
-        parts
-          // transform the occurrences of '~1' into occurrences of '/'
-          .map(_.replace("~1", "/"))
-          // transform the occurrences of '~0' into occurrences of '~'
-          .map(_.replace("~0", "~"))
+        // check that an occurrence of '~' is followed by '0' or '1'
+        if (parts.exists(_.replace("~0", "").replace("~1", "").contains("~"))) {
+          throw new PointerException("Occurrences of '~' must be followed by '0' or '1'")
+        } else {
+          parts
+            // transform the occurrences of '~1' into occurrences of '/'
+            .map(_.replace("~1", "/"))
+            // transform the occurrences of '~0' into occurrences of '~'
+            .map(_.replace("~0", "~"))
+            .toList
+        }
       }
     }
   }
