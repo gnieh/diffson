@@ -17,7 +17,33 @@ package gnieh.diffson
 
 import spray.json._
 
+import schema._
+
+import java.net.{
+  URI,
+  URISyntaxException
+}
+
 object DiffsonProtocol extends DefaultJsonProtocol {
+
+  implicit object URIFormat extends JsonFormat[URI] {
+
+    def write(uri: URI): JsString =
+      JsString(uri.normalize.toString)
+
+    def read(value: JsValue): URI = value match {
+      case JsString(uri) =>
+        try {
+          new URI(uri)
+        } catch {
+          case e: URISyntaxException => deserializationError("Wrong URI format")
+        }
+      case _ =>
+        deserializationError("URI expected")
+    }
+  }
+
+  implicit val refForm = jsonFormat1(JsonReference)
 
   implicit def PointerFormat(implicit pointer: JsonPointer): JsonFormat[Pointer] =
     new JsonFormat[Pointer] {
@@ -89,6 +115,39 @@ object DiffsonProtocol extends DefaultJsonProtocol {
         case _ =>
           throw new FormatException(f"Operation expected: $value")
       }
+    }
+
+  }
+
+  implicit object JsonSchemaFormat extends JsonFormat[JsonSchema] {
+
+    def write(schema: JsonSchema): JsValue = {
+      val baseFields = (schema.$schema, schema.id) match {
+        case (Some(uri), Some(id)) => Map("$schema" -> uri.toJson, "id" -> id.toJson)
+        case (None, Some(id))      => Map("id" -> id.toJson)
+        case (Some(uri), None)     => Map("$schema" -> uri.toJson)
+        case (None, None)          => Map[String, JsValue]()
+      }
+      JsObject(baseFields ++
+        schema.subschemas.map { case (name, sc) => (name -> sc.toJson) } ++
+        schema.keywords.map(_.toJson))
+    }
+
+    def read(value: JsValue): JsonSchema = value match {
+      case JsObject(fields) =>
+        val $schema = fields.get("$schema").map(_.convertTo[URI])
+        val id = fields.get("id").map(_.convertTo[URI])
+        val (subschemas, keywords) =
+          fields.foldLeft((Map[String, JsonSchema](), List[Keyword]())) {
+            case ((subschemasAcc, keywordsAcc), (name, value)) =>
+              Keyword.all.get(name) match {
+                case Some(convert) => (subschemasAcc, keywordsAcc :+ convert(value))
+                case None          => (subschemasAcc.updated(name, value.convertTo[JsonSchema]), keywordsAcc)
+              }
+          }
+        JsonSchema($schema, id, subschemas, keywords)
+      case _ =>
+        deserializationError("JsonSchema expected")
     }
 
   implicit def JsonPatchFormat(implicit pointer: JsonPointer): JsonFormat[JsonPatch] =
