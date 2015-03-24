@@ -6,13 +6,11 @@ import org.scalatest._
 import spray.json._
 
 class TestJsonPatch extends FlatSpec
-                    with ShouldMatchers
-                    with TestAddPatch
-                    with TestRemovePatch
-                    with TestReplacePatch
-                    with TestMovePatch {
-
-  val pointer = JsonPointer
+    with ShouldMatchers
+    with TestAddPatch
+    with TestRemovePatch
+    with TestReplacePatch
+    with TestMovePatch {
 
 }
 
@@ -24,7 +22,7 @@ trait TestAddPatch {
   }
 
   it should "replace the value if the pointer is the root" in {
-    Add(pointer.parse("/"), JsNumber(17))(JsonParser("[1, 2, 3, 4]")) should be(JsNumber(17))
+    Add(pointer.parse(""), JsNumber(17))(JsonParser("[1, 2, 3, 4]")) should be(JsNumber(17))
   }
 
   it should "replace the field value if it does exist" in {
@@ -45,11 +43,11 @@ trait TestAddPatch {
   }
 
   it should "throw an error if some element is missing in the middle of the path" in {
-    a [PatchException] should be thrownBy { Add(pointer.parse("/lbl/lbl"), JsNumber(17))(JsonParser("{}")) }
+    a[PatchException] should be thrownBy { Add(pointer.parse("/lbl/lbl"), JsNumber(17))(JsonParser("{}")) }
   }
 
   it should "throw an error if adding an element out of the array boundaries" in {
-    a [PatchException] should be thrownBy { Add(pointer.parse("/178"), JsNumber(17))(JsonParser("[1, 2]")) }
+    a[PatchException] should be thrownBy { Add(pointer.parse("/178"), JsNumber(17))(JsonParser("[1, 2]")) }
   }
 
 }
@@ -66,19 +64,19 @@ trait TestRemovePatch {
   }
 
   "removing the '-' element of an array" should "result in an error being thrown" in {
-    a [PatchException] should be thrownBy { Remove(pointer.parse("/-"))(JsonParser("[1, 2, 3, 4]")) }
+    a[PatchException] should be thrownBy { Remove(pointer.parse("/-"))(JsonParser("[1, 2, 3, 4]")) }
   }
 
   "removing an element out of the array boundaries" should "result in an error being thrown" in {
-    a [PatchException] should be thrownBy { Remove(pointer.parse("/20"))(JsonParser("[1, 2, 3, 4]")) }
+    a[PatchException] should be thrownBy { Remove(pointer.parse("/20"))(JsonParser("[1, 2, 3, 4]")) }
   }
 
   "removing an unknown label from an object" should "result in an error being thrown" in {
-    a [PatchException] should be thrownBy { Remove(pointer.parse("/toto"))(JsonParser("{}")) }
+    a[PatchException] should be thrownBy { Remove(pointer.parse("/toto"))(JsonParser("{}")) }
   }
 
   "removing the root" should "result in an error being thrown" in {
-    a [PatchException] should be thrownBy { Remove(pointer.parse("/"))(JsonParser("{}")) }
+    a[PatchException] should be thrownBy { Remove(pointer.parse("/"))(JsonParser("{}")) }
   }
 }
 
@@ -95,19 +93,19 @@ trait TestReplacePatch {
   }
 
   "replacing the root" should "result in the value being completely replaced" in {
-    Replace(pointer.parse("/"), JsNumber(17))(JsonParser("[1, 2, 3]")) should be(JsNumber(17))
+    Replace(pointer.parse(""), JsNumber(17))(JsonParser("[1, 2, 3]")) should be(JsNumber(17))
   }
 
   "replacing a non existing element in an object" should "result in an error being thrown" in {
-    a [PatchException] should be thrownBy { Replace(pointer.parse("/1/lbl"), JsNumber(17))(JsonParser("[1, {}, true]")) }
+    a[PatchException] should be thrownBy { Replace(pointer.parse("/1/lbl"), JsNumber(17))(JsonParser("[1, {}, true]")) }
   }
 
   "replacing the '-' element of an array" should "result in an error being thrown" in {
-    a [PatchException] should be thrownBy { Replace(pointer.parse("/-"), JsNumber(17))(JsonParser("[1, 2, 3, 4]")) }
+    a[PatchException] should be thrownBy { Replace(pointer.parse("/-"), JsNumber(17))(JsonParser("[1, 2, 3, 4]")) }
   }
 
   "replacing an element out of the array boundaries" should "result in an error being thrown" in {
-    a [PatchException] should be thrownBy { Replace(pointer.parse("/20"), JsNumber(17))(JsonParser("[1, 2, 3, 4]")) }
+    a[PatchException] should be thrownBy { Replace(pointer.parse("/20"), JsNumber(17))(JsonParser("[1, 2, 3, 4]")) }
   }
 
 }
@@ -122,10 +120,10 @@ trait TestMovePatch {
   }
 
   "moving a value in a sub element" should "result in an error being thrown" in {
-    a [PatchException] should be thrownBy { Move(pointer.parse("/0"), pointer.parse("/0/toto"))(JsonParser("0")) }
+    a[PatchException] should be thrownBy { Move(pointer.parse("/0"), pointer.parse("/0/toto"))(JsonParser("0")) }
   }
 
   "moving the root" should "result in an error being thrown" in {
-    a [PatchException] should be thrownBy { Move(pointer.parse("/"), pointer.parse("/toto"))(JsonParser("0")) }
+    a[PatchException] should be thrownBy { Move(pointer.parse("/"), pointer.parse("/toto"))(JsonParser("0")) }
   }
 }

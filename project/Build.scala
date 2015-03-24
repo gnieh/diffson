@@ -5,6 +5,9 @@ import Keys._
 import com.typesafe.sbt.osgi.SbtOsgi._
 import com.typesafe.sbt.osgi.OsgiKeys
 
+import scalariform.formatter.preferences._
+import com.typesafe.sbt.SbtScalariform._
+
 object DiffsonBuild extends Build {
 
   lazy val diffson = (Project(id = "diffson",
@@ -33,6 +36,13 @@ object DiffsonBuild extends Build {
     OsgiKeys.privatePackage := Seq(),
     compileOptions)
     settings(publishSettings: _*)
+    settings(scalariformSettings: _*)
+    settings(
+      ScalariformKeys.preferences := ScalariformKeys.preferences.value
+        .setPreference(AlignSingleLineCaseStatements, true)
+        .setPreference(DoubleIndentClassDeclaration, true)
+        .setPreference(MultilineScaladocCommentsStartOnFirstLine, true))
+
   )
 
   lazy val dependencies = Seq(

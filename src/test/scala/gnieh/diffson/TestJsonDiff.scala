@@ -7,8 +7,6 @@ import spray.json._
 
 class TestJsonDiff extends FlatSpec with ShouldMatchers {
 
-  val pointer = JsonPointer
-
   import JsonDiff._
 
   "a diff" should "be empty if created between two equal values" in {
