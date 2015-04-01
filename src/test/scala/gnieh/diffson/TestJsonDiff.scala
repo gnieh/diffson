@@ -129,7 +129,7 @@ class TestJsonDiff extends FlatSpec with ShouldMatchers {
                    |  "c": "test"
                    |}""".stripMargin
     val json2 = """{"a":6,"c":"test2","d":false}""".stripMargin
-    val json3 = JsonDiff.diff(json1, json2)(json1)
+    val json3 = JsonDiff.diff(json1, json2)(json1, true)
     json3 should be(json2)
   }
 

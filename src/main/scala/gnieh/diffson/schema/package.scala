@@ -27,4 +27,42 @@ package object schema {
     AnySchema(None, None, None, None, None, None, Map()),
     MetadataSchema(None, None, None))
 
+  val keywords = Set("multipleOf",
+    "maximum",
+    "exclusiveMaximum",
+    "minimum",
+    "exclusiveMinimum",
+    "maxLength",
+    "minLength",
+    "pattern",
+    "items",
+    "additionalItems",
+    "maxItems",
+    "minItems",
+    "uniqueItems",
+    "maxProperties",
+    "minProperties",
+    "required",
+    "additionalProperties",
+    "properties",
+    "patternProperties",
+    "dependencies",
+    "enum",
+    "type",
+    "allOf",
+    "anyOf",
+    "oneOf",
+    "not",
+    "definitions",
+    "title",
+    "description",
+    "default")
+
+  implicit class SchemaString(val str: String) extends AnyVal {
+
+    def isKeyword: Boolean =
+      keywords.contains(str)
+
+  }
+
 }

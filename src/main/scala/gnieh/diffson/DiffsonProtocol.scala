@@ -117,39 +117,6 @@ object DiffsonProtocol extends DefaultJsonProtocol {
       }
     }
 
-  }
-
-  implicit object JsonSchemaFormat extends JsonFormat[JsonSchema] {
-
-    def write(schema: JsonSchema): JsValue = {
-      val baseFields = (schema.$schema, schema.id) match {
-        case (Some(uri), Some(id)) => Map("$schema" -> uri.toJson, "id" -> id.toJson)
-        case (None, Some(id))      => Map("id" -> id.toJson)
-        case (Some(uri), None)     => Map("$schema" -> uri.toJson)
-        case (None, None)          => Map[String, JsValue]()
-      }
-      JsObject(baseFields ++
-        schema.subschemas.map { case (name, sc) => (name -> sc.toJson) } ++
-        schema.keywords.map(_.toJson))
-    }
-
-    def read(value: JsValue): JsonSchema = value match {
-      case JsObject(fields) =>
-        val $schema = fields.get("$schema").map(_.convertTo[URI])
-        val id = fields.get("id").map(_.convertTo[URI])
-        val (subschemas, keywords) =
-          fields.foldLeft((Map[String, JsonSchema](), List[Keyword]())) {
-            case ((subschemasAcc, keywordsAcc), (name, value)) =>
-              Keyword.all.get(name) match {
-                case Some(convert) => (subschemasAcc, keywordsAcc :+ convert(value))
-                case None          => (subschemasAcc.updated(name, value.convertTo[JsonSchema]), keywordsAcc)
-              }
-          }
-        JsonSchema($schema, id, subschemas, keywords)
-      case _ =>
-        deserializationError("JsonSchema expected")
-    }
-
   implicit def JsonPatchFormat(implicit pointer: JsonPointer): JsonFormat[JsonPatch] =
     new JsonFormat[JsonPatch] {
 
@@ -161,7 +128,86 @@ object DiffsonProtocol extends DefaultJsonProtocol {
           JsonPatch(ops.map(_.convertTo[Operation]).toList)
         case _ => throw new FormatException("JsonPatch expected")
       }
-
     }
+
+  implicit object JsTypeFormat extends JsonFormat[JsType] {
+
+    def write(tpe: JsType): JsValue = tpe match {
+      case JsArrayType   => JsString("array")
+      case JsBooleanType => JsString("boolean")
+      case JsIntegerType => JsString("integer")
+      case JsNumberType  => JsString("number")
+      case JsNullType    => JsString("null")
+      case JsObjectType  => JsString("object")
+      case JsStringType  => JsString("string")
+    }
+
+    def read(json: JsValue): JsType = json match {
+      case JsString("array")   => JsArrayType
+      case JsString("boolean") => JsBooleanType
+      case JsString("integer") => JsIntegerType
+      case JsString("number")  => JsNumberType
+      case JsString("null")    => JsNullType
+      case JsString("object")  => JsObjectType
+      case JsString("string")  => JsStringType
+      case _                   => deserializationError("json type string expected")
+    }
+
+  }
+
+  implicit object JsonSchemaFormat extends RootJsonFormat[JsonSchema] {
+
+    implicit val numericSchemaFormat = jsonFormat5(NumericSchema)
+
+    implicit val stringSchemaFormat = jsonFormat3(StringSchema)
+
+    implicit val arraySchemaFormat = jsonFormat5(ArraySchema)
+
+    implicit val objectSchemaFormat = jsonFormat7(ObjectSchema)
+
+    implicit val anySchemaFormat = jsonFormat7(AnySchema)
+
+    implicit val metadataSchemaFormat = jsonFormat3(MetadataSchema)
+
+    def write(schema: JsonSchema): JsObject = schema match {
+      case JsonSchema(sc, id, subs, nums, strs, arrs, objs, any, meta) =>
+        val numerics = nums.toJson.asJsObject.fields
+        val strings = strs.toJson.asJsObject.fields
+        val arrays = arrs.toJson.asJsObject.fields
+        val objects = objs.toJson.asJsObject.fields
+        val anys = any.toJson.asJsObject.fields
+        val metadata = meta.toJson.asJsObject.fields
+        val subschemas = subs.toJson.asJsObject.fields
+        JsObject(numerics
+          ++ strings
+          ++ arrays
+          ++ objects
+          ++ anys
+          ++ metadata
+          ++ subschemas
+          + ("$schema" -> sc.toJson)
+          + ("id" -> id.toJson))
+    }
+
+    def read(value: JsValue): JsonSchema = {
+      val (schema, id, subs) = value match {
+        case JsObject(fields) =>
+          (fields.get("$schema").map(_.convertTo[URI]),
+            fields.get("id").map(_.convertTo[URI]),
+            fields.filter(!_._1.isKeyword).map {
+              case (k, v) => (k, v.convertTo[JsonSchema])
+            })
+        case _ =>
+          deserializationError("json schema expected")
+      }
+      val numerics = value.convertTo[NumericSchema]
+      val strings = value.convertTo[StringSchema]
+      val arrays = value.convertTo[ArraySchema]
+      val objects = value.convertTo[ObjectSchema]
+      val anys = value.convertTo[AnySchema]
+      val metadata = value.convertTo[MetadataSchema]
+      JsonSchema(schema, id, subs, numerics, strings, arrays, objects, anys, metadata)
+    }
+  }
 
 }
