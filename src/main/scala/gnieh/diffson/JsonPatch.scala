@@ -28,13 +28,8 @@ final case class JsonPatch(ops: List[Operation])(implicit pointer: JsonPointer) 
     JsArray(ops.map(_.toJson).toVector)
 
   /** Applies this patch to the given Json valued and returns the patched value */
-  def apply(json: String, compacted: Boolean = false): String = {
-    val patched = apply(JsonParser(json))
-    if (compacted)
-      patched.compactPrint
-    else
-      patched.prettyPrint
-  }
+  def apply(json: String): String =
+    apply(JsonParser(json)).compactPrint
 
   /** Applies this patch to the given Json value, and returns the patched value */
   def apply(value: JsValue): JsValue =
@@ -83,13 +78,8 @@ sealed abstract class Operation {
   def toJson: JsObject
 
   /** Applies this operation to the given Json value */
-  def apply(json: String, compacted: Boolean = false)(implicit pointer: JsonPointer): String = {
-    val patched = apply(JsonParser(json))
-    if (compacted)
-      patched.compactPrint
-    else
-      patched.prettyPrint
-  }
+  def apply(json: String): String =
+    apply(JsonParser(json)).compactPrint
 
   /** Applies this operation to the given Json value */
   def apply(value: JsValue)(implicit pointer: JsonPointer): JsValue = action(value, path, Nil)

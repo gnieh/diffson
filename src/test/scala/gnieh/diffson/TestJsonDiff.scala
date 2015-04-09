@@ -116,4 +116,15 @@ class TestJsonDiff extends FlatSpec with ShouldMatchers {
     diff(json1, json2)(json1) should be(json2)
   }
 
+  "applying a diff to strings" should "provide a correct string representation" in {
+    val json1 = """{
+                   |  "a": 1,
+                   |  "b": true,
+                   |  "c": "test"
+                   |}""".stripMargin
+    val json2 = """{"a":6,"c":"test2","d":false}""".stripMargin
+    val json3 = JsonDiff.diff(json1, json2)(json1)
+    json3 should be(json2)
+  }
+
 }
