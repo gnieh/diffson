@@ -142,7 +142,7 @@ class JsonDiff(lcsalg: Lcs[JsValue]) {
           remove(idx1 + shift1, until - 1 + shift1) reverse_::: acc)
       case (v1 :: tl1, v2 :: tl2) =>
         // values are different, recursively compute the diff of these values
-        loop(tl1, tl2, idx1 + 1, shift1, idx2 + 1, lcs, diff(v1, v2, path ::: List(idx1.toString)) reverse_::: acc)
+        loop(tl1, tl2, idx1 + 1, shift1, idx2 + 1, lcs, diff(v1, v2, path ::: List((idx1 + shift1).toString)) reverse_::: acc)
       case (_, Nil) =>
         // all subsequent values in arr1 were removed
         remove(idx1 + shift1, idx1 + arr1.size - 1 + shift1) reverse_::: acc
