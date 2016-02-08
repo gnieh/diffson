@@ -68,9 +68,9 @@ class JsonDiff(lcsalg: Lcs[JsValue]) {
         // the second field is not present in the first object
         associate(fields1, t2, (None, Some(f2)) :: acc)
       case (_, Nil) =>
-        fields1.map(Some(_) -> None) reverse_::: acc
+        fields1.map(Some(_) -> None) ::: acc
       case (Nil, _) =>
-        fields2.map(None -> Some(_)) reverse_::: acc
+        fields2.map(None -> Some(_)) ::: acc
     }
     @tailrec
     def fields(fs: List[(Option[(String, JsValue)], Option[(String, JsValue)])], acc: List[Operation]): List[Operation] = fs match {
@@ -79,7 +79,7 @@ class JsonDiff(lcsalg: Lcs[JsValue]) {
         fields(tl, acc)
       case (Some(f1), Some(f2)) :: tl =>
         // same field name, different values
-        fields(tl, diff(f1._2, f2._2, path :+ f1._1) reverse_::: acc)
+        fields(tl, diff(f1._2, f2._2, path :+ f1._1) ::: acc)
       case (Some(f1), None) :: tl =>
         // the field was deleted
         fields(tl, Remove(path :+ f1._1) :: acc)
