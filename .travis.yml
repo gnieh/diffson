@@ -11,5 +11,5 @@ script:
 before_install:
     - pip install --user codecov
 
-after_install:
+after_success:
   - codecov
