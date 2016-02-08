@@ -14,12 +14,12 @@ object DiffsonBuild extends Build {
     base = file(".")) settings (
     organization := "org.gnieh",
     name := "diffson",
-    version := "1.1.0-SNAPSHOT",
-    scalaVersion := "2.11.6",
+    version := "1.2.0-SNAPSHOT",
+    scalaVersion := "2.11.7",
     description := "Json diff/patch library",
     licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     homepage := Some(url("https://github.com/gnieh/diffson")),
-    crossScalaVersions := Seq("2.11.6", "2.10.5"),
+    crossScalaVersions := Seq("2.11.7", "2.10.6"),
     libraryDependencies ++= dependencies,
     parallelExecution := false,
     fork in test := true)
@@ -46,9 +46,9 @@ object DiffsonBuild extends Build {
   )
 
   lazy val dependencies = Seq(
-    "org.scalatest" %% "scalatest" % "2.2.0" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.12.5" % "test",
-    "io.spray" %%  "spray-json" % "1.3.1"
+    "org.scalatest" %% "scalatest" % "2.2.6" % "test",
+    "org.scalacheck" %% "scalacheck" % "1.13.0" % "test",
+    "io.spray" %%  "spray-json" % "1.3.2"
   )
 
   lazy val compileOptions = scalacOptions ++=
