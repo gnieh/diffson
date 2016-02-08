@@ -6,7 +6,10 @@ branches:
     - master
 
 script:
-  - sbt +clean +coverage +test
+  - sbt clean coverage test coverageReport coverageAggregate
+
+before_install:
+    - pip install --user codecov
 
 after_install:
   - codecov
