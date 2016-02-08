@@ -5,3 +5,11 @@ branches:
   only:
     - master
 
+script:
+  - sbt +clean +coverage +test
+
+before_install:
+  - pip install codecov --user codecov
+
+after_install:
+  - codecov
