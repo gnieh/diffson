@@ -40,12 +40,12 @@ class TestSerialization extends FlatSpec with ShouldMatchers {
     JsonParser(patch)
 
   val json = JsonPatch(
-    Replace(List("a"), JsNumber(6)),
-    Remove(List("b")),
-    Add(List("c"), JsString("test2")),
-    Test(List("d"), JsBoolean(false)),
-    Copy(List("c"), List("e")),
-    Move(List("d"), List("f"))
+    Replace(Pointer("a"), JsNumber(6)),
+    Remove(Pointer("b")),
+    Add(Pointer("c"), JsString("test2")),
+    Test(Pointer("d"), JsBoolean(false)),
+    Copy(Pointer("c"), Pointer("e")),
+    Move(Pointer("d"), Pointer("f"))
   )
 
   "a patch json" should "be correctly deserialized from a Json object" in {
@@ -67,7 +67,7 @@ class TestSerialization extends FlatSpec with ShouldMatchers {
 
   "applying a patch" should "raise an exception if it changes the shape" in {
     val json = Json(1, true, "test", Nil)
-    val patch = JsonPatch(Replace(Nil, JsBoolean(true)))
+    val patch = JsonPatch(Replace(Pointer.root, JsBoolean(true)))
     a[DeserializationException] should be thrownBy { patch(json) }
   }
 

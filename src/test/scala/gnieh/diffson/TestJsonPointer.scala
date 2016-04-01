@@ -8,23 +8,23 @@ import spray.json._
 class TestJsonPointer extends FlatSpec with ShouldMatchers {
 
   "an empty string" should "be parsed as an empty pointer" in {
-    pointer.parse("") should be(Nil)
+    pointer.parse("") should be(Pointer.empty)
   }
 
   "the root pointer" should "be parsed as the pointer to empty element at root" in {
-    pointer.parse("/") should be(List(""))
+    pointer.parse("/") should be(Pointer(""))
   }
 
   "a pointer string with one chunk" should "be parsed as a pointer with one element" in {
-    pointer.parse("/test") should be(List("test"))
+    pointer.parse("/test") should be(Pointer("test"))
   }
 
   "occurrences of ~0" should "be replaced by occurrences of ~" in {
-    pointer.parse("/~0/test/~0~0plop") should be(List("~", "test", "~~plop"))
+    pointer.parse("/~0/test/~0~0plop") should be(Pointer("~", "test", "~~plop"))
   }
 
   "occurrences of ~1" should "be replaced by occurrences of /" in {
-    pointer.parse("/test~1/~1/plop") should be(List("test/", "/", "plop"))
+    pointer.parse("/test~1/~1/plop") should be(Pointer("test/", "/", "plop"))
   }
 
   "occurrences of ~" should "be directly followed by either 0 or 1" in {

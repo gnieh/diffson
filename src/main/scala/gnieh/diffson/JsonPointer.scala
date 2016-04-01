@@ -34,7 +34,7 @@ class JsonPointer(errorHandler: PartialFunction[(JsValue, String, Pointer), JsVa
   def parse(input: String): Pointer = {
     if (input == null || input.isEmpty)
       // shortcut if input is empty
-      Nil
+      Pointer.empty
     else if (!input.startsWith("/")) {
       // a pointer MUST start with a '/'
       throw new PointerException("A JSON pointer must start with '/'")
@@ -45,18 +45,17 @@ class JsonPointer(errorHandler: PartialFunction[(JsValue, String, Pointer), JsVa
         .drop(1)
       if (parts.size == 0) {
         // the pointer was simply "/"
-        List("")
+        Path(Root, "")
       } else {
         // check that an occurrence of '~' is followed by '0' or '1'
-        if (parts.exists(_.replace("~0", "").replace("~1", "").contains("~"))) {
+        if (parts.exists(_.matches(".*~(?![01]).*"))) {
           throw new PointerException("Occurrences of '~' must be followed by '0' or '1'")
         } else {
           parts
             // transform the occurrences of '~1' into occurrences of '/'
-            .map(_.replace("~1", "/"))
             // transform the occurrences of '~0' into occurrences of '~'
-            .map(_.replace("~0", "~"))
-            .toList
+            .map(_.replace("~1", "/").replace("~0", "~"))
+            .foldLeft(Pointer.root)(_ / _)
         }
       }
     }
@@ -73,24 +72,24 @@ class JsonPointer(errorHandler: PartialFunction[(JsValue, String, Pointer), JsVa
    *  Upon missing elements in value, the error handler is called with the current value and element
    */
   final def evaluate(value: JsValue, path: Pointer): JsValue =
-    evaluate(value, path, Nil)
+    evaluate(value, path, Pointer.root)
 
   @tailrec
   private def evaluate(value: JsValue, path: Pointer, parent: Pointer): JsValue = (value, path) match {
-    case (JsObject(obj), elem :: tl) =>
-      evaluate(obj.getOrElse(elem, JsNull), tl, elem :: parent)
-    case (JsArray(arr), (p @ IntIndex(idx)) :: tl) =>
+    case (JsObject(obj), elem / tl) =>
+      evaluate(obj.getOrElse(elem, JsNull), tl, parent / elem)
+    case (JsArray(arr), (p @ IntIndex(idx)) / tl) =>
       if (idx >= arr.size)
         // we know (by construction) that the index is greater or equal to zero
-        evaluate(handle(value, p, parent.reverse), tl, p :: parent)
+        evaluate(handle(value, p, parent), tl, parent / p)
       else
-        evaluate(arr(idx), tl, p :: parent)
-    case (arr: JsArray, "-" :: tl) =>
-      evaluate(handle(value, "-", parent.reverse), tl, "-" :: parent)
-    case (_, Nil) =>
+        evaluate(arr(idx), tl, parent / p)
+    case (arr: JsArray, "-" / tl) =>
+      evaluate(handle(value, "-", parent), tl, parent / "-")
+    case (_, Pointer.Empty) =>
       value
-    case (_, elem :: tl) =>
-      evaluate(handle(value, elem, parent.reverse), tl, elem :: parent)
+    case (_, elem / tl) =>
+      evaluate(handle(value, elem, parent), tl, parent / elem)
   }
 
 }

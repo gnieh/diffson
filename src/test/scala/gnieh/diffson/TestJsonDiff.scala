@@ -15,7 +15,7 @@ class TestJsonDiff extends FlatSpec with ShouldMatchers {
   }
 
   it should "be a simple replacement if the two values are completely different" in {
-    diff(JsonParser("true"), JsonParser("13")) should be(JsonPatch(Replace(Nil, JsNumber(13))))
+    diff(JsonParser("true"), JsonParser("13")) should be(JsonPatch(Replace(Pointer.root, JsNumber(13))))
   }
 
   it should "contain an add operation for each added field" in {
@@ -24,9 +24,9 @@ class TestJsonDiff extends FlatSpec with ShouldMatchers {
     val json3 = JsonParser("""{"lbl": 32, "new1": false, "new2": null}""")
     val json4 = JsonParser("""{"a": 3, "b": {"a": true }}""")
     val json5 = JsonParser("""{"a": 3, "b": {"a": true, "b": 43}, "c": null}""")
-    diff(json1, json2) should be(JsonPatch(Add("new", JsBoolean(false))))
-    diff(json1, json3) should be(JsonPatch(Add("new2", JsNull), Add("new1", JsBoolean(false))))
-    diff(json4, json5) should be(JsonPatch(Add("b" :: "b", JsNumber(43)), Add("c", JsNull)))
+    diff(json1, json2) should be(JsonPatch(Add(Pointer("new"), JsBoolean(false))))
+    diff(json1, json3) should be(JsonPatch(Add(Pointer("new2"), JsNull), Add(Pointer("new1"), JsBoolean(false))))
+    diff(json4, json5) should be(JsonPatch(Add(Pointer("b", "b"), JsNumber(43)), Add(Pointer("c"), JsNull)))
   }
 
   it should "contain a remove operation for each removed field" in {
@@ -35,15 +35,15 @@ class TestJsonDiff extends FlatSpec with ShouldMatchers {
     val json3 = JsonParser("""{"lbl": 32, "old1": false, "old2": null}""")
     val json4 = JsonParser("""{"a": 3, "b": {"a": true }}""")
     val json5 = JsonParser("""{"a": 3, "b": {"a": true, "b": 43}, "c": null}""")
-    diff(json2, json1) should be(JsonPatch(Remove("old")))
-    diff(json3, json1) should be(JsonPatch(Remove("old2"), Remove("old1")))
-    diff(json5, json4) should be(JsonPatch(Remove("b" :: "b"), Remove("c")))
+    diff(json2, json1) should be(JsonPatch(Remove(Pointer("old"))))
+    diff(json3, json1) should be(JsonPatch(Remove(Pointer("old2")), Remove(Pointer("old1"))))
+    diff(json5, json4) should be(JsonPatch(Remove(Pointer("b", "b")), Remove(Pointer("c"))))
   }
 
   it should "correctly handle array diffs in objects" in {
     val json1 = JsonParser("""{"lbl": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}""")
     val json2 = JsonParser("""{"lbl": [1, 4, 5, 11, 6, 7]}""")
-    diff(json1, json2) should be(JsonPatch(Remove("lbl" :: "2"), Remove("lbl" :: "1"), Add("lbl" :: "3", JsNumber(11)), Remove("lbl" :: "8"), Remove("lbl" :: "7"), Remove("lbl" :: "6")))
+    diff(json1, json2) should be(JsonPatch(Remove(Pointer("lbl", "2")), Remove(Pointer("lbl", "1")), Add(Pointer("lbl", "3"), JsNumber(11)), Remove(Pointer("lbl", "8")), Remove(Pointer("lbl", "7")), Remove(Pointer("lbl", "6"))))
   }
 
   it should "contain a replace operation for each changed field value" in {
@@ -51,9 +51,9 @@ class TestJsonDiff extends FlatSpec with ShouldMatchers {
     val json2 = JsonParser("""{"lbl": 60}""")
     val json3 = JsonParser("""{"lbl": {"a": true}}""")
     val json4 = JsonParser("""{"lbl": {"a": null}}""")
-    diff(json1, json2) should be(JsonPatch(Replace("lbl", JsNumber(60))))
-    diff(json1, json3) should be(JsonPatch(Replace("lbl", JsonParser("""{"a": true}"""))))
-    diff(json3, json4) should be(JsonPatch(Replace("lbl" :: "a", JsNull)))
+    diff(json1, json2) should be(JsonPatch(Replace(Pointer("lbl"), JsNumber(60))))
+    diff(json1, json3) should be(JsonPatch(Replace(Pointer("lbl"), JsonParser("""{"a": true}"""))))
+    diff(json3, json4) should be(JsonPatch(Replace(Pointer("lbl", "a"), JsNull)))
   }
 
   it should "contain an add operation for each added element" in {
