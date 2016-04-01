@@ -19,6 +19,19 @@ import spray.json._
 
 object DiffsonProtocol extends DefaultJsonProtocol {
 
+  implicit def PointerFormat(implicit pointer: JsonPointer): JsonFormat[Pointer] =
+    new JsonFormat[Pointer] {
+
+      def write(p: Pointer): JsString =
+        JsString(p.toString)
+
+      def read(value: JsValue): Pointer = value match {
+        case JsString(s) => pointer.parse(s)
+        case _           => throw new FormatException(f"Pointer expected: $value")
+      }
+
+    }
+
   implicit def OperationFormat(implicit pointer: JsonPointer): JsonFormat[Operation] =
     new JsonFormat[Operation] {
 
