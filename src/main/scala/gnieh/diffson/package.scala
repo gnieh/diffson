@@ -36,6 +36,8 @@ package object diffson {
 
   implicit val pointer = new JsonPointer(allError)
 
+  val EmptyPatch = JsonPatch(Nil)
+
   def pointerString(path: Pointer): String =
     path.map(_.replace("~", "~0").replace("/", "~1")).mkString("/", "/", "")
 

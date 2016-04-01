@@ -65,9 +65,8 @@ class JsonPointer(errorHandler: PartialFunction[(JsValue, String, Pointer), JsVa
   /** Evaluates the given path in the given JSON object.
    *  Upon missing elements in value, the error handler is called with the current value and element
    */
-  @inline
   def evaluate(value: String, path: String): JsValue =
-    evaluate(JsonParser(value), parse(path))
+    evaluate(JsonParser(value), parse(path), Nil)
 
   /** Evaluates the given path in the given JSON object.
    *  Upon missing elements in value, the error handler is called with the current value and element
