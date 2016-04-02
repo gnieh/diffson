@@ -32,4 +32,35 @@ package object diffson {
 
   val EmptyPatch = JsonPatch(Nil)
 
+  implicit class CollectionOps(val patch: JsonPatch) extends AnyVal {
+
+    def map(f: Operation => Operation): JsonPatch =
+      JsonPatch(patch.ops.map(f))
+
+    def flatMap(f: Operation => JsonPatch): JsonPatch =
+      JsonPatch(for {
+        op <- patch.ops
+        JsonPatch(ops) = f(op)
+        op <- ops
+      } yield op)
+
+    def filter(p: Operation => Boolean): JsonPatch =
+      JsonPatch(patch.ops.filter(p))
+
+    def withFilter(p: Operation => Boolean): WithFilter =
+      new WithFilter(p, patch)
+
+    def foldLeft[Res](zero: Res)(f: (Res, Operation) => Res): Res =
+      patch.ops.foldLeft(zero)(f)
+
+    def foldRight[Res](zero: Res)(f: (Operation, Res) => Res): Res =
+      patch.ops.foldRight(zero)(f)
+
+    def foreach(f: Operation => Unit): Unit =
+      patch.ops.foreach(f)
+
+    def collect[T](pf: PartialFunction[Operation, T]): Seq[T] =
+      patch.ops.collect(pf)
+  }
+
 }
