@@ -10,6 +10,7 @@ It also provides methods to compute _diffs_ between two Json values that produce
 
 - [Getting Started](#getting-started)
 - [Basic Usage](#basic-usage)
+- [Remembering old values](#remembering-old-values)
 - [Patches as Collections of Operations](#patches-as-collections-of-operations)
 - [Technical Details](#technical-details)
 
@@ -59,7 +60,7 @@ val json2 = """{
               |  "d": false
               |}""".stripMargin
 
-val patch = JsonDiff.diff(json1, json2)
+val patch = JsonDiff.diff(json1, json2, false)
 
 println(patch)
 ```
@@ -117,6 +118,13 @@ val json2 = """{ "a": 7 }"""
 patch(json1) // ok json1 is returned unchanched
 patch(json2) // throws PatchException
 ```
+
+Remembering old values
+----------------------
+
+The `diff` method takes three parameter. The third one indicates whether the generated patch remembers removed and replaced values.
+When set to `true`, the `Replace` and `Remove` operations take an extra field named `old` giving the old value.
+The RFC does not define these fields, but it does not fordbid either to add extra fields. Hence, generated patches can still be interpreted by third party implementations.
 
 Patches as Collections of Operations
 ------------------------------------

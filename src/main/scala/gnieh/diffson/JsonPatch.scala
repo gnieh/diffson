@@ -142,15 +142,15 @@ final case class Add(path: Pointer, value: JsValue) extends Operation {
 }
 
 /** Remove the pointed element */
-final case class Remove(path: Pointer, value: Option[JsValue] = None) extends Operation {
+final case class Remove(path: Pointer, old: Option[JsValue] = None) extends Operation {
 
   lazy val toJson =
-    value match {
-      case Some(value) =>
+    old match {
+      case Some(old) =>
         JsObject(
           "op" -> JsString("remove"),
           "path" -> JsString(path.toString),
-          "value" -> value)
+          "old" -> old)
       case None =>
         JsObject(
           "op" -> JsString("remove"),

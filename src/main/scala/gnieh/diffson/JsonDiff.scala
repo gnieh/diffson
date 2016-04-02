@@ -31,26 +31,32 @@ object JsonDiff extends JsonDiff(new Patience[JsValue])
  */
 class JsonDiff(lcsalg: Lcs[JsValue]) {
 
-  /** Computes the patch from `json1` to `json2` */
-  def diff(json1: String, json2: String): JsonPatch =
-    diff(JsonParser(json1), JsonParser(json2))
+  /** Computes the patch from `json1` to `json2`.
+   *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
+   */
+  def diff(json1: String, json2: String, remember: Boolean): JsonPatch =
+    diff(JsonParser(json1), JsonParser(json2), remember)
 
-  /** Computes the patch from `json1` to `json2` */
-  def diff(json1: JsValue, json2: JsValue): JsonPatch =
-    JsonPatch(diff(json1, json2, Pointer.root))
+  /** Computes the patch from `json1` to `json2`
+   *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
+   */
+  def diff(json1: JsValue, json2: JsValue, remember: Boolean): JsonPatch =
+    JsonPatch(diff(json1, json2, remember, Pointer.root))
 
-  /** Computes the patch from `json1` to `json2` */
-  def diff[T1: JsonFormat, T2: JsonFormat](json1: T1, json2: T2): JsonPatch =
-    diff(json1.toJson, json2.toJson)
+  /** Computes the patch from `json1` to `json2`
+   *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
+   */
+  def diff[T1: JsonFormat, T2: JsonFormat](json1: T1, json2: T2, remember: Boolean): JsonPatch =
+    diff(json1.toJson, json2.toJson, remember)
 
-  private def diff(json1: JsValue, json2: JsValue, pointer: Pointer): List[Operation] = (json1, json2) match {
+  private def diff(json1: JsValue, json2: JsValue, remember: Boolean, pointer: Pointer): List[Operation] = (json1, json2) match {
     case (v1, v2) if v1 == v2                   => Nil // if they are equal, this one is easy...
-    case (JsObject(fields1), JsObject(fields2)) => fieldsDiff(fields1.toList, fields2.toList, pointer)
-    case (JsArray(arr1), JsArray(arr2))         => arraysDiff(arr1.toList, arr2.toList, pointer)
-    case (_, _)                                 => List(Replace(pointer, json2))
+    case (JsObject(fields1), JsObject(fields2)) => fieldsDiff(fields1.toList, fields2.toList, remember, pointer)
+    case (JsArray(arr1), JsArray(arr2))         => arraysDiff(arr1.toList, arr2.toList, remember, pointer)
+    case (_, _)                                 => List(Replace(pointer, json2, if (remember) Some(json1) else None))
   }
 
-  private def fieldsDiff(fields1: List[(String, JsValue)], fields2: List[(String, JsValue)], path: Pointer): List[Operation] = {
+  private def fieldsDiff(fields1: List[(String, JsValue)], fields2: List[(String, JsValue)], remember: Boolean, path: Pointer): List[Operation] = {
     // sort fields by name in both objects
     val sorted1 = fields1.sortBy(_._1)
     val sorted2 = fields2.sortBy(_._1)
@@ -79,10 +85,10 @@ class JsonDiff(lcsalg: Lcs[JsValue]) {
         fields(tl, acc)
       case (Some(f1), Some(f2)) :: tl =>
         // same field name, different values
-        fields(tl, diff(f1._2, f2._2, path / f1._1) ::: acc)
+        fields(tl, diff(f1._2, f2._2, remember, path / f1._1) ::: acc)
       case (Some(f1), None) :: tl =>
         // the field was deleted
-        fields(tl, Remove(path / f1._1) :: acc)
+        fields(tl, Remove(path / f1._1, if (remember) Some(f1._2) else None) :: acc)
       case (None, Some(f2)) :: tl =>
         // the field was added
         fields(tl, Add(path / f2._1, f2._2) :: acc)
@@ -92,7 +98,7 @@ class JsonDiff(lcsalg: Lcs[JsValue]) {
     fields(associate(sorted1, sorted2, Nil), Nil)
   }
 
-  private def arraysDiff(arr1: List[JsValue], arr2: List[JsValue], path: Pointer): List[Operation] = {
+  private def arraysDiff(arr1: List[JsValue], arr2: List[JsValue], remember: Boolean, path: Pointer): List[Operation] = {
     // get the longest common subsequence in the array
     val lcs = lcsalg.lcs(arr1, arr2)
 
@@ -116,9 +122,9 @@ class JsonDiff(lcsalg: Lcs[JsValue]) {
     }
 
     // remove a bunch of array elements starting by the last one in the range
-    def remove(from: Int, until: Int): List[Operation] =
+    def remove(from: Int, until: Int, shift: Int, arr: List[JsValue]): List[Operation] =
       (for (idx <- until to from by -1)
-        yield Remove(path / idx)).toList
+        yield Remove(path / idx, if (remember) Some(arr(idx - shift)) else None)).toList
 
     // now iterate over the first array to computes what was added, what was removed and what was modified
     @tailrec
@@ -139,13 +145,13 @@ class JsonDiff(lcsalg: Lcs[JsValue]) {
         // all values in arr1 were removed until the index of common value
         val until = lcs.head._1
         loop(arr1.drop(until - idx1 + 1), tl2, until + 1, shift1 - (until - idx1), idx2 + 1, lcs.tail,
-          remove(idx1 + shift1, until - 1 + shift1) reverse_::: acc)
+          remove(idx1 + shift1, until - 1 + shift1, idx1 + shift1, arr1) reverse_::: acc)
       case (v1 :: tl1, v2 :: tl2) =>
         // values are different, recursively compute the diff of these values
-        loop(tl1, tl2, idx1 + 1, shift1, idx2 + 1, lcs, diff(v1, v2, path / (idx1 + shift1)) reverse_::: acc)
+        loop(tl1, tl2, idx1 + 1, shift1, idx2 + 1, lcs, diff(v1, v2, remember, path / (idx1 + shift1)) reverse_::: acc)
       case (_, Nil) =>
         // all subsequent values in arr1 were removed
-        remove(idx1 + shift1, idx1 + arr1.size - 1 + shift1) reverse_::: acc
+        remove(idx1 + shift1, idx1 + arr1.size - 1 + shift1, idx1 + shift1, arr1) reverse_::: acc
       case (Nil, _) =>
         // all subsequent value in arr2 were added
         arr2.map(Add(path / "-", _)) reverse_::: acc

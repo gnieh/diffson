@@ -59,7 +59,7 @@ class TestSerialization extends FlatSpec with ShouldMatchers {
   "a pacth" should "be applicable to a serializable Scala object if the shape is kept" in {
     val json1 = Json(1, true, "test", List(1, 2, 4))
     val json2 = Json(10, false, "toto", List(1, 2, 3, 4, 5))
-    val patch = JsonDiff.diff(json1, json2)
+    val patch = JsonDiff.diff(json1, json2, false)
 
     patch(json1) should be(json2)
 
