@@ -1,5 +1,6 @@
 /*
 * This file is part of the diffson project.
+* Copyright (c) 2016 Lucas Satabin
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -34,7 +35,7 @@ sealed trait JsonSchema {
   val anyKeywords: AnySchema
   val metadataKeywords: MetadataSchema
 
-  def validate(json: JsValue): Boolean
+  def validate(pointer: Pointer, json: JsValue): Vector[ValidationError]
 
 }
 
@@ -84,12 +85,12 @@ private class ResolvedJsonSchema(val $schema: Option[URI],
     val anyKeywords: AnySchema,
     val metadataKeywords: MetadataSchema) extends JsonSchema {
 
-  def validate(json: JsValue): Boolean =
-    numericKeywords.validate(json) &&
-      stringKewords.validate(json) &&
-      arrayKeywords.validate(json) &&
-      objectKeywords.validate(json) &&
-      anyKeywords.validate(json)
+  def validate(pointer: Pointer, json: JsValue): Vector[ValidationError] =
+    numericKeywords.validate(pointer, json) ++
+      stringKewords.validate(pointer, json) ++
+      arrayKeywords.validate(pointer, json) ++
+      objectKeywords.validate(pointer, json) ++
+      anyKeywords.validate(pointer, json)
 
 }
 
@@ -99,26 +100,26 @@ case class NumericSchema(multipleOf: Option[BigDecimal],
     minimum: Option[BigDecimal],
     exclusiveMinimum: Boolean) {
 
-  def validate(json: JsValue): Boolean = json match {
+  def validate(pointer: Pointer, json: JsValue): Vector[ValidationError] = json match {
     case JsNumber(num) =>
-      val mult = multipleOf.fold(true) { mul =>
-        num % mul == BigDecimal(0)
+      val mult = multipleOf.fold(noError) { mul =>
+        validateInner(num % mul == BigDecimal(0), pointer, f"Multiple of $mul expected but got $num")
       }
-      def max = maximum.fold(true) { max =>
+      def max = maximum.fold(noError) { max =>
         if (exclusiveMaximum)
-          num < max
+          validateInner(num < max, pointer, f"Maximum of $max (exclusive) expected but got $num")
         else
-          num <= max
+          validateInner(num <= max, pointer, f"Maximum of $max (inclusive) expected but got $num")
       }
-      def min = minimum.fold(true) { min =>
+      def min = minimum.fold(noError) { min =>
         if (exclusiveMinimum)
-          num > min
+          validateInner(num > min, pointer, f"Minimum of $max (exclusive) expected but got $num")
         else
-          num >= min
+          validateInner(num >= min, pointer, f"Minimum of $max (exclusive) expected but got $num")
       }
-      mult && max && min
+      mult ++ max ++ min
     case _ =>
-      true
+      noError
   }
 
 }
@@ -127,59 +128,65 @@ case class StringSchema(maxLength: Option[Int],
     minLength: Int,
     pattern: Option[String]) {
 
-  def validate(json: JsValue): Boolean = json match {
+  def validate(pointer: Pointer, json: JsValue): Vector[ValidationError] = json match {
     case JsString(str) =>
-      def max = maxLength.fold(true) { max =>
-        str.length <= max
+      def max = maxLength.fold(noError) { max =>
+        validateInner(str.length <= max, pointer, f"String of maximum length $max expected but got string of length ${str.length}")
       }
-      def min = str.length >= minLength
-      def pat = pattern.fold(true) { pat =>
-        str.matches(pat)
+      def min =
+        validateInner(str.length >= minLength, pointer, f"String of minimum length $minLength expected but got string of length ${str.length}")
+      def pat = pattern.fold(noError) { pat =>
+        validateInner(str.matches(pat), pointer, f"String matching pattern `$pat` expected")
       }
-      max && min && pat
+      max ++ min ++ pat
     case _ =>
-      true
+      noError
   }
 
 }
 
-case class ArraySchema(items: Either[JsonSchema, List[JsonSchema]],
+case class ArraySchema(items: Either[JsonSchema, Vector[JsonSchema]],
     additionalItems: Either[Boolean, JsonSchema],
     maxItems: Option[Int],
     minItems: Int,
     uniqueItems: Boolean) {
 
-  def validate(json: JsValue): Boolean = json match {
+  def validate(pointer: Pointer, json: JsValue): Vector[ValidationError] = json match {
     case JsArray(elems) =>
-      def max = maxItems.fold(true) { max =>
-        elems.size <= max
+      def max = maxItems.fold(noError) { max =>
+        validateInner(elems.size <= max, pointer, f"Array of maximum length $max expected but gor array of length ${elems.size}")
       }
-      def min = elems.size <= minItems
+      def min =
+        validateInner(elems.size >= minItems, pointer, f"Array of minimum length $minItems expected but got array of length ${elems.length}")
       def dist =
         if (uniqueItems)
-          elems.distinct == elems
+          validateInner(elems.distinct == elems, pointer, "Array of distinct elements expected")
         else
-          true
+          noError
       def it = items match {
         case Left(schema) =>
           // all elements must validate this schema
-          elems.forall(elem => schema.validate(elem))
+          elems.zipWithIndex.flatMap {
+            case (elem, idx) => schema.validate(pointer / idx, elem)
+          }
         case Right(schemas) =>
-          elems.zipWithIndex.forall {
+          elems.zipWithIndex.flatMap {
             case (elem, idx) =>
               if (idx < schemas.size)
-                schemas(idx).validate(elem)
+                schemas(idx).validate(pointer / idx, elem)
               else additionalItems match {
-                case Left(ok) =>
-                  ok
+                case Left(true) =>
+                  noError
+                case Left(false) =>
+                  Vector(ValidationError(pointer / idx, f"No additional elements authorized"))
                 case Right(schema) =>
-                  schema.validate(elem)
+                  schema.validate(pointer / idx, elem)
               }
           }
       }
-      max && min && dist && it
+      max ++ min ++ dist ++ it
     case _ =>
-      true
+      noError
   }
 
 }
@@ -192,77 +199,87 @@ case class ObjectSchema(maxProperties: Option[Int],
     patternProperties: Map[String, JsonSchema],
     dependencies: Map[String, Either[JsonSchema, Set[String]]]) {
 
-  def validate(json: JsValue): Boolean = json match {
+  def validate(pointer: Pointer, json: JsValue): Vector[ValidationError] = json match {
     case JsObject(fields) =>
-      def max = maxProperties.fold(true) { max =>
-        fields.size <= max
+      def max = maxProperties.fold(noError) { max =>
+        validateInner(fields.size <= max, pointer, f"Expected object with maximum field number $max but got an object with ${fields.size} field(s)")
       }
-      def min = fields.size >= minProperties
-      def req = required.fold(true) { req =>
-        req.forall(n => fields.contains(n))
+      def min =
+        validateInner(fields.size >= minProperties, pointer, f"Expected object with minimum field number $minProperties but got an object with ${fields.size} field(s)")
+      def req = required.fold(noError) { req =>
+        req.toVector.flatMap(n => validateInner(fields.contains(n), pointer, f"Missing required field $n"))
       }
-      def props = fields.forall {
+      def props = fields.flatMap {
         case (name, value) =>
+          // (validation errors for "properties", indicate whether this field is in "properties")
           val (p, inp) =
             if (properties.contains(name))
-              (properties(name).validate(value), true)
+              (properties(name).validate(pointer / name, value), true)
             else
-              (true, false)
+              (noError, false)
+          // (validation errors for "patternProperties", indicate whether this field is in "patternProperties")
           val (pp, inpp) =
-            patternProperties.foldLeft((true, false)) {
-              case ((ok, inpp), (ppn, pps)) =>
+            patternProperties.foldLeft((noError, false)) {
+              case ((err, inpp), (ppn, pps)) =>
                 if (name.matches(ppn))
-                  (ok && pps.validate(value), true)
+                  (err ++ pps.validate(pointer / name, value), true)
                 else
-                  (ok, inpp)
+                  (err, inpp)
             }
           val add =
             if (inp || inpp) {
-              true
+              noError
             } else additionalProperties match {
-              case Left(ok)      => ok
-              case Right(schema) => schema.validate(value)
+              case Left(true)    => noError
+              case Left(false)   => Vector(ValidationError(pointer / name, "No additional properties are allowed"))
+              case Right(schema) => schema.validate(pointer / name, value)
             }
-          p && pp && add
+          p ++ pp ++ add
       }
-      def deps = fields.keys.forall { name =>
-        dependencies.get(name).fold(true) {
-          case Left(schema) => schema.validate(json)
-          case Right(names) => names.forall(n => fields.contains(n))
+      def deps = fields.keys.flatMap { name =>
+        dependencies.get(name).fold(noError) {
+          case Left(schema) => schema.validate(pointer, json)
+          case Right(names) => names.toVector.flatMap(n => validateInner(fields.contains(n), pointer, f"Missing required dependent field $n (because of presence of field $name)"))
         }
       }
-      max && min && req && deps
+      max ++ min ++ req ++ deps
     case _ =>
-      true
+      noError
   }
 
 }
 
-case class AnySchema(enum: Option[List[JsValue]],
+case class AnySchema(enum: Option[Vector[JsValue]],
     `type`: Option[JsType],
-    allOf: Option[List[JsonSchema]],
-    anyOf: Option[List[JsonSchema]],
-    oneOf: Option[List[JsonSchema]],
+    allOf: Option[Vector[JsonSchema]],
+    anyOf: Option[Vector[JsonSchema]],
+    oneOf: Option[Vector[JsonSchema]],
     not: Option[JsonSchema],
     definitions: Map[String, JsonSchema]) {
 
-  def validate(json: JsValue): Boolean = {
-    def en = enum.fold(true) { en =>
-      en.contains(json)
+  def validate(pointer: Pointer, json: JsValue): Vector[ValidationError] = {
+    def en = enum.fold(noError) { en =>
+      validateInner(en.contains(json), pointer, f"Unexpected value")
     }
-    def tpe = `type`.fold(true) { tpe =>
-      tpe.validate(json)
+    def tpe = `type`.fold(noError) { tpe =>
+      tpe.validate(pointer, json)
     }
-    def all = allOf.fold(true) { all =>
-      all.forall(s => s.validate(json))
+    def all = allOf.fold(noError) { all =>
+      all.flatMap(s => s.validate(pointer, json))
     }
-    def one = oneOf.fold(true) { one =>
-      one.exists(s => s.validate(json))
+    def one = oneOf.fold(noError) { one =>
+      if (one.exists(s => s.validate(pointer, json).isEmpty))
+        noError
+      else
+        Vector(ValidationError(pointer, "Expected to validate one schema in the list"))
     }
-    def n = not.fold(true) { s =>
-      !s.validate(json)
+    def n = not.fold(noError) { s =>
+      if (s.validate(pointer, json).isEmpty)
+        Vector(ValidationError(pointer, "Not expected to validate"))
+      else
+        noError
     }
-    en && tpe && all && one && n
+    en ++ tpe ++ all ++ one ++ n
   }
 
 }

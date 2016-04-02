@@ -1,5 +1,6 @@
 /*
 * This file is part of the diffson project.
+* Copyright (c) 2016 Lucas Satabin
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -64,5 +65,14 @@ package object schema {
       keywords.contains(str)
 
   }
+
+  private[schema] val noError: Vector[ValidationError] =
+    Vector()
+
+  private[schema] def validateInner(cond: Boolean, pointer: Pointer, msg: => String): Vector[ValidationError] =
+    if (cond)
+      Vector()
+    else
+      Vector(ValidationError(pointer, msg))
 
 }

@@ -1,5 +1,6 @@
 /*
 * This file is part of the diffson project.
+* Copyright (c) 2016 Lucas Satabin
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -19,48 +20,62 @@ package schema
 import spray.json._
 
 sealed trait JsType {
-  def validate(json: JsValue): Boolean
+  def validate(pointer: Pointer, json: JsValue): Vector[ValidationError]
+}
+
+object JsType {
+
+  def apply(json: JsValue): JsType = json match {
+    case JsArray(_)                  => JsArrayType
+    case JsBoolean(_)                => JsBooleanType
+    case JsNumber(n) if n.isValidInt => JsIntegerType
+    case JsNumber(_)                 => JsNumberType
+    case JsNull                      => JsNullType
+    case JsObject(_)                 => JsObjectType
+    case JsString(_)                 => JsStringType
+  }
+
 }
 
 case object JsArrayType extends JsType {
-  def validate(json: JsValue): Boolean = json match {
-    case JsArray(_) => true
-    case _          => false
+  def validate(pointer: Pointer, json: JsValue): Vector[ValidationError] = json match {
+    case JsArray(_) => Vector()
+    case _          => Vector(ValidationError(pointer, f"Array expected but got value of type ${JsType(json)}"))
   }
 }
 case object JsBooleanType extends JsType {
-  def validate(json: JsValue): Boolean = json match {
-    case JsBoolean(_) => true
-    case _            => false
+  def validate(pointer: Pointer, json: JsValue): Vector[ValidationError] = json match {
+    case JsBoolean(_) => Vector()
+    case _            => Vector(ValidationError(pointer, f"Boolean expected but got value of type ${JsType(json)}"))
   }
 }
 case object JsIntegerType extends JsType {
-  def validate(json: JsValue): Boolean = json match {
-    case JsNumber(n) => n.isValidInt
-    case _           => false
+  def validate(pointer: Pointer, json: JsValue): Vector[ValidationError] = json match {
+    case JsNumber(n) if n.isValidInt => Vector()
+    case _                           => Vector(ValidationError(pointer, f"Integer expected but got value of type ${JsType(json)}"))
   }
 }
 case object JsNumberType extends JsType {
-  def validate(json: JsValue): Boolean = json match {
-    case JsNumber(_) => true
-    case _           => false
+  def validate(pointer: Pointer, json: JsValue): Vector[ValidationError] = json match {
+    case JsNumber(_) => Vector()
+    case _           => Vector(ValidationError(pointer, f"Number expected but got value of type ${JsType(json)}"))
   }
 }
 case object JsNullType extends JsType {
-  def validate(json: JsValue): Boolean = json match {
-    case JsNull => true
-    case _      => false
+  def validate(pointer: Pointer, json: JsValue): Vector[ValidationError] = json match {
+    case JsNull => Vector()
+    case _      => Vector(ValidationError(pointer, f"Null expected but got value of type ${JsType(json)}"))
   }
 }
 case object JsObjectType extends JsType {
-  def validate(json: JsValue): Boolean = json match {
-    case JsObject(_) => true
-    case _           => false
+  def validate(pointer: Pointer, json: JsValue): Vector[ValidationError] = json match {
+    case JsObject(_) => Vector()
+    case _           => Vector(ValidationError(pointer, f"Object expected but got value of type ${JsType(json)}"))
   }
 }
 case object JsStringType extends JsType {
-  def validate(json: JsValue): Boolean = json match {
-    case JsString(_) => true
-    case _           => false
+  def validate(pointer: Pointer, json: JsValue): Vector[ValidationError] = json match {
+    case JsString(_) => Vector()
+    case _           => Vector(ValidationError(pointer, f"String expected but got value of type ${JsType(json)}"))
   }
 }
