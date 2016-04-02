@@ -16,30 +16,59 @@
 package gnieh.diffson
 package schema
 
-import spray.json.JsString
+import spray.json._
 
 sealed trait JsType {
   def toJson: JsString
+  def validate(json: JsValue): Boolean
 }
 
 case object JsArrayType extends JsType {
   def toJson = JsString("array")
+  def validate(json: JsValue): Boolean = json match {
+    case JsArray(_) => true
+    case _          => false
+  }
 }
 case object JsBooleanType extends JsType {
   def toJson = JsString("boolean")
+  def validate(json: JsValue): Boolean = json match {
+    case JsBoolean(_) => true
+    case _            => false
+  }
 }
 case object JsIntegerType extends JsType {
   def toJson = JsString("integer")
+  def validate(json: JsValue): Boolean = json match {
+    case JsNumber(n) => n.isValidInt
+    case _           => false
+  }
 }
 case object JsNumberType extends JsType {
   def toJson = JsString("number")
+  def validate(json: JsValue): Boolean = json match {
+    case JsNumber(_) => true
+    case _           => false
+  }
 }
 case object JsNullType extends JsType {
   def toJson = JsString("null")
+  def validate(json: JsValue): Boolean = json match {
+    case JsNull => true
+    case _      => false
+  }
 }
 case object JsObjectType extends JsType {
   def toJson = JsString("object")
+  def validate(json: JsValue): Boolean = json match {
+    case JsObject(_) => true
+    case _           => false
+  }
 }
 case object JsStringType extends JsType {
   def toJson = JsString("string")
+  def validate(json: JsValue): Boolean = json match {
+    case JsString(_) => true
+    case _           => false
+  }
 }
