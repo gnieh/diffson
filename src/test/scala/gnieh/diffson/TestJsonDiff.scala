@@ -133,4 +133,28 @@ class TestJsonDiff extends FlatSpec with ShouldMatchers {
     json3 should be(json2)
   }
 
+  "a remembering diff" should "correctly add removed values in array diffs" in {
+    val json1 = JsonParser("""{"lbl": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}""")
+    val json2 = JsonParser("""{"lbl": [1, 4, 5, 11, 6, 7]}""")
+    diff(json1, json2, true) should be(JsonPatch(
+      Remove(Pointer("lbl", "2"), Some(JsNumber(3))),
+      Remove(Pointer("lbl", "1"), Some(JsNumber(2))),
+      Add(Pointer("lbl", "3"), JsNumber(11)),
+      Remove(Pointer("lbl", "8"), Some(JsNumber(10))),
+      Remove(Pointer("lbl", "7"), Some(JsNumber(9))),
+      Remove(Pointer("lbl", "6"), Some(JsNumber(8)))))
+  }
+
+  it should "correctly add removed values in object diffs" in {
+    val json1 = """{"a": 1, "b": true}"""
+    val json2 = """{"a": 1}"""
+    diff(json1, json2, true) should be(JsonPatch(Remove(Pointer("b"), Some(JsBoolean(true)))))
+  }
+
+  it should "correctly add replaced values in object diffs" in {
+    val json1 = """{"a": 1, "b": false}"""
+    val json2 = """{"a": 1, "b": "test"}"""
+    diff(json1, json2, true) should be(JsonPatch(Replace(Pointer("b"), JsString("test"), Some(JsBoolean(false)))))
+  }
+
 }
