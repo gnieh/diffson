@@ -14,12 +14,12 @@ object DiffsonBuild extends Build {
     base = file(".")) settings (
     organization := "org.gnieh",
     name := "diffson",
-    version := "1.2.0-SNAPSHOT",
-    scalaVersion := "2.11.7",
+    version := "2.0.0-SNAPSHOT",
+    scalaVersion := "2.11.8",
     description := "Json diff/patch library",
     licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     homepage := Some(url("https://github.com/gnieh/diffson")),
-    crossScalaVersions := Seq("2.11.7", "2.10.6"),
+    crossScalaVersions := Seq("2.11.8", "2.10.6"),
     libraryDependencies ++= dependencies,
     parallelExecution := false,
     fork in test := true)
