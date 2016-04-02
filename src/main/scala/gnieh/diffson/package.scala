@@ -30,4 +30,6 @@ package object diffson {
 
   implicit val pointer = new JsonPointer(allError)
 
+  val EmptyPatch = JsonPatch(Nil)
+
 }

@@ -4,8 +4,19 @@ Gnieh Diffson [![Build Status](https://travis-ci.org/gnieh/diffson.png)](https:/
 A [scala][6] implementation of the [RFC-6901][1] and [RFC-6902][2].
 It also provides methods to compute _diffs_ between two Json values that produce valid Json patches.
 
-Basic Usage
------------
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+## Table of Contents
+
+- [Getting Started](#getting-started)
+- [Basic Usage](#basic-usage)
+- [Patches as Collections of Operations](#patches-as-collections-of-operations)
+- [Technical Details](#technical-details)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+Getting Started
+---------------
 
 This library is published in the [Maven][7] [Central Repository][8] and is compiled against scala 2.10 and 2.11.
 You can add it to your sbt project by putting this line to your build description:
@@ -21,6 +32,9 @@ If you are using maven, add the following dependency to your `pom.xml`:
   <version>1.1.0</version>
 </dependency>
 ```
+
+Basic Usage
+-----------
 
 Although the library is quite small and easy to use, here comes a summary of its basic usage.
 
@@ -102,6 +116,26 @@ val json1 = """{ "a": 4 }"""
 val json2 = """{ "a": 7 }"""
 patch(json1) // ok json1 is returned unchanched
 patch(json2) // throws PatchException
+```
+
+Patches as Collections of Operations
+------------------------------------
+
+Patches may be seen as collections of operations on which you may which to apply some typical collection functions such as `map`, `flatMap`, filtering, folding, ...
+You may either perform these operations on the `ops` field of a patch or bring these operations in scope with the following import:
+
+```scala
+import gnieh.diffson.collection._
+```
+
+This brings an implicit value class with the collection operators. You may now write this kind of code:
+
+```scala
+val patch: JsonPatch = ...
+
+val patch2: JsonPatch =
+  for(op @ Add("my" :: "prefix" :: _, _) <- patch)
+    yield op
 ```
 
 Technical Details
