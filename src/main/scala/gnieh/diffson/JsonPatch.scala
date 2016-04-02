@@ -142,12 +142,20 @@ final case class Add(path: Pointer, value: JsValue) extends Operation {
 }
 
 /** Remove the pointed element */
-final case class Remove(path: Pointer) extends Operation {
+final case class Remove(path: Pointer, value: Option[JsValue] = None) extends Operation {
 
   lazy val toJson =
-    JsObject(
-      "op" -> JsString("remove"),
-      "path" -> JsString(path.toString))
+    value match {
+      case Some(value) =>
+        JsObject(
+          "op" -> JsString("remove"),
+          "path" -> JsString(path.toString),
+          "value" -> value)
+      case None =>
+        JsObject(
+          "op" -> JsString("remove"),
+          "path" -> JsString(path.toString))
+    }
 
   override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue =
     (original, pointer) match {
@@ -172,13 +180,22 @@ final case class Remove(path: Pointer) extends Operation {
 }
 
 /** Replace the pointed element by the given value */
-final case class Replace(path: Pointer, value: JsValue) extends Operation {
+final case class Replace(path: Pointer, value: JsValue, old: Option[JsValue] = None) extends Operation {
 
   lazy val toJson =
-    JsObject(
-      "op" -> JsString("replace"),
-      "path" -> JsString(path.toString),
-      "value" -> value)
+    old match {
+      case Some(old) =>
+        JsObject(
+          "op" -> JsString("replace"),
+          "path" -> JsString(path.toString),
+          "value" -> value,
+          "old" -> old)
+      case None =>
+        JsObject(
+          "op" -> JsString("replace"),
+          "path" -> JsString(path.toString),
+          "value" -> value)
+    }
 
   override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue =
     (original, pointer) match {

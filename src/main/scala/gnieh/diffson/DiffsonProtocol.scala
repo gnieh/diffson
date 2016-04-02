@@ -49,16 +49,20 @@ object DiffsonProtocol extends DefaultJsonProtocol {
                   throw new FormatException("missing 'path' or 'value' field")
               }
             case JsString("remove") =>
-              obj.getFields("path") match {
+              obj.getFields("path", "value") match {
                 case Seq(JsString(path)) =>
                   Remove(pointer.parse(path))
+                case Seq(JsString(path), value) =>
+                  Remove(pointer.parse(path), Some(value))
                 case _ =>
                   throw new FormatException("missing 'path' field")
               }
             case JsString("replace") =>
-              obj.getFields("path", "value") match {
+              obj.getFields("path", "value", "old") match {
                 case Seq(JsString(path), value) =>
                   Replace(pointer.parse(path), value)
+                case Seq(JsString(path), value, old) =>
+                  Replace(pointer.parse(path), value, Some(old))
                 case _ =>
                   throw new FormatException("missing 'path' or 'value' field")
               }
