@@ -9,7 +9,7 @@ object TestArrayDiff extends Properties("TestArrayDiff") {
   import DefaultJsonProtocol._
   property("arrayDiff") = forAll {
     (a: Seq[Int], b: Seq[Int]) =>
-      val p = JsonDiff.diff(a, b)
+      val p = JsonDiff.diff(a, b, false)
       p(a) == b
   }
 }

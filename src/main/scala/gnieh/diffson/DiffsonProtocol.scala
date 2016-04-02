@@ -36,7 +36,48 @@ object DiffsonProtocol extends DefaultJsonProtocol {
     new JsonFormat[Operation] {
 
       def write(op: Operation): JsObject =
-        op.toJson
+        op match {
+          case Add(path, value) =>
+            JsObject(
+              "op" -> JsString("add"),
+              "path" -> JsString(path.toString),
+              "value" -> value)
+          case Remove(path, None) =>
+            JsObject(
+              "op" -> JsString("remove"),
+              "path" -> JsString(path.toString))
+          case Remove(path, Some(old)) =>
+            JsObject(
+              "op" -> JsString("remove"),
+              "path" -> JsString(path.toString),
+              "old" -> old)
+          case Replace(path, value, None) =>
+            JsObject(
+              "op" -> JsString("replace"),
+              "path" -> JsString(path.toString),
+              "value" -> value)
+          case Replace(path, value, Some(old)) =>
+            JsObject(
+              "op" -> JsString("replace"),
+              "path" -> JsString(path.toString),
+              "value" -> value,
+              "old" -> old)
+          case Move(from, path) =>
+            JsObject(
+              "op" -> JsString("move"),
+              "from" -> JsString(from.toString),
+              "path" -> JsString(path.toString))
+          case Copy(from, path) =>
+            JsObject(
+              "op" -> JsString("copy"),
+              "from" -> JsString(from.toString),
+              "path" -> JsString(path.toString))
+          case Test(path, value) =>
+            JsObject(
+              "op" -> JsString("test"),
+              "path" -> JsString(path.toString),
+              "value" -> value)
+        }
 
       def read(value: JsValue): Operation = value match {
         case obj @ JsObject(fields) if fields.contains("op") =>
@@ -49,16 +90,20 @@ object DiffsonProtocol extends DefaultJsonProtocol {
                   throw new FormatException("missing 'path' or 'value' field")
               }
             case JsString("remove") =>
-              obj.getFields("path") match {
+              obj.getFields("path", "old") match {
                 case Seq(JsString(path)) =>
                   Remove(pointer.parse(path))
+                case Seq(JsString(path), value) =>
+                  Remove(pointer.parse(path), Some(value))
                 case _ =>
                   throw new FormatException("missing 'path' field")
               }
             case JsString("replace") =>
-              obj.getFields("path", "value") match {
+              obj.getFields("path", "value", "old") match {
                 case Seq(JsString(path), value) =>
                   Replace(pointer.parse(path), value)
+                case Seq(JsString(path), value, old) =>
+                  Replace(pointer.parse(path), value, Some(old))
                 case _ =>
                   throw new FormatException("missing 'path' or 'value' field")
               }
@@ -95,7 +140,7 @@ object DiffsonProtocol extends DefaultJsonProtocol {
     new JsonFormat[JsonPatch] {
 
       def write(patch: JsonPatch): JsArray =
-        JsArray(patch.ops.toJson)
+        JsArray(patch.ops.map(_.toJson).toVector)
 
       def read(value: JsValue): JsonPatch = value match {
         case JsArray(ops) =>
