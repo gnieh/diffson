@@ -19,13 +19,13 @@ import spray.json._
 
 import scala.annotation.tailrec
 
+import DiffsonProtocol._
+
 /** A Json patch object according to http://tools.ietf.org/html/rfc6902
  *
  *  @author Lucas Satabin
  */
 final case class JsonPatch(ops: List[Operation])(implicit pointer: JsonPointer) {
-  lazy val toJson: JsArray =
-    JsArray(ops.map(_.toJson).toVector)
 
   /** Applies this patch to the given Json valued and returns the patched value */
   def apply(json: String): String =
@@ -48,7 +48,7 @@ final case class JsonPatch(ops: List[Operation])(implicit pointer: JsonPointer) 
   def andThen(that: JsonPatch): JsonPatch =
     JsonPatch(this.ops ++ that.ops)(pointer)
 
-  override def toString = toJson.prettyPrint
+  override def toString = this.toJson.prettyPrint
 
 }
 
@@ -75,7 +75,6 @@ object JsonPatch {
 /** A patch operation to apply to a Json value */
 sealed abstract class Operation {
   val path: Pointer
-  def toJson: JsObject
 
   /** Applies this operation to the given Json value */
   def apply(json: String): String =
@@ -112,12 +111,6 @@ sealed abstract class Operation {
 /** Add (or replace if existing) the pointed element */
 final case class Add(path: Pointer, value: JsValue) extends Operation {
 
-  lazy val toJson =
-    JsObject(
-      "op" -> JsString("add"),
-      "path" -> JsString(path.toString),
-      "value" -> value)
-
   override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue = (original, pointer) match {
     case (_, Pointer.Empty) =>
       // we are at the root value, simply return the replacement value
@@ -144,19 +137,6 @@ final case class Add(path: Pointer, value: JsValue) extends Operation {
 /** Remove the pointed element */
 final case class Remove(path: Pointer, old: Option[JsValue] = None) extends Operation {
 
-  lazy val toJson =
-    old match {
-      case Some(old) =>
-        JsObject(
-          "op" -> JsString("remove"),
-          "path" -> JsString(path.toString),
-          "old" -> old)
-      case None =>
-        JsObject(
-          "op" -> JsString("remove"),
-          "path" -> JsString(path.toString))
-    }
-
   override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue =
     (original, pointer) match {
       case (JsArray(arr), Pointer(IntIndex(idx))) =>
@@ -181,21 +161,6 @@ final case class Remove(path: Pointer, old: Option[JsValue] = None) extends Oper
 
 /** Replace the pointed element by the given value */
 final case class Replace(path: Pointer, value: JsValue, old: Option[JsValue] = None) extends Operation {
-
-  lazy val toJson =
-    old match {
-      case Some(old) =>
-        JsObject(
-          "op" -> JsString("replace"),
-          "path" -> JsString(path.toString),
-          "value" -> value,
-          "old" -> old)
-      case None =>
-        JsObject(
-          "op" -> JsString("replace"),
-          "path" -> JsString(path.toString),
-          "value" -> value)
-    }
 
   override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue =
     (original, pointer) match {
@@ -223,12 +188,6 @@ final case class Replace(path: Pointer, value: JsValue, old: Option[JsValue] = N
 /** Move the pointed element to the new position */
 final case class Move(from: Pointer, path: Pointer) extends Operation {
 
-  lazy val toJson =
-    JsObject(
-      "op" -> JsString("move"),
-      "from" -> JsString(from.toString),
-      "path" -> JsString(path.toString))
-
   override def apply(original: JsValue)(implicit pointer: JsonPointer): JsValue = {
     @tailrec
     def prefix(p1: Pointer, p2: Pointer): Boolean = (p1, p2) match {
@@ -248,24 +207,12 @@ final case class Move(from: Pointer, path: Pointer) extends Operation {
 /** Copy the pointed element to the new position */
 final case class Copy(from: Pointer, path: Pointer) extends Operation {
 
-  lazy val toJson =
-    JsObject(
-      "op" -> JsString("copy"),
-      "from" -> JsString(from.toString),
-      "path" -> JsString(path.toString))
-
   override def apply(original: JsValue)(implicit pointer: JsonPointer): JsValue =
     Add(path, pointer.evaluate(original, from))(original)
 }
 
 /** Test that the pointed element is equal to the given value */
 final case class Test(path: Pointer, value: JsValue) extends Operation {
-
-  lazy val toJson =
-    JsObject(
-      "op" -> JsString("test"),
-      "path" -> JsString(path.toString),
-      "value" -> value)
 
   override def apply(original: JsValue)(implicit pointer: JsonPointer): JsValue = {
     val orig = pointer.evaluate(original, path)
