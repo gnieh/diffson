@@ -37,7 +37,7 @@ class JsonDiff(lcsalg: Lcs[JsValue]) {
 
   /** Computes the patch from `json1` to `json2` */
   def diff(json1: JsValue, json2: JsValue): JsonPatch =
-    JsonPatch(diff(json1, json2, Nil))
+    JsonPatch(diff(json1, json2, Pointer.root))
 
   /** Computes the patch from `json1` to `json2` */
   def diff[T1: JsonFormat, T2: JsonFormat](json1: T1, json2: T2): JsonPatch =
@@ -79,13 +79,13 @@ class JsonDiff(lcsalg: Lcs[JsValue]) {
         fields(tl, acc)
       case (Some(f1), Some(f2)) :: tl =>
         // same field name, different values
-        fields(tl, diff(f1._2, f2._2, path :+ f1._1) ::: acc)
+        fields(tl, diff(f1._2, f2._2, path / f1._1) ::: acc)
       case (Some(f1), None) :: tl =>
         // the field was deleted
-        fields(tl, Remove(path :+ f1._1) :: acc)
+        fields(tl, Remove(path / f1._1) :: acc)
       case (None, Some(f2)) :: tl =>
         // the field was added
-        fields(tl, Add(path :+ f2._1, f2._2) :: acc)
+        fields(tl, Add(path / f2._1, f2._2) :: acc)
       case _ =>
         acc
     }
@@ -111,14 +111,14 @@ class JsonDiff(lcsalg: Lcs[JsValue]) {
     // add a bunch of values to an array starting at the specified index
     @tailrec
     def add(arr: List[JsValue], idx: Int, acc: List[Operation]): List[Operation] = arr match {
-      case v :: tl => add(tl, idx + 1, Add(path ::: List(idx.toString), v) :: acc)
+      case v :: tl => add(tl, idx + 1, Add(path / idx, v) :: acc)
       case Nil     => acc.reverse
     }
 
     // remove a bunch of array elements starting by the last one in the range
     def remove(from: Int, until: Int): List[Operation] =
       (for (idx <- until to from by -1)
-        yield Remove(path ::: List(idx.toString))).toList
+        yield Remove(path / idx)).toList
 
     // now iterate over the first array to computes what was added, what was removed and what was modified
     @tailrec
@@ -142,13 +142,13 @@ class JsonDiff(lcsalg: Lcs[JsValue]) {
           remove(idx1 + shift1, until - 1 + shift1) reverse_::: acc)
       case (v1 :: tl1, v2 :: tl2) =>
         // values are different, recursively compute the diff of these values
-        loop(tl1, tl2, idx1 + 1, shift1, idx2 + 1, lcs, diff(v1, v2, path ::: List((idx1 + shift1).toString)) reverse_::: acc)
+        loop(tl1, tl2, idx1 + 1, shift1, idx2 + 1, lcs, diff(v1, v2, path / (idx1 + shift1)) reverse_::: acc)
       case (_, Nil) =>
         // all subsequent values in arr1 were removed
         remove(idx1 + shift1, idx1 + arr1.size - 1 + shift1) reverse_::: acc
       case (Nil, _) =>
         // all subsequent value in arr2 were added
-        arr2.map(Add(path ::: List("-"), _)) reverse_::: acc
+        arr2.map(Add(path / "-", _)) reverse_::: acc
     }
 
     loop(arr1, arr2, 0, 0, 0, lcs, Nil).reverse
