@@ -15,8 +15,5 @@
 * limitations under the License.
 */
 package gnieh.diffson
-package schema
 
-import java.net.URI
-
-case class JsonReference($ref: URI)
+case class ValidationError(pointer: Pointer, reason: String)

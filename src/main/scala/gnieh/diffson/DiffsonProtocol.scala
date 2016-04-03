@@ -44,8 +44,6 @@ object DiffsonProtocol extends DefaultJsonProtocol {
     }
   }
 
-  implicit val refForm = jsonFormat1(JsonReference)
-
   implicit def PointerFormat(implicit pointer: JsonPointer): JsonFormat[Pointer] =
     new JsonFormat[Pointer] {
 
@@ -171,7 +169,7 @@ object DiffsonProtocol extends DefaultJsonProtocol {
     implicit val metadataSchemaFormat = jsonFormat3(MetadataSchema)
 
     def write(schema: JsonSchema): JsObject = schema match {
-      case JsonSchema(sc, id, subs, nums, strs, arrs, objs, any, meta) =>
+      case ResolvedJsonSchema(sc, id, subs, nums, strs, arrs, objs, any, meta) =>
         val numerics = nums.toJson.asJsObject.fields
         val strings = strs.toJson.asJsObject.fields
         val arrays = arrs.toJson.asJsObject.fields
@@ -188,26 +186,29 @@ object DiffsonProtocol extends DefaultJsonProtocol {
           ++ subschemas
           + ("$schema" -> sc.toJson)
           + ("id" -> id.toJson))
+      case RefJsonSchema(ref) =>
+        JsObject("$ref" -> ref.toJson)
     }
 
-    def read(value: JsValue): JsonSchema = {
-      val (schema, id, subs) = value match {
-        case JsObject(fields) =>
+    def read(value: JsValue): JsonSchema = value match {
+      case JsObject(fields) if fields.contains("$ref") =>
+        RefJsonSchema(fields("$ref").convertTo[URI])
+      case JsObject(fields) =>
+        val (schema, id, subs) =
           (fields.get("$schema").map(_.convertTo[URI]),
             fields.get("id").map(_.convertTo[URI]),
             fields.filter(!_._1.isKeyword).map {
               case (k, v) => (k, v.convertTo[JsonSchema])
             })
-        case _ =>
-          deserializationError("json schema expected")
-      }
-      val numerics = value.convertTo[NumericSchema]
-      val strings = value.convertTo[StringSchema]
-      val arrays = value.convertTo[ArraySchema]
-      val objects = value.convertTo[ObjectSchema]
-      val anys = value.convertTo[AnySchema]
-      val metadata = value.convertTo[MetadataSchema]
-      JsonSchema(schema, id, subs, numerics, strings, arrays, objects, anys, metadata)
+        val numerics = value.convertTo[NumericSchema]
+        val strings = value.convertTo[StringSchema]
+        val arrays = value.convertTo[ArraySchema]
+        val objects = value.convertTo[ObjectSchema]
+        val anys = value.convertTo[AnySchema]
+        val metadata = value.convertTo[MetadataSchema]
+        JsonSchema(schema, id, subs, numerics, strings, arrays, objects, anys, metadata)
+      case _ =>
+        deserializationError("json schema expected")
     }
   }
 

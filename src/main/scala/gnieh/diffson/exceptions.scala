@@ -23,3 +23,5 @@ class PatchException(msg: String) extends DiffsonException(msg)
 class PointerException(msg: String) extends DiffsonException(msg)
 
 class FormatException(msg: String) extends DiffsonException(msg)
+
+class SchemaException(msg: String) extends DiffsonException(msg)

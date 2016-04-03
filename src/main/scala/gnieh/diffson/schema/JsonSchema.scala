@@ -23,17 +23,25 @@ import spray.json._
 
 import scala.util.matching.Regex
 
-sealed trait JsonSchema {
+sealed abstract class JsonSchema {
 
-  val $schema: Option[URI]
-  val id: Option[URI]
-  val subschemas: Map[String, JsonSchema]
-  val numericKeywords: NumericSchema
-  val stringKewords: StringSchema
-  val arrayKeywords: ArraySchema
-  val objectKeywords: ObjectSchema
-  val anyKeywords: AnySchema
-  val metadataKeywords: MetadataSchema
+  def $schema: Option[URI]
+  def id: Option[URI]
+  def subschemas: Map[String, JsonSchema]
+  def numericKeywords: NumericSchema
+  def stringKewords: StringSchema
+  def arrayKeywords: ArraySchema
+  def objectKeywords: ObjectSchema
+  def anyKeywords: AnySchema
+  def metadataKeywords: MetadataSchema
+
+  def resolve(): Unit =
+    resolve(None)
+
+  private[schema] def resolve(parent: Option[JsonSchema]): Unit
+
+  def validate(json: JsValue): Vector[ValidationError] =
+    validate(Pointer.root, json)
 
   def validate(pointer: Pointer, json: JsValue): Vector[ValidationError]
 
@@ -73,17 +81,68 @@ object JsonSchema {
 
 }
 
-private class RefJsonSchema(val $ref: URI)
+private[diffson] case class RefJsonSchema($ref: URI) extends JsonSchema {
 
-private class ResolvedJsonSchema(val $schema: Option[URI],
-    val id: Option[URI],
-    val subschemas: Map[String, JsonSchema],
-    val numericKeywords: NumericSchema,
-    val stringKewords: StringSchema,
-    val arrayKeywords: ArraySchema,
-    val objectKeywords: ObjectSchema,
-    val anyKeywords: AnySchema,
-    val metadataKeywords: MetadataSchema) extends JsonSchema {
+  private var resolved: ResolvedJsonSchema = null
+
+  private def ensureResolved[T](access: JsonSchema => T): T =
+    if (resolved == null)
+      throw new SchemaException("Schema must be resolved before anything else")
+    else
+      access(resolved)
+
+  def resolve(parent: Option[JsonSchema]): Unit =
+    ???
+
+  def $schema: Option[URI] =
+    ensureResolved(_.$schema)
+
+  def id: Option[URI] =
+    ensureResolved(_.id)
+
+  def subschemas: Map[String, JsonSchema] =
+    ensureResolved(_.subschemas)
+
+  def numericKeywords: NumericSchema =
+    ensureResolved(_.numericKeywords)
+
+  def stringKewords: StringSchema =
+    ensureResolved(_.stringKewords)
+
+  def arrayKeywords: ArraySchema =
+    ensureResolved(_.arrayKeywords)
+
+  def objectKeywords: ObjectSchema =
+    ensureResolved(_.objectKeywords)
+
+  def anyKeywords: AnySchema =
+    ensureResolved(_.anyKeywords)
+
+  def metadataKeywords: MetadataSchema =
+    ensureResolved(_.metadataKeywords)
+
+  def validate(pointer: Pointer, json: JsValue): Vector[ValidationError] =
+    resolved.validate(pointer, json)
+
+}
+
+private[diffson] case class ResolvedJsonSchema($schema: Option[URI],
+    id: Option[URI],
+    subschemas: Map[String, JsonSchema],
+    numericKeywords: NumericSchema,
+    stringKewords: StringSchema,
+    arrayKeywords: ArraySchema,
+    objectKeywords: ObjectSchema,
+    anyKeywords: AnySchema,
+    metadataKeywords: MetadataSchema) extends JsonSchema {
+
+  def resolve(parent: Option[JsonSchema]): Unit = {
+    for ((_, schema) <- subschemas)
+      schema.resolve(Some(this))
+    arrayKeywords.resolve(Some(this))
+    objectKeywords.resolve(Some(this))
+    anyKeywords.resolve(Some(this))
+  }
 
   def validate(pointer: Pointer, json: JsValue): Vector[ValidationError] =
     numericKeywords.validate(pointer, json) ++
@@ -151,6 +210,17 @@ case class ArraySchema(items: Either[JsonSchema, Vector[JsonSchema]],
     minItems: Int,
     uniqueItems: Boolean) {
 
+  def resolve(parent: Option[JsonSchema]): Unit = {
+    items match {
+      case Left(schema)   => schema.resolve(parent)
+      case Right(schemas) => for (schema <- schemas) schema.resolve(parent)
+    }
+    additionalItems match {
+      case Left(_)       => //ignore
+      case Right(schema) => schema.resolve(parent)
+    }
+  }
+
   def validate(pointer: Pointer, json: JsValue): Vector[ValidationError] = json match {
     case JsArray(elems) =>
       def max = maxItems.fold(noError) { max =>
@@ -198,6 +268,19 @@ case class ObjectSchema(maxProperties: Option[Int],
     properties: Map[String, JsonSchema],
     patternProperties: Map[String, JsonSchema],
     dependencies: Map[String, Either[JsonSchema, Set[String]]]) {
+
+  def resolve(parent: Option[JsonSchema]): Unit = {
+    additionalProperties match {
+      case Left(_)       => // ignore
+      case Right(schema) => schema.resolve(parent)
+    }
+    for ((_, schema) <- properties)
+      schema.resolve(parent)
+    for ((_, schema) <- patternProperties)
+      schema.resolve(parent)
+    for ((_, Left(schema)) <- dependencies)
+      schema.resolve(parent)
+  }
 
   def validate(pointer: Pointer, json: JsValue): Vector[ValidationError] = json match {
     case JsObject(fields) =>
@@ -256,6 +339,25 @@ case class AnySchema(enum: Option[Vector[JsValue]],
     oneOf: Option[Vector[JsonSchema]],
     not: Option[JsonSchema],
     definitions: Map[String, JsonSchema]) {
+
+  def resolve(parent: Option[JsonSchema]): Unit = {
+    for {
+      schemas <- allOf
+      schema <- schemas
+    } schema.resolve(parent)
+    for {
+      schemas <- anyOf
+      schema <- schemas
+    } schema.resolve(parent)
+    for {
+      schemas <- oneOf
+      schema <- schemas
+    } schema.resolve(parent)
+    for (schema <- not)
+      schema.resolve(parent)
+    for ((_, schema) <- definitions)
+      schema.resolve(parent)
+  }
 
   def validate(pointer: Pointer, json: JsValue): Vector[ValidationError] = {
     def en = enum.fold(noError) { en =>
