@@ -1,7 +1,7 @@
 package gnieh.diffson
 package conformance
 
-import spray.json._
+import play.api.libs.json._
 
 sealed trait ConformanceTest
 

@@ -17,21 +17,18 @@ package gnieh.diffson
 package conformance
 
 import org.scalatest._
-
-import spray.json._
-
+import play.api.libs.json._
 import scala.io.Source
 
 class TestRfcConformance extends FunSuite with ShouldMatchers {
 
-  import DefaultJsonProtocol._
   import ConformanceTestProtocol._
 
   val specTests =
-    JsonParser(Source.fromURL(getClass.getResource("/conformance/spec_tests.json")).mkString).convertTo[List[ConformanceTest]]
+    Json.parse(Source.fromURL(getClass.getResource("/conformance/spec_tests.json")).mkString).as[List[ConformanceTest]]
 
   val tests =
-    JsonParser(Source.fromURL(getClass.getResource("/conformance/tests.json")).mkString).convertTo[List[ConformanceTest]]
+    Json.parse(Source.fromURL(getClass.getResource("/conformance/tests.json")).mkString).as[List[ConformanceTest]]
 
   def scalatest(t: ConformanceTest) = t match {
     case SuccessConformanceTest(doc, patch, Some(expected), comment, Some(true)) =>

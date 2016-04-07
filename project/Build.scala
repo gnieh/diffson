@@ -14,7 +14,7 @@ object DiffsonBuild extends Build {
     base = file(".")) settings (
     organization := "org.gnieh",
     name := "diffson",
-    version := "2.0.0-SNAPSHOT",
+    version := "2.1.0-SNAPSHOT",
     scalaVersion := "2.11.8",
     description := "Json diff/patch library",
     licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
@@ -50,6 +50,7 @@ object DiffsonBuild extends Build {
   lazy val dependencies = Seq(
     "org.scalatest" %% "scalatest" % "2.2.6" % "test",
     "org.scalacheck" %% "scalacheck" % "1.13.0" % "test",
+    "com.typesafe.play" %% "play-json" % "2.4.2",
     "io.spray" %%  "spray-json" % "1.3.2"
   )
 

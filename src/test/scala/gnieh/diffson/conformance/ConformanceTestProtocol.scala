@@ -16,40 +16,36 @@
 package gnieh.diffson
 package conformance
 
-import spray.json._
+import play.api.libs.json._
 
 object ConformanceTestProtocol {
 
   import DiffsonProtocol._
 
-  implicit val successConformanceTestFormat = jsonFormat5(SuccessConformanceTest)
-  implicit val errorConformanceTestFormat = jsonFormat5(ErrorConformanceTest)
-  implicit val commentConformanceTestFormat = jsonFormat1(CommentConformanceTest)
+  implicit val successConformanceTestFormat = Json.format[SuccessConformanceTest]
+  implicit val errorConformanceTestFormat = Json.format[ErrorConformanceTest]
+  implicit val commentConformanceTestFormat = Json.format[CommentConformanceTest]
 
-  implicit object ConformanceTestFormat extends JsonFormat[ConformanceTest] {
-
-    def write(test: ConformanceTest) = test match {
+  implicit val ConformanceTestFormat = Format[ConformanceTest](Reads {
+    case obj @ JsObject(fields) if fields.contains("expected") =>
+      obj.validate[SuccessConformanceTest]
+    case obj @ JsObject(fields) if fields.contains("error") =>
+      obj.validate[ErrorConformanceTest]
+    case obj @ JsObject(fields) if fields.contains("patch") =>
+      obj.validate[SuccessConformanceTest]
+    case obj @ JsObject(fields) if fields.keySet == Set("comment") =>
+      obj.validate[CommentConformanceTest]
+    case json =>
+      throw new Exception(f"Test record expected: $json")
+  },
+    Writes {
       case success @ SuccessConformanceTest(_, _, _, _, _) =>
-        success.toJson
+        Json.toJson(success)
       case error @ ErrorConformanceTest(_, _, _, _, _) =>
-        error.toJson
+        Json.toJson(error)
       case com @ CommentConformanceTest(_) =>
-        com.toJson
+        Json.toJson(com)
     }
-
-    def read(json: JsValue): ConformanceTest = json match {
-      case obj @ JsObject(fields) if fields.contains("expected") =>
-        obj.convertTo[SuccessConformanceTest]
-      case obj @ JsObject(fields) if fields.contains("error") =>
-        obj.convertTo[ErrorConformanceTest]
-      case obj @ JsObject(fields) if fields.contains("patch") =>
-        obj.convertTo[SuccessConformanceTest]
-      case obj @ JsObject(fields) if fields.keySet == Set("comment") =>
-        obj.convertTo[CommentConformanceTest]
-      case _ =>
-        deserializationError(f"Test record expected: $json")
-    }
-
-  }
+  )
 
 }

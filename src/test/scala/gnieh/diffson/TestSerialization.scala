@@ -2,14 +2,13 @@ package gnieh.diffson
 package test
 
 import org.scalatest._
-
-import spray.json._
+import play.api.libs.json._
 
 class TestSerialization extends FlatSpec with ShouldMatchers {
 
   import DiffsonProtocol._
 
-  implicit val testJsonFormat = jsonFormat4(Json)
+  implicit val testJsonFormat = Json.format[TestJson]
 
   val patch = """[{
                 |  "op":"replace",
@@ -64,10 +63,10 @@ class TestSerialization extends FlatSpec with ShouldMatchers {
                         |}]""".stripMargin
 
   val parsed =
-    JsonParser(patch)
+    Json.parse(patch)
 
   val parsedRemember =
-    JsonParser(patchRemember)
+    Json.parse(patchRemember)
 
   val json = JsonPatch(
     Replace(Pointer("a"), JsNumber(6)),
@@ -88,24 +87,24 @@ class TestSerialization extends FlatSpec with ShouldMatchers {
   )
 
   "a patch json" should "be correctly deserialized from a Json object" in {
-    parsed.convertTo[JsonPatch] should be(json)
+    parsed.as[JsonPatch] should be(json)
   }
 
   "a patch object" should "be correctly serialized to a Json object" in {
-    json.toJson should be(parsed)
+    Json.toJson(json) should be(parsed)
   }
 
   "a remembering patch json" should "be correctly deserialized from a Json object" in {
-    parsedRemember.convertTo[JsonPatch] should be(jsonRemember)
+    parsedRemember.as[JsonPatch] should be(jsonRemember)
   }
 
   "a remembering patch object" should "be correctly serialized to a Json object" in {
-    jsonRemember.toJson should be(parsedRemember)
+    Json.toJson(jsonRemember) should be(parsedRemember)
   }
 
-  "a pacth" should "be applicable to a serializable Scala object if the shape is kept" in {
-    val json1 = Json(1, true, "test", List(1, 2, 4))
-    val json2 = Json(10, false, "toto", List(1, 2, 3, 4, 5))
+  "a patch" should "be applicable to a serializable Scala object if the shape is kept" in {
+    val json1 = TestJson(1, true, "test", List(1, 2, 4))
+    val json2 = TestJson(10, false, "toto", List(1, 2, 3, 4, 5))
     val patch = JsonDiff.diff(json1, json2, false)
 
     patch(json1) should be(json2)
@@ -113,12 +112,12 @@ class TestSerialization extends FlatSpec with ShouldMatchers {
   }
 
   "applying a patch" should "raise an exception if it changes the shape" in {
-    val json = Json(1, true, "test", Nil)
+    val json = TestJson(1, true, "test", Nil)
     val patch = JsonPatch(Replace(Pointer.root, JsBoolean(true)))
-    a[DeserializationException] should be thrownBy { patch(json) }
+    an[Exception] should be thrownBy { patch(json) }
   }
 
 }
 
-case class Json(a: Int, b: Boolean, c: String, d: List[Int])
+case class TestJson(a: Int, b: Boolean, c: String, d: List[Int])
 
