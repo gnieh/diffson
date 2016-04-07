@@ -17,7 +17,8 @@ package gnieh.diffson
 
 import scala.annotation.tailrec
 
-import spray.json._
+//import spray.json._
+import play.api.libs.json._
 
 /** A class to work with Json pointers according to http://tools.ietf.org/html/rfc6901.
  *  The behavior in case of invalid pointer is customizable by passing an error handler
@@ -65,7 +66,7 @@ class JsonPointer(errorHandler: PartialFunction[(JsValue, String, Pointer), JsVa
    *  Upon missing elements in value, the error handler is called with the current value and element
    */
   def evaluate(value: String, path: String): JsValue =
-    evaluate(JsonParser(value), parse(path), Pointer.root)
+    evaluate(Json.parse(value), parse(path), Pointer.root)
 
   /** Evaluates the given path in the given JSON object.
    *  Upon missing elements in value, the error handler is called with the current value and element

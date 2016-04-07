@@ -2,8 +2,7 @@ package gnieh.diffson
 package test
 
 import org.scalatest._
-
-import spray.json._
+import play.api.libs.json._
 
 class TestJsonPointer extends FlatSpec with ShouldMatchers {
 

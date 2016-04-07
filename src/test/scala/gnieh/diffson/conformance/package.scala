@@ -15,29 +15,25 @@
 */
 package gnieh.diffson
 
-import spray.json._
+import play.api.libs.json._
 
 package object conformance {
 
   import DiffsonProtocol._
 
-  implicit val successConformanceTestFormat = jsonFormat5(SuccessConformanceTest)
-  implicit val errorConformanceTestFormat = jsonFormat5(ErrorConformanceTest)
-  implicit val commentConformanceTestFormat = jsonFormat1(CommentConformanceTest)
+  implicit val successConformanceTestFormat = Json.format[SuccessConformanceTest]
+  implicit val errorConformanceTestFormat = Json.format[ErrorConformanceTest]
+  implicit val commentConformanceTestFormat = Json.format[CommentConformanceTest]
 
-  implicit object ConformanceTestFormat extends JsonReader[ConformanceTest] {
-
-    def read(json: JsValue): ConformanceTest = json match {
-      case obj @ JsObject(fields) if fields.contains("expected") =>
-        obj.convertTo[SuccessConformanceTest]
-      case obj @ JsObject(fields) if fields.contains("error") =>
-        obj.convertTo[ErrorConformanceTest]
-      case obj @ JsObject(fields) if fields.keySet == Set("comment") =>
-        obj.convertTo[CommentConformanceTest]
-      case _ =>
-        deserializationError("Test record expected")
-    }
-
+  implicit val ConformanceTestFormat = Reads[ConformanceTest] {
+    case obj @ JsObject(fields) if fields.contains("expected") =>
+      obj.validate[SuccessConformanceTest]
+    case obj @ JsObject(fields) if fields.contains("error") =>
+      obj.validate[ErrorConformanceTest]
+    case obj @ JsObject(fields) if fields.keySet == Set("comment") =>
+      obj.validate[CommentConformanceTest]
+    case _ =>
+      throw new Exception("Test record expected")
   }
 
 }

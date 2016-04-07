@@ -15,139 +15,128 @@
 */
 package gnieh.diffson
 
-import spray.json._
+import play.api.libs.json._
 
-object DiffsonProtocol extends DefaultJsonProtocol {
+object DiffsonProtocol {
 
-  implicit def PointerFormat(implicit pointer: JsonPointer): JsonFormat[Pointer] =
-    new JsonFormat[Pointer] {
+  implicit def PointerFormat(implicit pointer: JsonPointer): Format[Pointer] =
+    Format[Pointer](
+      Reads {
+        case JsString(s) => JsSuccess(pointer.parse(s))
+        case value       => throw new FormatException(f"Pointer expected: $value")
+      },
+      Writes(p => JsString(p.toString))
+    )
 
-      def write(p: Pointer): JsString =
-        JsString(p.toString)
-
-      def read(value: JsValue): Pointer = value match {
-        case JsString(s) => pointer.parse(s)
-        case _           => throw new FormatException(f"Pointer expected: $value")
-      }
-
-    }
-
-  implicit def OperationFormat(implicit pointer: JsonPointer): JsonFormat[Operation] =
-    new JsonFormat[Operation] {
-
-      def write(op: Operation): JsObject =
-        op match {
-          case Add(path, value) =>
-            JsObject(
-              "op" -> JsString("add"),
-              "path" -> JsString(path.toString),
-              "value" -> value)
-          case Remove(path, None) =>
-            JsObject(
-              "op" -> JsString("remove"),
-              "path" -> JsString(path.toString))
-          case Remove(path, Some(old)) =>
-            JsObject(
-              "op" -> JsString("remove"),
-              "path" -> JsString(path.toString),
-              "old" -> old)
-          case Replace(path, value, None) =>
-            JsObject(
-              "op" -> JsString("replace"),
-              "path" -> JsString(path.toString),
-              "value" -> value)
-          case Replace(path, value, Some(old)) =>
-            JsObject(
-              "op" -> JsString("replace"),
-              "path" -> JsString(path.toString),
-              "value" -> value,
-              "old" -> old)
-          case Move(from, path) =>
-            JsObject(
-              "op" -> JsString("move"),
-              "from" -> JsString(from.toString),
-              "path" -> JsString(path.toString))
-          case Copy(from, path) =>
-            JsObject(
-              "op" -> JsString("copy"),
-              "from" -> JsString(from.toString),
-              "path" -> JsString(path.toString))
-          case Test(path, value) =>
-            JsObject(
-              "op" -> JsString("test"),
-              "path" -> JsString(path.toString),
-              "value" -> value)
-        }
-
-      def read(value: JsValue): Operation = value match {
+  implicit def OperationFormat(implicit pointer: JsonPointer): Format[Operation] =
+    Format[Operation](
+      Reads {
         case obj @ JsObject(fields) if fields.contains("op") =>
           fields("op") match {
             case JsString("add") =>
-              obj.getFields("path", "value") match {
-                case Seq(JsString(path), value) =>
-                  Add(pointer.parse(path), value)
+              (fields.get("path"), fields.get("value")) match {
+                case (Some(JsString(path)), Some(value)) =>
+                  JsSuccess(Add(pointer.parse(path), value))
                 case _ =>
                   throw new FormatException("missing 'path' or 'value' field")
               }
             case JsString("remove") =>
-              obj.getFields("path", "old") match {
-                case Seq(JsString(path)) =>
-                  Remove(pointer.parse(path))
-                case Seq(JsString(path), value) =>
-                  Remove(pointer.parse(path), Some(value))
+              (fields.get("path"), fields.get("old")) match {
+                case (Some(JsString(path)), None) =>
+                  JsSuccess(Remove(pointer.parse(path)))
+                case (Some(JsString(path)), Some(value)) =>
+                  JsSuccess(Remove(pointer.parse(path), Some(value)))
                 case _ =>
                   throw new FormatException("missing 'path' field")
               }
             case JsString("replace") =>
-              obj.getFields("path", "value", "old") match {
-                case Seq(JsString(path), value) =>
-                  Replace(pointer.parse(path), value)
-                case Seq(JsString(path), value, old) =>
-                  Replace(pointer.parse(path), value, Some(old))
+              (fields.get("path"), fields.get("value"), fields.get("old")) match {
+                case (Some(JsString(path)), Some(value), None) =>
+                  JsSuccess(Replace(pointer.parse(path), value))
+                case (Some(JsString(path)), Some(value), Some(old)) =>
+                  JsSuccess(Replace(pointer.parse(path), value, Some(old)))
                 case _ =>
                   throw new FormatException("missing 'path' or 'value' field")
               }
             case JsString("move") =>
-              obj.getFields("from", "path") match {
-                case Seq(JsString(from), JsString(path)) =>
-                  Move(pointer.parse(from), pointer.parse(path))
+              (fields.get("from"), fields.get("path")) match {
+                case (Some(JsString(from)), Some(JsString(path))) =>
+                  JsSuccess(Move(pointer.parse(from), pointer.parse(path)))
                 case _ =>
                   throw new FormatException("missing 'from' or 'path' field")
               }
             case JsString("copy") =>
-              obj.getFields("from", "path") match {
-                case Seq(JsString(from), JsString(path)) =>
-                  Copy(pointer.parse(from), pointer.parse(path))
+              (fields.get("from"), fields.get("path")) match {
+                case (Some(JsString(from)), Some(JsString(path))) =>
+                  JsSuccess(Copy(pointer.parse(from), pointer.parse(path)))
                 case _ =>
                   throw new FormatException("missing 'from' or 'path' field")
               }
             case JsString("test") =>
-              obj.getFields("path", "value") match {
-                case Seq(JsString(path), value) =>
-                  Test(pointer.parse(path), value)
+              (fields.get("path"), fields.get("value")) match {
+                case (Some(JsString(path)), Some(value)) =>
+                  JsSuccess(Test(pointer.parse(path), value))
                 case _ =>
                   throw new FormatException("missing 'path' or 'value' field")
               }
             case op =>
-              throw new FormatException(f"Unknown operation ${op.compactPrint}")
+              throw new FormatException(f"Unknown operation ${Json.stringify(op)}")
           }
-        case _ =>
+        case value =>
           throw new FormatException(f"Operation expected: $value")
+      },
+      Writes {
+        case Add(path, value) =>
+          Json.obj(
+            "op" -> JsString("add"),
+            "path" -> JsString(path.toString),
+            "value" -> value)
+        case Remove(path, None) =>
+          Json.obj(
+            "op" -> JsString("remove"),
+            "path" -> JsString(path.toString))
+        case Remove(path, Some(old)) =>
+          Json.obj(
+            "op" -> JsString("remove"),
+            "path" -> JsString(path.toString),
+            "old" -> old)
+        case Replace(path, value, None) =>
+          Json.obj(
+            "op" -> JsString("replace"),
+            "path" -> JsString(path.toString),
+            "value" -> value)
+        case Replace(path, value, Some(old)) =>
+          Json.obj(
+            "op" -> JsString("replace"),
+            "path" -> JsString(path.toString),
+            "value" -> value,
+            "old" -> old)
+        case Move(from, path) =>
+          Json.obj(
+            "op" -> JsString("move"),
+            "from" -> JsString(from.toString),
+            "path" -> JsString(path.toString))
+        case Copy(from, path) =>
+          Json.obj(
+            "op" -> JsString("copy"),
+            "from" -> JsString(from.toString),
+            "path" -> JsString(path.toString))
+        case Test(path, value) =>
+          Json.obj(
+            "op" -> JsString("test"),
+            "path" -> JsString(path.toString),
+            "value" -> value)
       }
-    }
+    )
 
-  implicit def JsonPatchFormat(implicit pointer: JsonPointer): JsonFormat[JsonPatch] =
-    new JsonFormat[JsonPatch] {
-
-      def write(patch: JsonPatch): JsArray =
-        JsArray(patch.ops.map(_.toJson).toVector)
-
-      def read(value: JsValue): JsonPatch = value match {
+  implicit def JsonPatchFormat(implicit pointer: JsonPointer): Format[JsonPatch] =
+    Format[JsonPatch](
+      Reads[JsonPatch] {
         case JsArray(ops) =>
-          JsonPatch(ops.map(_.convertTo[Operation]).toList)
+          JsSuccess(JsonPatch(ops.map(_.as[Operation]).toList))
         case _ => throw new FormatException("JsonPatch expected")
-      }
-
-    }
+      },
+      Writes(patch => JsArray(patch.ops.map(Json.toJson(_)).toVector))
+    )
 
 }

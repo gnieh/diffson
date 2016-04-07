@@ -17,7 +17,7 @@ package gnieh.diffson
 
 import scala.annotation.tailrec
 
-import spray.json._
+import play.api.libs.json._
 
 /** Default `JsonDiff` instance that uses the patience algorithm to compute lcs for arrays
  *
@@ -35,7 +35,7 @@ class JsonDiff(lcsalg: Lcs[JsValue]) {
    *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
    */
   def diff(json1: String, json2: String, remember: Boolean): JsonPatch =
-    diff(JsonParser(json1), JsonParser(json2), remember)
+    diff(Json.parse(json1), Json.parse(json2), remember)
 
   /** Computes the patch from `json1` to `json2`
    *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
@@ -46,8 +46,8 @@ class JsonDiff(lcsalg: Lcs[JsValue]) {
   /** Computes the patch from `json1` to `json2`
    *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
    */
-  def diff[T1: JsonFormat, T2: JsonFormat](json1: T1, json2: T2, remember: Boolean): JsonPatch =
-    diff(json1.toJson, json2.toJson, remember)
+  def diff[T1: Format, T2: Format](json1: T1, json2: T2, remember: Boolean): JsonPatch =
+    diff(Json.toJson(json1), Json.toJson(json2), remember)
 
   private def diff(json1: JsValue, json2: JsValue, remember: Boolean, pointer: Pointer): List[Operation] = (json1, json2) match {
     case (v1, v2) if v1 == v2                   => Nil // if they are equal, this one is easy...

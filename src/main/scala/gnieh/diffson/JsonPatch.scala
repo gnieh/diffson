@@ -15,7 +15,7 @@
 */
 package gnieh.diffson
 
-import spray.json._
+import play.api.libs.json._
 
 import scala.annotation.tailrec
 
@@ -29,7 +29,7 @@ final case class JsonPatch(ops: List[Operation])(implicit pointer: JsonPointer) 
 
   /** Applies this patch to the given Json valued and returns the patched value */
   def apply(json: String): String =
-    apply(JsonParser(json)).compactPrint
+    Json.stringify(apply(Json.parse(json)))
 
   /** Applies this patch to the given Json value, and returns the patched value */
   def apply(value: JsValue): JsValue =
@@ -41,14 +41,14 @@ final case class JsonPatch(ops: List[Operation])(implicit pointer: JsonPointer) 
    *  It assumes that the shape of the patched object is the same as the input one.
    *  If it is not the case, an exception will be raised
    */
-  def apply[T: JsonFormat](value: T): T =
-    apply(value.toJson).convertTo[T]
+  def apply[T: Format](value: T): T =
+    apply(Json.toJson(value)).as[T]
 
   /** Create a patch that applies `this` patch and then `that` patch */
   def andThen(that: JsonPatch): JsonPatch =
     JsonPatch(this.ops ++ that.ops)(pointer)
 
-  override def toString = this.toJson.prettyPrint
+  override def toString = Json.stringify(Json.toJson(this))
 
 }
 
@@ -65,10 +65,10 @@ object JsonPatch {
 
   /** Parses a Json patch as per http://tools.ietf.org/html/rfc6902 */
   def parse(patch: String)(implicit pointer: JsonPointer): JsonPatch =
-    JsonParser(patch).convertTo[JsonPatch]
+    Json.parse(patch).as[JsonPatch]
 
   def apply(json: JsValue)(implicit pointer: JsonPointer): JsonPatch =
-    json.convertTo[JsonPatch]
+    json.as[JsonPatch]
 
 }
 
@@ -78,7 +78,7 @@ sealed abstract class Operation {
 
   /** Applies this operation to the given Json value */
   def apply(json: String): String =
-    apply(JsonParser(json)).compactPrint
+    Json.stringify(apply(Json.parse(json)))
 
   /** Applies this operation to the given Json value */
   def apply(value: JsValue)(implicit pointer: JsonPointer): JsValue = action(value, path, Pointer.root)
