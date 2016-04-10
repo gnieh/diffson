@@ -17,87 +17,104 @@ package gnieh.diffson
 
 import scala.annotation.tailrec
 
-import spray.json._
+trait JsonPointerSupport[JsValue] {
+  this: DiffsonInstance[JsValue] =>
 
-/** A class to work with Json pointers according to http://tools.ietf.org/html/rfc6901.
- *  The behavior in case of invalid pointer is customizable by passing an error handler
- *  when instantiating.
- *
- *  @author Lucas Satabin
- */
-class JsonPointer(errorHandler: PartialFunction[(JsValue, String, Pointer), JsValue]) {
+  import provider._
 
-  private def handle(value: JsValue, pointer: String, parent: Pointer): JsValue =
-    errorHandler.orElse(allError)(value, pointer, parent)
+  implicit val pointer = new JsonPointer()
 
-  /** Parses a JSON pointer and returns the resolved path. */
-  def parse(input: String): Pointer = {
-    if (input == null || input.isEmpty)
-      // shortcut if input is empty
-      Pointer.empty
-    else if (!input.startsWith("/")) {
-      // a pointer MUST start with a '/'
-      throw new PointerException("A JSON pointer must start with '/'")
-    } else {
-      // first gets the different parts of the pointer
-      val parts = input.split("/")
-        // the first element is always empty as the path starts with a '/'
-        .drop(1)
-      if (parts.size == 0) {
-        // the pointer was simply "/"
-        Path(Root, "")
+  /** A class to work with Json pointers according to http://tools.ietf.org/html/rfc6901.
+   *  The behavior in case of invalid pointer is customizable by passing an error handler
+   *  when instantiating.
+   *
+   *  @author Lucas Satabin
+   */
+  class JsonPointer {
+
+    private var errorHandler: PointerErrorHandler = null
+
+    private def handle(value: JsValue, pointer: String, parent: Pointer): JsValue =
+      if (errorHandler == null)
+        defaultHandler(value, pointer, parent)
+      else
+        errorHandler.orElse(defaultHandler)(value, pointer, parent)
+
+    /** Parses a JSON pointer and returns the resolved path. */
+    def parse(input: String): Pointer = {
+      if (input == null || input.isEmpty)
+        // shortcut if input is empty
+        Pointer.empty
+      else if (!input.startsWith("/")) {
+        // a pointer MUST start with a '/'
+        throw new PointerException("A JSON pointer must start with '/'")
       } else {
-        // check that an occurrence of '~' is followed by '0' or '1'
-        if (parts.exists(_.matches(".*~(?![01]).*"))) {
-          throw new PointerException("Occurrences of '~' must be followed by '0' or '1'")
+        // first gets the different parts of the pointer
+        val parts = input.split("/")
+          // the first element is always empty as the path starts with a '/'
+          .drop(1)
+        if (parts.size == 0) {
+          // the pointer was simply "/"
+          Path(Root, "")
         } else {
-          parts
-            // transform the occurrences of '~1' into occurrences of '/'
-            // transform the occurrences of '~0' into occurrences of '~'
-            .map(_.replace("~1", "/").replace("~0", "~"))
-            .foldLeft(Pointer.root)(_ / _)
+          // check that an occurrence of '~' is followed by '0' or '1'
+          if (parts.exists(_.matches(".*~(?![01]).*"))) {
+            throw new PointerException("Occurrences of '~' must be followed by '0' or '1'")
+          } else {
+            parts
+              // transform the occurrences of '~1' into occurrences of '/'
+              // transform the occurrences of '~0' into occurrences of '~'
+              .map(_.replace("~1", "/").replace("~0", "~"))
+              .foldLeft(Pointer.root)(_ / _)
+          }
         }
       }
     }
-  }
 
-  /** Evaluates the given path in the given JSON object.
-   *  Upon missing elements in value, the error handler is called with the current value and element
-   */
-  def evaluate(value: String, path: String): JsValue =
-    evaluate(JsonParser(value), parse(path), Pointer.root)
+    /** Evaluates the given path in the given JSON object.
+     *  Upon missing elements in value, the error handler is called with the current value and element
+     */
+    def evaluate(value: String, path: String): JsValue =
+      evaluate(parseJson(value), parse(path), Pointer.root)
 
-  /** Evaluates the given path in the given JSON object.
-   *  Upon missing elements in value, the error handler is called with the current value and element
-   */
-  final def evaluate(value: JsValue, path: Pointer): JsValue =
-    evaluate(value, path, Pointer.root)
+    /** Evaluates the given path in the given JSON object.
+     *  Upon missing elements in value, the error handler is called with the current value and element
+     */
+    final def evaluate(value: JsValue, path: Pointer): JsValue =
+      evaluate(value, path, Pointer.root)
 
-  @tailrec
-  private def evaluate(value: JsValue, path: Pointer, parent: Pointer): JsValue = (value, path) match {
-    case (JsObject(obj), elem / tl) =>
-      evaluate(obj.getOrElse(elem, JsNull), tl, parent / elem)
-    case (JsArray(arr), (p @ IntIndex(idx)) / tl) =>
-      if (idx >= arr.size)
-        // we know (by construction) that the index is greater or equal to zero
-        evaluate(handle(value, p, parent), tl, parent / p)
-      else
-        evaluate(arr(idx), tl, parent / p)
-    case (arr: JsArray, "-" / tl) =>
-      evaluate(handle(value, "-", parent), tl, parent / "-")
-    case (_, Pointer.Empty) =>
-      value
-    case (_, elem / tl) =>
-      evaluate(handle(value, elem, parent), tl, parent / elem)
-  }
+    /** Sets the error handler for this instance to the given handler value.
+     *  It always falls back to the default handler of the Json provider.
+     */
+    def handler_=(h: PointerErrorHandler): Unit =
+      errorHandler = h
 
-}
-
-object IntIndex {
-  private[this] val int = "(0|[1-9][0-9]*)".r
-  def unapply(s: String): Option[Int] =
-    s match {
-      case int(i) => Some(i.toInt)
-      case _      => None
+    @tailrec
+    private def evaluate(value: JsValue, path: Pointer, parent: Pointer): JsValue = (value, path) match {
+      case (JsObject(obj), elem / tl) =>
+        evaluate(obj.getOrElse(elem, JsNull), tl, parent / elem)
+      case (JsArray(arr), (p @ IntIndex(idx)) / tl) =>
+        if (idx >= arr.size)
+          // we know (by construction) that the index is greater or equal to zero
+          evaluate(handle(value, p, parent), tl, parent / p)
+        else
+          evaluate(arr(idx), tl, parent / p)
+      case (arr @ JsArray(_), "-" / tl) =>
+        evaluate(handle(value, "-", parent), tl, parent / "-")
+      case (_, Pointer.Empty) =>
+        value
+      case (_, elem / tl) =>
+        evaluate(handle(value, elem, parent), tl, parent / elem)
     }
+
+  }
+
+  protected[this] object IntIndex {
+    private[this] val int = "(0|[1-9][0-9]*)".r
+    def unapply(s: String): Option[Int] =
+      s match {
+        case int(i) => Some(i.toInt)
+        case _      => None
+      }
+  }
 }

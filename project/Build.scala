@@ -49,8 +49,7 @@ object DiffsonBuild extends Build {
 
   lazy val dependencies = Seq(
     "org.scalatest" %% "scalatest" % "2.2.6" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.13.0" % "test",
-    "io.spray" %%  "spray-json" % "1.3.2"
+    "org.scalacheck" %% "scalacheck" % "1.13.0" % "test"
   )
 
   lazy val publishSettings = Seq(
