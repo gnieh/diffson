@@ -2,6 +2,7 @@ package gnieh.diffson
 package conformance
 
 import spray.json._
+import sprayJson._
 
 sealed trait ConformanceTest
 

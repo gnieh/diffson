@@ -34,7 +34,7 @@ object DiffsonBuild extends Build {
     ),
     OsgiKeys.bundleSymbolicName := "org.gnieh.diffson",
     OsgiKeys.privatePackage := Seq(),
-    scalacOptions ++= Seq("-deprecation", "-feature"),
+    scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked"),
     scalacOptions in (Compile, doc) ++= Seq("-implicits", "-implicits-show-all", "-diagrams"))
 
     settings(publishSettings: _*)
@@ -49,7 +49,8 @@ object DiffsonBuild extends Build {
 
   lazy val dependencies = Seq(
     "org.scalatest" %% "scalatest" % "2.2.6" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.13.0" % "test"
+    "org.scalacheck" %% "scalacheck" % "1.13.0" % "test",
+    "io.spray" %%  "spray-json" % "1.3.2" % "provided,test"
   )
 
   lazy val publishSettings = Seq(

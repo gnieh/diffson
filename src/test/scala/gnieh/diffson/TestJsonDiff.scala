@@ -4,6 +4,7 @@ package test
 import org.scalatest._
 
 import spray.json._
+import sprayJson._
 
 class TestJsonDiff extends FlatSpec with ShouldMatchers {
 

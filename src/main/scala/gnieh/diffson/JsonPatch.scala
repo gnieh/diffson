@@ -60,7 +60,7 @@ trait JsonPatchSupport[JsValue] {
    *
    *  @author Lucas Satabin
    */
-  final case class JsonPatch(ops: List[Operation]) {
+  case class JsonPatch(ops: List[Operation]) {
 
     /** Applies this patch to the given Json valued and returns the patched value */
     def apply(json: String): String =
@@ -152,7 +152,7 @@ trait JsonPatchSupport[JsValue] {
   }
 
   /** Add (or replace if existing) the pointed element */
-  final case class Add(path: Pointer, value: JsValue) extends Operation {
+  case class Add(path: Pointer, value: JsValue) extends Operation {
 
     override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue = (original, pointer) match {
       case (_, Pointer.Empty) =>
@@ -178,7 +178,7 @@ trait JsonPatchSupport[JsValue] {
   }
 
   /** Remove the pointed element */
-  final case class Remove(path: Pointer, old: Option[JsValue] = None) extends Operation {
+  case class Remove(path: Pointer, old: Option[JsValue] = None) extends Operation {
 
     override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue =
       (original, pointer) match {
@@ -203,7 +203,7 @@ trait JsonPatchSupport[JsValue] {
   }
 
   /** Replace the pointed element by the given value */
-  final case class Replace(path: Pointer, value: JsValue, old: Option[JsValue] = None) extends Operation {
+  case class Replace(path: Pointer, value: JsValue, old: Option[JsValue] = None) extends Operation {
 
     override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue =
       (original, pointer) match {
@@ -229,7 +229,7 @@ trait JsonPatchSupport[JsValue] {
   }
 
   /** Move the pointed element to the new position */
-  final case class Move(from: Pointer, path: Pointer)(implicit val pointer: JsonPointer) extends Operation {
+  case class Move(from: Pointer, path: Pointer)(implicit val pointer: JsonPointer) extends Operation {
 
     override def apply(original: JsValue): JsValue = {
       @tailrec
@@ -250,7 +250,7 @@ trait JsonPatchSupport[JsValue] {
   }
 
   /** Copy the pointed element to the new position */
-  final case class Copy(from: Pointer, path: Pointer)(implicit val pointer: JsonPointer) extends Operation {
+  case class Copy(from: Pointer, path: Pointer)(implicit val pointer: JsonPointer) extends Operation {
 
     override def apply(original: JsValue): JsValue = {
       val add = Add(path, pointer.evaluate(original, from))
@@ -259,7 +259,7 @@ trait JsonPatchSupport[JsValue] {
   }
 
   /** Test that the pointed element is equal to the given value */
-  final case class Test(path: Pointer, value: JsValue)(implicit val pointer: JsonPointer) extends Operation {
+  case class Test(path: Pointer, value: JsValue)(implicit val pointer: JsonPointer) extends Operation {
 
     override def apply(original: JsValue): JsValue = {
       val orig = pointer.evaluate(original, path)

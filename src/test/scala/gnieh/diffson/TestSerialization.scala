@@ -1,6 +1,8 @@
 package gnieh.diffson
 package test
 
+import sprayJson._
+
 import org.scalatest._
 
 import spray.json._
