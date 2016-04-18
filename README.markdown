@@ -9,6 +9,7 @@ It also provides methods to compute _diffs_ between two Json values that produce
 ## Table of Contents
 
 - [Getting Started](#getting-started)
+- [Json Library](#json-library)
 - [Basic Usage](#basic-usage)
 - [Remembering old values](#remembering-old-values)
 - [Patches as Collections of Operations](#patches-as-collections-of-operations)
@@ -34,6 +35,26 @@ If you are using maven, add the following dependency to your `pom.xml`:
 </dependency>
 ```
 
+Json Library
+------------
+
+Diffson was first developped for [spray-json][3], however, it is possible to use it with any json library of your linking.
+The only requirement is to have a `DiffsonInstance` for your json library.
+
+At the moment, diffson provides two instances for [spray-json][3] and [Play! Json][9].
+To use these implementations you need to import the correct instance:
+
+```scala
+// spray-json
+import gnieh.diffson.sprayJson
+// play-json
+import gnieh.diffson.playJson
+```
+
+You also need to add the library in your classpath, as they are marked as `provided` by diffson to avoid depending on all json libraries when using diffson.
+
+If you want to add support for your favorite Json library, all you need to do is to implement the `gnieh.diffson.DiffsonInstance` class, which provide the `JsonProvider` for the specific library. Contribution of new Json libraries in this repository are more than welcome.
+
 Basic Usage
 -----------
 
@@ -46,8 +67,6 @@ There are three different entities living in the `gnieh.diffson` package:
 
 Basically if one wants to compute the diff between two Json objects, on can execute the following:
 ```scala
-import gnieh.diffson._
-
 val json1 = """{
               |  "a": 1,
               |  "b": true,
@@ -101,8 +120,6 @@ which we can easily verify is the same as `json2` modulo reordering of fields.
 
 You may also only want to apply existing patches:
 ```scala
-import gnieh.diffson._
-
 val raw = """[
             |  {
             |    "op": "test",
@@ -130,13 +147,6 @@ Patches as Collections of Operations
 ------------------------------------
 
 Patches may be seen as collections of operations on which you may which to apply some typical collection functions such as `map`, `flatMap`, filtering, folding, ...
-You may either perform these operations on the `ops` field of a patch or bring these operations in scope with the following import:
-
-```scala
-import gnieh.diffson.collection._
-```
-
-This brings an implicit value class with the collection operators. You may now write this kind of code:
 
 ```scala
 val patch: JsonPatch = ...
@@ -168,3 +178,4 @@ then use `diff` in lieu of `JsonDiff` in the first usage example.
 [6]: http://scala-lang.org
 [7]: http://maven.apache.org/
 [8]: http://search.maven.org/
+[9]: https://www.playframework.com/documentation/latest/ScalaJson

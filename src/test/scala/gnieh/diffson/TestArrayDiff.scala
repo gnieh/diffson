@@ -1,6 +1,8 @@
 package gnieh.diffson
 package test
 
+import sprayJson._
+
 import org.scalacheck.Properties
 import org.scalacheck.Prop.forAll
 import spray.json._

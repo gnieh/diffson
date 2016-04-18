@@ -15,210 +15,259 @@
 */
 package gnieh.diffson
 
-import spray.json._
-
 import scala.annotation.tailrec
 
-import DiffsonProtocol._
+trait JsonPatchSupport[JsValue] {
+  this: DiffsonInstance[JsValue] =>
 
-/** A Json patch object according to http://tools.ietf.org/html/rfc6902
- *
- *  @author Lucas Satabin
- */
-final case class JsonPatch(ops: List[Operation])(implicit pointer: JsonPointer) {
+  import provider._
 
-  /** Applies this patch to the given Json valued and returns the patched value */
-  def apply(json: String): String =
-    apply(JsonParser(json)).compactPrint
+  class WithFilter(p: Operation => Boolean, patch: JsonPatch) {
 
-  /** Applies this patch to the given Json value, and returns the patched value */
-  def apply(value: JsValue): JsValue =
-    ops.foldLeft(value) { (acc, op) =>
-      op(acc)
-    }
+    def map(f: Operation => Operation): JsonPatch =
+      patch.flatMap(op => if (p(op)) JsonPatch(f(op)) else JsonPatch())
 
-  /** Applies this patch to the given Json value, and returns the patched value.
-   *  It assumes that the shape of the patched object is the same as the input one.
-   *  If it is not the case, an exception will be raised
+    def flatMap(f: Operation => JsonPatch): JsonPatch =
+      patch.flatMap(op => if (p(op)) f(op) else JsonPatch())
+
+    def withFilter(p2: Operation => Boolean): WithFilter =
+      new WithFilter(op => p(op) && p2(op), patch)
+
+    def foreach(f: Operation => Unit): Unit =
+      patch.foreach(op => if (p(op)) f(op))
+
+  }
+
+  /** JsonPatch companion object allowing to create `JsonPatch` objects from strings or operations.
+   *
+   *  @author Lucas Satabin
    */
-  def apply[T: JsonFormat](value: T): T =
-    apply(value.toJson).convertTo[T]
+  object JsonPatch {
 
-  /** Create a patch that applies `this` patch and then `that` patch */
-  def andThen(that: JsonPatch): JsonPatch =
-    JsonPatch(this.ops ++ that.ops)(pointer)
+    def apply(ops: Operation*): JsonPatch =
+      new JsonPatch(ops.toList)
 
-  override def toString = this.toJson.prettyPrint
+    /** Parses a Json patch as per http://tools.ietf.org/html/rfc6902 */
+    def parse(patch: String): JsonPatch =
+      unmarshall[JsonPatch](parseJson(patch))
 
-}
+    def apply(json: JsValue): JsonPatch =
+      unmarshall[JsonPatch](json)
 
-/** JsonPatch companion object allowing to create `JsonPatch` objects from strings or operations.
- *
- *  @author Lucas Satabin
- */
-object JsonPatch {
+  }
 
-  import DiffsonProtocol._
+  /** A Json patch object according to http://tools.ietf.org/html/rfc6902
+   *
+   *  @author Lucas Satabin
+   */
+  case class JsonPatch(ops: List[Operation]) {
 
-  def apply(ops: Operation*)(implicit pointer: JsonPointer): JsonPatch =
-    JsonPatch(ops.toList)(pointer)
+    /** Applies this patch to the given Json valued and returns the patched value */
+    def apply(json: String): String =
+      compactPrint(apply(parseJson(json)))
 
-  /** Parses a Json patch as per http://tools.ietf.org/html/rfc6902 */
-  def parse(patch: String)(implicit pointer: JsonPointer): JsonPatch =
-    JsonParser(patch).convertTo[JsonPatch]
-
-  def apply(json: JsValue)(implicit pointer: JsonPointer): JsonPatch =
-    json.convertTo[JsonPatch]
-
-}
-
-/** A patch operation to apply to a Json value */
-sealed abstract class Operation {
-  val path: Pointer
-
-  /** Applies this operation to the given Json value */
-  def apply(json: String): String =
-    apply(JsonParser(json)).compactPrint
-
-  /** Applies this operation to the given Json value */
-  def apply(value: JsValue)(implicit pointer: JsonPointer): JsValue = action(value, path, Pointer.root)
-
-  // internals
-
-  // the action to perform in this operation. By default returns an object that is equal
-  protected[this] def action(value: JsValue, pointer: Pointer, parent: Pointer): JsValue = (value, pointer) match {
-    case (_, Pointer.Empty) =>
-      value
-    case (JsObject(fields), elem / tl) if fields.contains(elem) =>
-      val fields1 = fields map {
-        case (name, value) if name == elem =>
-          (name, action(value, tl, parent / elem))
-        case f =>
-          f
+    /** Applies this patch to the given Json value, and returns the patched value */
+    def apply(value: JsValue): JsValue =
+      ops.foldLeft(value) { (acc, op) =>
+        op(acc)
       }
-      JsObject(fields1)
-    case (JsArray(elems), (elem @ IntIndex(idx)) / tl) =>
-      if (idx > elems.size)
-        throw new PatchException(f"element $idx does not exist at path $parent")
-      val elems1 = elems.take(idx) ++ Vector(action(elems(idx), tl, parent / elem)) ++ elems.drop(idx + 1)
-      JsArray(elems1)
-    case (_, elem / _) =>
-      throw new PatchException(s"element $elem does not exist at path $parent")
+
+    /** Applies this patch to the given Json value, and returns the patched value.
+     *  It assumes that the shape of the patched object is the same as the input one.
+     *  If it is not the case, an exception will be raised
+     */
+    def apply[T: Marshalling](value: T): T =
+      unmarshall[T](apply(marshall(value)))
+
+    /** Create a patch that applies `this` patch and then `that` patch */
+    def andThen(that: JsonPatch): JsonPatch =
+      new JsonPatch(this.ops ++ that.ops)
+
+    def map(f: Operation => Operation): JsonPatch =
+      JsonPatch(ops.map(f))
+
+    def flatMap(f: Operation => JsonPatch): JsonPatch =
+      JsonPatch(for {
+        op <- ops
+        JsonPatch(ops) = f(op)
+        op <- ops
+      } yield op)
+
+    def filter(p: Operation => Boolean): JsonPatch =
+      JsonPatch(ops.filter(p))
+
+    def withFilter(p: Operation => Boolean): WithFilter =
+      new WithFilter(p, this)
+
+    def foldLeft[Res](zero: Res)(f: (Res, Operation) => Res): Res =
+      ops.foldLeft(zero)(f)
+
+    def foldRight[Res](zero: Res)(f: (Operation, Res) => Res): Res =
+      ops.foldRight(zero)(f)
+
+    def foreach(f: Operation => Unit): Unit =
+      ops.foreach(f)
+
+    def collect[T](pf: PartialFunction[Operation, T]): Seq[T] =
+      ops.collect(pf)
+    override def toString =
+      prettyPrint(marshall(this))
+
   }
 
-}
+  /** A patch operation to apply to a Json value */
+  sealed abstract class Operation {
+    val path: Pointer
 
-/** Add (or replace if existing) the pointed element */
-final case class Add(path: Pointer, value: JsValue) extends Operation {
+    /** Applies this operation to the given Json value */
+    def apply(json: String): String =
+      compactPrint(apply(parseJson(json)))
 
-  override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue = (original, pointer) match {
-    case (_, Pointer.Empty) =>
-      // we are at the root value, simply return the replacement value
-      value
-    case (JsArray(arr), Pointer("-")) =>
-      // insert the value at the end of the array
-      JsArray(arr ++ Vector(value))
-    case (JsArray(arr), Pointer(IntIndex(idx))) =>
-      if (idx > arr.size)
-        throw new PatchException(f"element $idx does not exist at path $parent")
-      else
-        // insert the value at the specified index
-        JsArray(arr.take(idx) ++ Vector(value) ++ arr.drop(idx))
-    case (JsObject(obj), Pointer(lbl)) =>
-      // remove the label if it is present
-      val cleaned = obj filter (_._1 != lbl)
-      // insert the new label
-      JsObject(cleaned.updated(lbl, value))
-    case _ =>
-      super.action(original, pointer, parent)
-  }
-}
+    /** Applies this operation to the given Json value */
+    def apply(value: JsValue): JsValue = action(value, path, Pointer.root)
 
-/** Remove the pointed element */
-final case class Remove(path: Pointer, old: Option[JsValue] = None) extends Operation {
+    // internals
 
-  override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue =
-    (original, pointer) match {
-      case (JsArray(arr), Pointer(IntIndex(idx))) =>
-        if (idx >= arr.size)
-          // we know thanks to the extractor that the index cannot be negative
-          throw new PatchException(f"element $idx does not exist at path $parent")
-        else
-          // remove the element at the given index
-          JsArray(arr.take(idx) ++ arr.drop(idx + 1))
-      case (JsArray(_), Pointer("-")) =>
-        // how could we possibly remove an element that appears after the last one?
-        throw new PatchException(f"element - does not exist at path $parent")
-      case (JsObject(obj), Pointer(lbl)) if obj.contains(lbl) =>
-        // remove the field from the object if present, otherwise, ignore it
-        JsObject(obj filter (_._1 != lbl))
+    // the action to perform in this operation. By default returns an object that is equal
+    protected[this] def action(value: JsValue, pointer: Pointer, parent: Pointer): JsValue = (value, pointer) match {
       case (_, Pointer.Empty) =>
-        throw new PatchException("Cannot delete an empty path")
-      case _ =>
-        super.action(original, pointer, parent)
-    }
-}
-
-/** Replace the pointed element by the given value */
-final case class Replace(path: Pointer, value: JsValue, old: Option[JsValue] = None) extends Operation {
-
-  override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue =
-    (original, pointer) match {
-      case (_, Pointer.Empty) =>
-        // simply replace the root value by the replacement value
         value
+      case (JsObject(fields), elem / tl) if fields.contains(elem) =>
+        val fields1 = fields map {
+          case (name, value) if name == elem =>
+            (name, action(value, tl, parent / elem))
+          case f =>
+            f
+        }
+        JsObject(fields1)
+      case (JsArray(elems), (elem @ IntIndex(idx)) / tl) =>
+        if (idx > elems.size)
+          throw new PatchException(f"element $idx does not exist at path $parent")
+        val elems1 = elems.take(idx) ++ Vector(action(elems(idx), tl, parent / elem)) ++ elems.drop(idx + 1)
+        JsArray(elems1)
+      case (_, elem / _) =>
+        throw new PatchException(s"element $elem does not exist at path $parent")
+    }
+
+  }
+
+  /** Add (or replace if existing) the pointed element */
+  case class Add(path: Pointer, value: JsValue) extends Operation {
+
+    override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue = (original, pointer) match {
+      case (_, Pointer.Empty) =>
+        // we are at the root value, simply return the replacement value
+        value
+      case (JsArray(arr), Pointer("-")) =>
+        // insert the value at the end of the array
+        JsArray(arr ++ Vector(value))
       case (JsArray(arr), Pointer(IntIndex(idx))) =>
-        if (idx >= arr.size)
+        if (idx > arr.size)
           throw new PatchException(f"element $idx does not exist at path $parent")
         else
-          JsArray(arr.take(idx) ++ Vector(value) ++ arr.drop(idx + 1))
-      case (JsArray(_), Pointer("-")) =>
-        throw new PatchException(f"element - does not exist at path $parent")
-      case (JsObject(obj), Pointer(lbl)) if obj.contains(lbl) =>
-        val cleaned = obj filter (_._1 != lbl)
+          // insert the value at the specified index
+          JsArray(arr.take(idx) ++ Vector(value) ++ arr.drop(idx))
+      case (JsObject(obj), Pointer(lbl)) =>
+        // remove the label if it is present
+        val cleaned = obj.filter(_._1 != lbl)
+        // insert the new label
         JsObject(cleaned.updated(lbl, value))
-      case (JsObject(_), Pointer(lbl)) =>
-        throw new PatchException(s"element $lbl does not exist at path $parent")
       case _ =>
         super.action(original, pointer, parent)
     }
+  }
 
-}
+  /** Remove the pointed element */
+  case class Remove(path: Pointer, old: Option[JsValue] = None) extends Operation {
 
-/** Move the pointed element to the new position */
-final case class Move(from: Pointer, path: Pointer) extends Operation {
+    override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue =
+      (original, pointer) match {
+        case (JsArray(arr), Pointer(IntIndex(idx))) =>
+          if (idx >= arr.size)
+            // we know thanks to the extractor that the index cannot be negative
+            throw new PatchException(f"element $idx does not exist at path $parent")
+          else
+            // remove the element at the given index
+            JsArray(arr.take(idx) ++ arr.drop(idx + 1))
+        case (JsArray(_), Pointer("-")) =>
+          // how could we possibly remove an element that appears after the last one?
+          throw new PatchException(f"element - does not exist at path $parent")
+        case (JsObject(obj), Pointer(lbl)) if obj.contains(lbl) =>
+          // remove the field from the object if present, otherwise, ignore it
+          JsObject(obj.filter(_._1 != lbl))
+        case (_, Pointer.Empty) =>
+          throw new PatchException("Cannot delete an empty path")
+        case _ =>
+          super.action(original, pointer, parent)
+      }
+  }
 
-  override def apply(original: JsValue)(implicit pointer: JsonPointer): JsValue = {
-    @tailrec
-    def prefix(p1: Pointer, p2: Pointer): Boolean = (p1, p2) match {
-      case (h1 / tl1, h2 / tl2) if h1 == h2 => prefix(tl1, tl2)
-      case (Root, _ / _)                    => true
-      case (_, _)                           => false
+  /** Replace the pointed element by the given value */
+  case class Replace(path: Pointer, value: JsValue, old: Option[JsValue] = None) extends Operation {
+
+    override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue =
+      (original, pointer) match {
+        case (_, Pointer.Empty) =>
+          // simply replace the root value by the replacement value
+          value
+        case (JsArray(arr), Pointer(IntIndex(idx))) =>
+          if (idx >= arr.size)
+            throw new PatchException(f"element $idx does not exist at path $parent")
+          else
+            JsArray(arr.take(idx) ++ Vector(value) ++ arr.drop(idx + 1))
+        case (JsArray(_), Pointer("-")) =>
+          throw new PatchException(f"element - does not exist at path $parent")
+        case (JsObject(obj), Pointer(lbl)) if obj.contains(lbl) =>
+          val cleaned = obj.filter(_._1 != lbl)
+          JsObject(cleaned.updated(lbl, value))
+        case (JsObject(_), Pointer(lbl)) =>
+          throw new PatchException(s"element $lbl does not exist at path $parent")
+        case _ =>
+          super.action(original, pointer, parent)
+      }
+
+  }
+
+  /** Move the pointed element to the new position */
+  case class Move(from: Pointer, path: Pointer)(implicit val pointer: JsonPointer) extends Operation {
+
+    override def apply(original: JsValue): JsValue = {
+      @tailrec
+      def prefix(p1: Pointer, p2: Pointer): Boolean = (p1, p2) match {
+        case (h1 / tl1, h2 / tl2) if h1 == h2 => prefix(tl1, tl2)
+        case (Root, _ / _)                    => true
+        case (_, _)                           => false
+      }
+      if (prefix(from, path))
+        throw new PatchException("The path were to move cannot be a descendent of the from path")
+
+      val remove = Remove(from)
+      val cleaned = remove(original)
+      val add = Add(path, pointer.evaluate(original, from))
+      add(cleaned)
     }
-    if (prefix(from, path))
-      throw new PatchException("The path were to move cannot be a descendent of the from path")
 
-    val cleaned = Remove(from)(original)
-    Add(path, pointer.evaluate(original, from))(cleaned)
   }
 
-}
+  /** Copy the pointed element to the new position */
+  case class Copy(from: Pointer, path: Pointer)(implicit val pointer: JsonPointer) extends Operation {
 
-/** Copy the pointed element to the new position */
-final case class Copy(from: Pointer, path: Pointer) extends Operation {
-
-  override def apply(original: JsValue)(implicit pointer: JsonPointer): JsValue =
-    Add(path, pointer.evaluate(original, from))(original)
-}
-
-/** Test that the pointed element is equal to the given value */
-final case class Test(path: Pointer, value: JsValue) extends Operation {
-
-  override def apply(original: JsValue)(implicit pointer: JsonPointer): JsValue = {
-    val orig = pointer.evaluate(original, path)
-    if (value != orig)
-      throw new PatchException(s"test failed at path $path")
-    else
-      original
+    override def apply(original: JsValue): JsValue = {
+      val add = Add(path, pointer.evaluate(original, from))
+      add(original)
+    }
   }
+
+  /** Test that the pointed element is equal to the given value */
+  case class Test(path: Pointer, value: JsValue)(implicit val pointer: JsonPointer) extends Operation {
+
+    override def apply(original: JsValue): JsValue = {
+      val orig = pointer.evaluate(original, path)
+      if (value != orig)
+        throw new PatchException(s"test failed at path $path")
+      else
+        original
+    }
+  }
+
 }

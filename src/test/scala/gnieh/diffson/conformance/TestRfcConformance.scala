@@ -19,6 +19,7 @@ package conformance
 import org.scalatest._
 
 import spray.json._
+import sprayJson._
 
 import scala.io.Source
 

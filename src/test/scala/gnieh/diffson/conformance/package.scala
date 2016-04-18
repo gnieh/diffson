@@ -16,6 +16,7 @@
 package gnieh.diffson
 
 import spray.json._
+import sprayJson._
 
 package object conformance {
 

@@ -13,3 +13,6 @@ before_install:
 
 after_success:
   - codecov
+
+jdk:
+  - oraclejdk8

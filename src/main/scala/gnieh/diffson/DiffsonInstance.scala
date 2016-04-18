@@ -15,18 +15,8 @@
 */
 package gnieh.diffson
 
-class WithFilter(p: Operation => Boolean, patch: JsonPatch) {
+abstract class DiffsonInstance[JsValue] extends JsonDiffSupport[JsValue] with JsonPatchSupport[JsValue] with JsonPointerSupport[JsValue] with JsonSupport[JsValue] {
 
-  def map(f: Operation => Operation): JsonPatch =
-    patch.flatMap(op => if (p(op)) JsonPatch(f(op)) else EmptyPatch)
-
-  def flatMap(f: Operation => JsonPatch): JsonPatch =
-    patch.flatMap(op => if (p(op)) f(op) else EmptyPatch)
-
-  def withFilter(p2: Operation => Boolean): WithFilter =
-    new WithFilter(op => p(op) && p2(op), patch)
-
-  def foreach(f: Operation => Unit): Unit =
-    patch.foreach(op => if (p(op)) f(op))
+  val provider: JsonProvider
 
 }
