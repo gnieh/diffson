@@ -46,9 +46,9 @@ To use these implementations you need to import the correct instance:
 
 ```scala
 // spray-json
-import gnieh.diffson.sprayJson
+import gnieh.diffson.sprayJson._
 // play-json
-import gnieh.diffson.playJson
+import gnieh.diffson.playJson._
 ```
 
 You also need to add the library in your classpath, as they are marked as `provided` by diffson to avoid depending on all json libraries when using diffson.
