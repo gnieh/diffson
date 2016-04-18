@@ -8,6 +8,8 @@ import com.typesafe.sbt.osgi.OsgiKeys
 import scalariform.formatter.preferences._
 import com.typesafe.sbt.SbtScalariform._
 
+import scoverage.ScoverageKeys._
+
 object DiffsonBuild extends Build {
 
   lazy val diffson = (Project(id = "diffson",
@@ -19,7 +21,8 @@ object DiffsonBuild extends Build {
     description := "Json diff/patch library",
     licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     homepage := Some(url("https://github.com/gnieh/diffson")),
-    crossScalaVersions := Seq("2.11.8", "2.10.6"),
+    crossScalaVersions := Seq("2.11.8"),
+    coverageExcludedPackages := "<empty>;gnieh\\.diffson\\.playJson\\..*",
     libraryDependencies ++= dependencies,
     parallelExecution := false,
     fork in test := true)
@@ -50,7 +53,8 @@ object DiffsonBuild extends Build {
   lazy val dependencies = Seq(
     "org.scalatest" %% "scalatest" % "2.2.6" % "test",
     "org.scalacheck" %% "scalacheck" % "1.13.0" % "test",
-    "io.spray" %%  "spray-json" % "1.3.2" % "provided,test"
+    "io.spray" %%  "spray-json" % "1.3.2" % "provided,test",
+    "com.typesafe.play" %% "play-json" % "2.5.2" % "provided"
   )
 
   lazy val publishSettings = Seq(
