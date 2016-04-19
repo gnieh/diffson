@@ -18,7 +18,7 @@ package gnieh.diffson
 
 import play.api.libs.json._
 
-package object PlayDiffsonInstance extends DiffsonInstance[JsValue] {
+package object playJson extends DiffsonInstance[JsValue] {
 
   object DiffsonProtocol {
 

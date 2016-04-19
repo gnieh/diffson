@@ -20,10 +20,10 @@ It also provides methods to compute _diffs_ between two Json values that produce
 Getting Started
 ---------------
 
-This library is published in the [Maven][7] [Central Repository][8] and is compiled against scala 2.10 and 2.11.
+This library is published in the [Maven][7] [Central Repository][8] and is compiled against scala 2.11.
 You can add it to your sbt project by putting this line to your build description:
 ```scala
-libraryDependencies += "org.gnieh" %% "diffson" % "1.1.0"
+libraryDependencies += "org.gnieh" %% "diffson" % "2.0.0"
 ```
 
 If you are using maven, add the following dependency to your `pom.xml`:
@@ -31,7 +31,7 @@ If you are using maven, add the following dependency to your `pom.xml`:
 <dependency>
   <groupId>org.gnieh</groupId>
   <artifactId>diffson_${scala.version}</artifactId>
-  <version>1.1.0</version>
+  <version>2.0.0</version>
 </dependency>
 ```
 
