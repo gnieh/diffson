@@ -30,7 +30,9 @@ object DiffsonBuild extends Build {
     settings(
     resourceDirectories in Compile := List(),
     OsgiKeys.exportPackage := Seq(
-      "gnieh.diffson"
+      "gnieh.diffson",
+      "gnieh.diffson.playJson",
+      "gnieh.diffson.sprayJson"
     ),
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson"
