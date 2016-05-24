@@ -52,8 +52,7 @@
     { "comment": "Toplevel scalar values OK?",
       "doc": "foo",
       "patch": [{"op": "replace", "path": "", "value": "bar"}],
-      "expected": "bar",
-      "disabled": true },
+      "expected": "bar" },
 
     { "comment": "Add, / target",
       "doc": {},
@@ -119,11 +118,11 @@
     { "comment": "test with bad number should fail",
       "doc": ["foo", "bar"],
       "patch": [{"op": "test", "path": "/1e0", "value": "bar"}],
-      "error": "element 1e0 does not exist at path /" },
+      "error": "element 1e0 does not exist at path " },
 
     { "doc": ["foo", "sil"],
       "patch": [{"op": "add", "path": "/bar", "value": 42}],
-      "error": "element bar does not exist at path /" },
+      "error": "element bar does not exist at path " },
 
     { "doc": ["foo", "sil"],
       "patch": [{"op": "add", "path": "/1", "value": ["bar", "baz"]}],
@@ -203,8 +202,7 @@
 
     { "comment": "Whole document",
       "doc": { "foo": 1 },
-      "patch": [{"op": "test", "path": "", "value": {"foo": 1}}],
-      "disabled": true },
+      "patch": [{"op": "test", "path": "", "value": {"foo": 1}}] },
 
     { "comment": "Empty-string element",
       "doc": { "": 1 },
@@ -285,12 +283,12 @@
     { "comment": "test remove with bad index should fail",
       "doc": [1, 2, 3, 4],
       "patch": [{"op": "remove", "path": "/1e0"}],
-      "error": "element 1e0 does not exist at path /" },
+      "error": "element 1e0 does not exist at path " },
 
     { "comment": "test replace with bad number should fail",
       "doc": [""],
       "patch": [{"op": "replace", "path": "/1e0", "value": false}],
-      "error": "element 1e0 does not exist at path /" },
+      "error": "element 1e0 does not exist at path " },
 
     { "comment": "test copy with bad number should fail",
       "doc": {"baz": [1,2,3], "bar": 1},
@@ -305,7 +303,7 @@
     { "comment": "test add with bad number should fail",
       "doc": ["foo", "sil"],
       "patch": [{"op": "add", "path": "/1e0", "value": "bar"}],
-      "error": "element 1e0 does not exist at path /" },
+      "error": "element 1e0 does not exist at path " },
 
     { "comment": "missing 'value' parameter to add",
       "doc": [ 1 ],
