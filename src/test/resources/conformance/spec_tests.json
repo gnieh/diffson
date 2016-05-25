@@ -4,7 +4,7 @@
     "doc": { "q": { "bar": 2 } },
     "patch": [ {"op": "add", "path": "/a/b", "value": 1} ],
     "error":
-       "element a does not exist at path /"
+       "element a does not exist at path "
   },
 
   {
@@ -181,7 +181,7 @@
     "patch": [
   { "op": "add", "path": "/baz/bat", "value": "qux" }
 ],
-    "error": "element baz does not exist at path /"
+    "error": "element baz does not exist at path "
   },
 
  {

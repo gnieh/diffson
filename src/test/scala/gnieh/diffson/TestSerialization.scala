@@ -35,7 +35,7 @@ class TestSerialization extends FlatSpec with ShouldMatchers {
                 |},{
                 |  "op":"move",
                 |  "from":"/d",
-                |  "path":"/f"
+                |  "path":"/f/g"
                 |}]""".stripMargin
 
   val patchRemember = """[{
@@ -62,7 +62,7 @@ class TestSerialization extends FlatSpec with ShouldMatchers {
                         |},{
                         |  "op":"move",
                         |  "from":"/d",
-                        |  "path":"/f"
+                        |  "path":"/f/g"
                         |}]""".stripMargin
 
   val parsed =
@@ -77,7 +77,7 @@ class TestSerialization extends FlatSpec with ShouldMatchers {
     Add(Pointer("c"), JsString("test2")),
     Test(Pointer("d"), JsBoolean(false)),
     Copy(Pointer("c"), Pointer("e")),
-    Move(Pointer("d"), Pointer("f"))
+    Move(Pointer("d"), Pointer("f", "g"))
   )
 
   val jsonRemember = JsonPatch(
@@ -86,7 +86,7 @@ class TestSerialization extends FlatSpec with ShouldMatchers {
     Add(Pointer("c"), JsString("test2")),
     Test(Pointer("d"), JsBoolean(false)),
     Copy(Pointer("c"), Pointer("e")),
-    Move(Pointer("d"), Pointer("f"))
+    Move(Pointer("d"), Pointer("f", "g"))
   )
 
   "a patch json" should "be correctly deserialized from a Json object" in {
@@ -105,7 +105,7 @@ class TestSerialization extends FlatSpec with ShouldMatchers {
     jsonRemember.toJson should be(parsedRemember)
   }
 
-  "a pacth" should "be applicable to a serializable Scala object if the shape is kept" in {
+  "a patch" should "be applicable to a serializable Scala object if the shape is kept" in {
     val json1 = Json(1, true, "test", List(1, 2, 4))
     val json2 = Json(10, false, "toto", List(1, 2, 3, 4, 5))
     val patch = JsonDiff.diff(json1, json2, false)
