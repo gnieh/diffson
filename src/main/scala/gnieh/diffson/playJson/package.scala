@@ -146,7 +146,8 @@ package object playJson extends DiffsonInstance[JsValue] {
 
   object provider extends JsonProvider {
 
-    type Marshalling[T] = Format[T]
+    type Marshaller[T] = Format[T]
+    type Unmarshaller[T] = Format[T]
 
     val JsNull: JsValue =
       play.api.libs.json.JsNull
@@ -160,16 +161,19 @@ package object playJson extends DiffsonInstance[JsValue] {
     def compactPrint(value: JsValue): String =
       Json.stringify(value)
 
-    def marshall[T: Marshalling](value: T): JsValue =
+    def marshall[T: Marshaller](value: T): JsValue =
       Json.toJson(value)
 
-    def unmarshall[T: Marshalling](value: JsValue): T =
+    def unmarshall[T: Unmarshaller](value: JsValue): T =
       value.as[T]
 
     def parseJson(s: String): JsValue =
       Json.parse(s)
 
-    implicit val patchMarshaller: Marshalling[JsonPatch] =
+    implicit val patchMarshaller: Marshaller[JsonPatch] =
+      DiffsonProtocol.JsonPatchFormat
+
+    implicit val patchUnmarshaller: Unmarshaller[JsonPatch] =
       DiffsonProtocol.JsonPatchFormat
 
     def prettyPrint(value: JsValue): String =

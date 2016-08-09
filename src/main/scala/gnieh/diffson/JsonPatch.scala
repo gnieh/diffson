@@ -76,7 +76,7 @@ trait JsonPatchSupport[JsValue] {
      *  It assumes that the shape of the patched object is the same as the input one.
      *  If it is not the case, an exception will be raised
      */
-    def apply[T: Marshalling](value: T): T =
+    def apply[T: Marshaller: Unmarshaller](value: T): T =
       unmarshall[T](apply(marshall(value)))
 
     /** Create a patch that applies `this` patch and then `that` patch */
@@ -110,6 +110,7 @@ trait JsonPatchSupport[JsValue] {
 
     def collect[T](pf: PartialFunction[Operation, T]): Seq[T] =
       ops.collect(pf)
+
     override def toString =
       prettyPrint(marshall(this))
 
