@@ -159,7 +159,8 @@ package object sprayJson extends DiffsonInstance[JsValue] {
 
   object provider extends JsonProvider {
 
-    type Marshalling[T] = JsonFormat[T]
+    type Marshaller[T] = JsonWriter[T]
+    type Unmarshaller[T] = JsonReader[T]
 
     val JsNull: JsValue =
       spray.json.JsNull
@@ -173,16 +174,19 @@ package object sprayJson extends DiffsonInstance[JsValue] {
     def compactPrint(value: JsValue): String =
       value.compactPrint
 
-    def marshall[T: Marshalling](value: T): JsValue =
+    def marshall[T: Marshaller](value: T): JsValue =
       value.toJson
 
-    def unmarshall[T: Marshalling](value: JsValue): T =
+    def unmarshall[T: Unmarshaller](value: JsValue): T =
       value.convertTo[T]
 
     def parseJson(s: String): JsValue =
       JsonParser(s)
 
-    implicit val patchMarshaller: Marshalling[JsonPatch] =
+    implicit val patchMarshaller: Marshaller[JsonPatch] =
+      DiffsonProtocol.JsonPatchFormat
+
+    implicit val patchUnmarshaller: Unmarshaller[JsonPatch] =
       DiffsonProtocol.JsonPatchFormat
 
     def prettyPrint(value: JsValue): String =

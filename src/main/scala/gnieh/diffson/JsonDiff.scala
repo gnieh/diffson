@@ -49,7 +49,7 @@ trait JsonDiffSupport[JsValue] {
     /** Computes the patch from `json1` to `json2`
      *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
      */
-    def diff[T1: Marshalling, T2: Marshalling](json1: T1, json2: T2, remember: Boolean): JsonPatch =
+    def diff[T1: Marshaller, T2: Marshaller](json1: T1, json2: T2, remember: Boolean): JsonPatch =
       diff(marshall(json1), marshall(json2), remember)
 
     private def diff(json1: JsValue, json2: JsValue, remember: Boolean, pointer: Pointer): List[Operation] = (json1, json2) match {

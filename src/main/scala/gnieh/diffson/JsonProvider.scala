@@ -28,7 +28,9 @@ trait JsonSupport[JsValue] {
    */
   abstract class JsonProvider {
 
-    type Marshalling[T]
+    type Marshaller[T]
+
+    type Unmarshaller[T]
 
     type PointerErrorHandler = PartialFunction[(JsValue, String, Pointer), JsValue]
 
@@ -39,7 +41,9 @@ trait JsonSupport[JsValue] {
 
     implicit val pointer = new JsonPointer()
 
-    implicit val patchMarshaller: Marshalling[JsonPatch]
+    implicit val patchMarshaller: Marshaller[JsonPatch]
+
+    implicit val patchUnmarshaller: Unmarshaller[JsonPatch]
 
     def parseJson(s: String): JsValue
 
@@ -53,9 +57,9 @@ trait JsonSupport[JsValue] {
 
     val JsNull: JsValue
 
-    def marshall[T: Marshalling](value: T): JsValue
+    def marshall[T: Marshaller](value: T): JsValue
 
-    def unmarshall[T: Marshalling](value: JsValue): T
+    def unmarshall[T: Unmarshaller](value: JsValue): T
 
     def prettyPrint(value: JsValue): String
 
