@@ -33,7 +33,7 @@ lazy val diffson = project.in(file("."))
   .settings(
     name := "diffson",
     packagedArtifacts := Map())
-  .aggregate(core, sprayJson, playJson)
+  .aggregate(core, sprayJson, playJson, circe)
 
 lazy val core = project.in(file("core"))
   .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
@@ -71,6 +71,23 @@ lazy val playJson = project.in(file("playJson"))
       "Bundle-Name" -> "Gnieh Diffson Play! Json"
     ),
     OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.play")
+  .dependsOn(core % "test->test;compile->compile")
+
+val circeVersion = "0.6.0"
+lazy val circe = project.in(file("circe"))
+  .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    name := "diffson-circe",
+    libraryDependencies ++= Seq(
+      "io.circe" %% "circe-core"    % circeVersion,
+      "io.circe" %% "circe-parser"  % circeVersion,
+      "io.circe" %% "circe-generic" % circeVersion % "test"
+    ),
+    OsgiKeys.additionalHeaders := Map (
+      "Bundle-Name" -> "Gnieh Diffson Circe"
+    ),
+    OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.circe")
   .dependsOn(core % "test->test;compile->compile")
 
 lazy val publishSettings = Seq(
