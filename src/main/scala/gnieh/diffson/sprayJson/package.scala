@@ -37,8 +37,8 @@ package object sprayJson extends DiffsonInstance[JsValue] {
 
       }
 
-    implicit def OperationFormat(implicit pointer: JsonPointer): JsonFormat[Operation] =
-      new JsonFormat[Operation] {
+    implicit def OperationFormat(implicit pointer: JsonPointer): RootJsonFormat[Operation] =
+      new RootJsonFormat[Operation] {
 
         def write(op: Operation): JsObject =
           op match {
@@ -141,8 +141,8 @@ package object sprayJson extends DiffsonInstance[JsValue] {
         }
       }
 
-    implicit def JsonPatchFormat(implicit pointer: JsonPointer): JsonFormat[JsonPatch] =
-      new JsonFormat[JsonPatch] {
+    implicit def JsonPatchFormat(implicit pointer: JsonPointer): RootJsonFormat[JsonPatch] =
+      new RootJsonFormat[JsonPatch] {
 
         def write(patch: JsonPatch): JsArray =
           JsArray(patch.ops.map(_.toJson).toVector)
