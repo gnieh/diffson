@@ -15,8 +15,6 @@
 */
 package gnieh
 
-import spray.json._
-
 /** This package contains an implementation of Json JsonPatch, according to [RFC-6902](http://tools.ietf.org/html/rfc6902)
  */
 package object diffson

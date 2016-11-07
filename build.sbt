@@ -1,50 +1,76 @@
 import com.typesafe.sbt.SbtScalariform._
 import scalariform.formatter.preferences._
 
-lazy val diffson = (project in file(".")).
-  enablePlugins(SbtOsgi, ScoverageSbtPlugin).
-  settings(
-    organization := "org.gnieh",
-    name := "diffson",
-    version := "2.1.0-SNAPSHOT",
-    scalaVersion := "2.11.8",
-    description := "Json diff/patch library",
-    licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
-    homepage := Some(url("https://github.com/gnieh/diffson")),
-    crossScalaVersions := Seq("2.11.8"),
-    coverageExcludedPackages := "<empty>;gnieh\\.diffson\\.playJson\\..*",
-    libraryDependencies ++= dependencies,
-    parallelExecution := false,
-    fork in test := true).
-  settings(
-    resourceDirectories in Compile := List(),
-    OsgiKeys.exportPackage := Seq(
-      "gnieh.diffson",
-      "gnieh.diffson.playJson",
-      "gnieh.diffson.sprayJson"
-    ),
-    OsgiKeys.additionalHeaders := Map (
-      "Bundle-Name" -> "Gnieh Diffson"
-    ),
-    OsgiKeys.bundleSymbolicName := "org.gnieh.diffson",
-    OsgiKeys.privatePackage := Seq()).
-  settings(
-    scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked"),
-    scalacOptions in (Compile, doc) ++= Seq("-implicits", "-implicits-show-all", "-diagrams")).
-  settings(publishSettings).
-  settings(scalariformSettings).
-  settings(
-    ScalariformKeys.preferences := ScalariformKeys.preferences.value
+import UnidocKeys._
+
+lazy val commonSettings = Seq(
+  organization := "org.gnieh",
+  scalaVersion := "2.11.8",
+  version := "2.1.0-SNAPSHOT",
+  description := "Json diff/patch library",
+  licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
+  homepage := Some(url("https://github.com/gnieh/diffson")),
+  crossScalaVersions := Seq("2.11.8"),
+  parallelExecution := false,
+  fork in test := true,
+  scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits"),
+  autoAPIMappings := true,
+  OsgiKeys.exportPackage := Seq("gnieh.diffson"),
+  OsgiKeys.privatePackage := Seq(),
+  resourceDirectories in Compile := List(),
+  scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked")) ++ scalariformSettings ++ Seq(
+    ScalariformKeys.preferences := {
+    ScalariformKeys.preferences.value
       .setPreference(AlignSingleLineCaseStatements, true)
       .setPreference(DoubleIndentClassDeclaration, true)
-      .setPreference(MultilineScaladocCommentsStartOnFirstLine, true))
+      .setPreference(MultilineScaladocCommentsStartOnFirstLine, true)
+    }) ++ publishSettings
 
-lazy val dependencies = Seq(
-  "org.scalatest" %% "scalatest" % "2.2.6" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.13.0" % "test",
-  "io.spray" %%  "spray-json" % "1.3.2" % "provided,test",
-  "com.typesafe.play" %% "play-json" % "2.5.2" % "provided"
-)
+lazy val diffson = project.in(file("."))
+  .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
+  .settings(commonSettings: _*)
+  .settings(unidocSettings: _*)
+  .settings(
+    name := "diffson",
+    packagedArtifacts := Map())
+  .aggregate(core, sprayJson, playJson)
+
+lazy val core = project.in(file("core"))
+  .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    name := "diffson-core",
+    libraryDependencies ++= Seq(
+      "org.scalatest" %% "scalatest" % "2.2.6" % "test",
+      "org.scalacheck" %% "scalacheck" % "1.13.0" % "test"),
+    OsgiKeys.additionalHeaders := Map (
+      "Bundle-Name" -> "Gnieh Diffson Core"
+    ),
+    OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.core")
+
+lazy val sprayJson = project.in(file("sprayJson"))
+  .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    name := "diffson-spray-json",
+    libraryDependencies += "io.spray" %%  "spray-json" % "1.3.2",
+    OsgiKeys.additionalHeaders := Map (
+      "Bundle-Name" -> "Gnieh Diffson Spray Json"
+    ),
+    OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.spray")
+  .dependsOn(core % "test->test;compile->compile")
+
+lazy val playJson = project.in(file("playJson"))
+  .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    name := "diffson-play-json",
+    libraryDependencies += "com.typesafe.play" %% "play-json" % "2.5.2",
+    OsgiKeys.additionalHeaders := Map (
+      "Bundle-Name" -> "Gnieh Diffson Play! Json"
+    ),
+    OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.play")
+  .dependsOn(core % "test->test;compile->compile")
 
 lazy val publishSettings = Seq(
   publishMavenStyle := true,
@@ -80,5 +106,3 @@ lazy val publishSettings = Seq(
     </issueManagement>
   )
 )
-
-
