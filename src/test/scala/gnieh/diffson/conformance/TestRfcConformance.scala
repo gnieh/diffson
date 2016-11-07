@@ -25,9 +25,7 @@ abstract class TestRfcConformance[JsValue, Instance <: DiffsonInstance[JsValue]]
 
   type JsArray <: JsValue
 
-  trait ConformanceTest {
-    val comment: Option[String]
-  }
+  trait ConformanceTest
 
   case class SuccessConformanceTest(doc: JsValue,
     patch: JsArray,
@@ -41,7 +39,7 @@ abstract class TestRfcConformance[JsValue, Instance <: DiffsonInstance[JsValue]]
     comment: Option[String],
     disabled: Option[Boolean]) extends ConformanceTest
 
-  case class CommentConformanceTest(comment: Option[String]) extends ConformanceTest
+  case class CommentConformanceTest(comment: String) extends ConformanceTest
 
   def load(path: String): List[ConformanceTest]
 
@@ -85,7 +83,7 @@ abstract class TestRfcConformance[JsValue, Instance <: DiffsonInstance[JsValue]]
       }
 
     case CommentConformanceTest(comment) =>
-      info(comment.getOrElse("Some comment"))
+      info(comment)
   }
 
   info("Specification conformance tests")

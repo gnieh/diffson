@@ -18,7 +18,9 @@ package gnieh.diffson
 
 import play.api.libs.json._
 
-package object playJson extends DiffsonInstance[JsValue] {
+object playJson extends PlayJsonInstance
+
+class PlayJsonInstance extends DiffsonInstance[JsValue] {
 
   object DiffsonProtocol {
 
@@ -146,8 +148,8 @@ package object playJson extends DiffsonInstance[JsValue] {
 
   object provider extends JsonProvider {
 
-    type Marshaller[T] = Format[T]
-    type Unmarshaller[T] = Format[T]
+    type Marshaller[T] = Writes[T]
+    type Unmarshaller[T] = Reads[T]
 
     val JsNull: JsValue =
       play.api.libs.json.JsNull
