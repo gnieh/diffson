@@ -35,6 +35,26 @@ If you are using maven, add the following dependency to your `pom.xml`:
 </dependency>
 ```
 
+### Snapshot versions
+
+Snapshot versions are published:
+
+```scala
+libraryDependencies += "org.gnieh" %% "diffson-spray-json" % "2.1.0-SNAPSHOT"
+libraryDependencies += "org.gnieh" %% "diffson-play-json" % "2.1.0-SNAPSHOT"
+```
+
+If you are using maven, add the following dependency to your `pom.xml`:
+```xml
+<dependency>
+  <groupId>org.gnieh</groupId>
+  <artifactId>diffson_${scala.version}-play-json</artifactId>
+  <version>2.1.0-SNAPSHOT</version>
+</dependency>
+```
+
+These versions are built for Scala 2.11 and 2.12 when the underlying json library is already published for 2.12.
+
 Json Library
 ------------
 
@@ -42,7 +62,7 @@ Diffson was first developped for [spray-json][3], however, it is possible to use
 The only requirement is to have a `DiffsonInstance` for your json library.
 
 At the moment, diffson provides two instances for [spray-json][3] and [Play! Json][9].
-To use these implementations you need to import the correct instance:
+To use these implementations you need to link with the correct module and import the instance:
 
 ```scala
 // spray-json
