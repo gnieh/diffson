@@ -3,7 +3,7 @@ package test
 
 import org.scalatest._
 
-abstract class TestSerialization[JsValue, Instance <: DiffsonInstance[JsValue]](val instance: Instance) extends FlatSpec with ShouldMatchers {
+abstract class TestSerialization[JsValue, Instance <: DiffsonInstance[JsValue]](val instance: Instance) extends FlatSpec with Matchers {
 
   import instance._
   import provider._

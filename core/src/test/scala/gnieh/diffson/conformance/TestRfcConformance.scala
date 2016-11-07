@@ -18,7 +18,7 @@ package conformance
 
 import org.scalatest._
 
-abstract class TestRfcConformance[JsValue, Instance <: DiffsonInstance[JsValue]](val instance: Instance) extends FunSuite with ShouldMatchers {
+abstract class TestRfcConformance[JsValue, Instance <: DiffsonInstance[JsValue]](val instance: Instance) extends FunSuite with Matchers {
 
   import instance._
   import provider._

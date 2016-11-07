@@ -10,7 +10,7 @@ lazy val commonSettings = Seq(
   description := "Json diff/patch library",
   licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://github.com/gnieh/diffson")),
-  crossScalaVersions := Seq("2.11.8"),
+  crossScalaVersions := Seq("2.11.8", "2.12.0"),
   parallelExecution := false,
   fork in test := true,
   scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits"),
@@ -27,7 +27,7 @@ lazy val commonSettings = Seq(
     }) ++ publishSettings
 
 lazy val diffson = project.in(file("."))
-  .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
+  .enablePlugins(SbtOsgi, ScoverageSbtPlugin, CrossPerProjectPlugin)
   .settings(commonSettings: _*)
   .settings(unidocSettings: _*)
   .settings(
@@ -41,8 +41,8 @@ lazy val core = project.in(file("core"))
   .settings(
     name := "diffson-core",
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "2.2.6" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.13.0" % "test"),
+      "org.scalatest" %% "scalatest" % "3.0.0" % "test",
+      "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"),
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Core"
     ),
@@ -66,6 +66,7 @@ lazy val playJson = project.in(file("playJson"))
   .settings(
     name := "diffson-play-json",
     libraryDependencies += "com.typesafe.play" %% "play-json" % "2.5.2",
+    crossScalaVersions := Seq("2.11.8"),
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Play! Json"
     ),

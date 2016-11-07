@@ -3,7 +3,7 @@ package test
 
 import org.scalatest._
 
-abstract class TestLcs extends FlatSpec with ShouldMatchers {
+abstract class TestLcs extends FlatSpec with Matchers {
 
   val lcsImpl: Lcs[Char]
 
