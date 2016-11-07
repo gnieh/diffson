@@ -1,13 +1,15 @@
 package gnieh.diffson
 package test
 
-import sprayJson._
-
-import spray.json._
-
 import org.scalatest._
 
-class TestJsonPointer extends FlatSpec with ShouldMatchers {
+abstract class TestJsonPointer[JsValue, Instance <: DiffsonInstance[JsValue]](val instance: Instance) extends FlatSpec with ShouldMatchers {
+
+  import instance._
+  import provider._
+
+  implicit def boolUnmarshaller: Unmarshaller[Boolean]
+  implicit def intUnmarshaller: Unmarshaller[Int]
 
   "an empty string" should "be parsed as an empty pointer" in {
     pointer.parse("") should be(Pointer.empty)
@@ -40,11 +42,11 @@ class TestJsonPointer extends FlatSpec with ShouldMatchers {
   }
 
   "a pointer to a label" should "be evaluated to the label value if it is one level deep" in {
-    pointer.evaluate("{\"label\": true}", "/label") should be(JsBoolean(true))
+    unmarshall[Boolean](pointer.evaluate("{\"label\": true}", "/label")) should be(true)
   }
 
   it should "be evaluated to the end label value if it is several levels deep" in {
-    pointer.evaluate("""{"l1": {"l2": { "l3": 17 } } }""", "/l1/l2/l3") should be(JsNumber(17))
+    unmarshall[Int](pointer.evaluate("""{"l1": {"l2": { "l3": 17 } } }""", "/l1/l2/l3")) should be(17)
   }
 
   it should "be evaluated to nothing if the final element is unknown" in {
@@ -56,8 +58,8 @@ class TestJsonPointer extends FlatSpec with ShouldMatchers {
   }
 
   "a pointer to an array element" should "be evaluated to the value at the given index" in {
-    pointer.evaluate("[1, 2, 3]", "/1") should be(JsNumber(2))
-    pointer.evaluate("{ \"lbl\": [3, 7, 5, 4, 7] }", "/lbl/4") should be(JsNumber(7))
+    unmarshall[Int](pointer.evaluate("[1, 2, 3]", "/1")) should be(2)
+    unmarshall[Int](pointer.evaluate("{ \"lbl\": [3, 7, 5, 4, 7] }", "/lbl/4")) should be(7)
   }
 
   it should "produce an error if it is out of the array bounds" in {

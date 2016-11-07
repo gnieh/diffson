@@ -18,7 +18,9 @@ package gnieh.diffson
 
 import spray.json._
 
-package object sprayJson extends DiffsonInstance[JsValue] {
+object sprayJson extends SprayJsonInstance
+
+class SprayJsonInstance extends DiffsonInstance[JsValue] {
 
   object DiffsonProtocol extends DiffsonProtocol
 

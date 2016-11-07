@@ -39,8 +39,6 @@ trait JsonSupport[JsValue] {
         throw new PointerException(s"element $name does not exist at path $parent")
     }
 
-    implicit val pointer = new JsonPointer()
-
     implicit val patchMarshaller: Marshaller[JsonPatch]
 
     implicit val patchUnmarshaller: Unmarshaller[JsonPatch]

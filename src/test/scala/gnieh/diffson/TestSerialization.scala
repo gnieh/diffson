@@ -1,17 +1,18 @@
 package gnieh.diffson
 package test
 
-import sprayJson._
-
 import org.scalatest._
 
-import spray.json._
+abstract class TestSerialization[JsValue, Instance <: DiffsonInstance[JsValue]](val instance: Instance) extends FlatSpec with ShouldMatchers {
 
-class TestSerialization extends FlatSpec with ShouldMatchers {
+  import instance._
+  import provider._
 
-  import DiffsonProtocol._
-
-  implicit val testJsonFormat = jsonFormat4(Json)
+  implicit def boolMarshaller: Marshaller[Boolean]
+  implicit def intMarshaller: Marshaller[Int]
+  implicit def stringMarshaller: Marshaller[String]
+  implicit def testJsonMarshaller: Marshaller[Json]
+  implicit def testJsonUnmarshaller: Unmarshaller[Json]
 
   val patch = """[{
                 |  "op":"replace",
@@ -66,43 +67,43 @@ class TestSerialization extends FlatSpec with ShouldMatchers {
                         |}]""".stripMargin
 
   val parsed =
-    JsonParser(patch)
+    parseJson(patch)
 
   val parsedRemember =
-    JsonParser(patchRemember)
+    parseJson(patchRemember)
 
   val json = JsonPatch(
-    Replace(Pointer("a"), JsNumber(6)),
+    Replace(Pointer("a"), marshall(6)),
     Remove(Pointer("b")),
-    Add(Pointer("c"), JsString("test2")),
-    Test(Pointer("d"), JsBoolean(false)),
+    Add(Pointer("c"), marshall("test2")),
+    Test(Pointer("d"), marshall(false)),
     Copy(Pointer("c"), Pointer("e")),
     Move(Pointer("d"), Pointer("f", "g"))
   )
 
   val jsonRemember = JsonPatch(
-    Replace(Pointer("a"), JsNumber(6), Some(JsNumber(5))),
-    Remove(Pointer("b"), Some(JsString("removed value"))),
-    Add(Pointer("c"), JsString("test2")),
-    Test(Pointer("d"), JsBoolean(false)),
+    Replace(Pointer("a"), marshall(6), Some(marshall(5))),
+    Remove(Pointer("b"), Some(marshall("removed value"))),
+    Add(Pointer("c"), marshall("test2")),
+    Test(Pointer("d"), marshall(false)),
     Copy(Pointer("c"), Pointer("e")),
     Move(Pointer("d"), Pointer("f", "g"))
   )
 
   "a patch json" should "be correctly deserialized from a Json object" in {
-    parsed.convertTo[JsonPatch] should be(json)
+    unmarshall[JsonPatch](parsed) should be(json)
   }
 
   "a patch object" should "be correctly serialized to a Json object" in {
-    json.toJson should be(parsed)
+    marshall(json) should be(parsed)
   }
 
   "a remembering patch json" should "be correctly deserialized from a Json object" in {
-    parsedRemember.convertTo[JsonPatch] should be(jsonRemember)
+    unmarshall[JsonPatch](parsedRemember) should be(jsonRemember)
   }
 
   "a remembering patch object" should "be correctly serialized to a Json object" in {
-    jsonRemember.toJson should be(parsedRemember)
+    marshall(jsonRemember) should be(parsedRemember)
   }
 
   "a patch" should "be applicable to a serializable Scala object if the shape is kept" in {
@@ -116,8 +117,8 @@ class TestSerialization extends FlatSpec with ShouldMatchers {
 
   "applying a patch" should "raise an exception if it changes the shape" in {
     val json = Json(1, true, "test", Nil)
-    val patch = JsonPatch(Replace(Pointer.root, JsBoolean(true)))
-    a[DeserializationException] should be thrownBy { patch(json) }
+    val patch = JsonPatch(Replace(Pointer.root, marshall(true)))
+    a[Exception] should be thrownBy { patch(json) }
   }
 
 }

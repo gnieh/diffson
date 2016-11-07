@@ -18,23 +18,34 @@ package conformance
 
 import org.scalatest._
 
-import spray.json._
-import sprayJson._
+abstract class TestRfcConformance[JsValue, Instance <: DiffsonInstance[JsValue]](val instance: Instance) extends FunSuite with ShouldMatchers {
 
-import scala.io.Source
+  import instance._
+  import provider._
 
-class TestRfcConformance extends FunSuite with ShouldMatchers {
+  type JsArray <: JsValue
 
-  import DefaultJsonProtocol._
-  import ConformanceTestProtocol._
+  trait ConformanceTest {
+    val comment: Option[String]
+  }
 
-  val specTests =
-    JsonParser(Source.fromURL(getClass.getResource("/conformance/spec_tests.json")).mkString).convertTo[List[ConformanceTest]]
+  case class SuccessConformanceTest(doc: JsValue,
+    patch: JsArray,
+    expected: Option[JsValue],
+    comment: Option[String],
+    disabled: Option[Boolean]) extends ConformanceTest
 
-  val tests =
-    JsonParser(Source.fromURL(getClass.getResource("/conformance/tests.json")).mkString).convertTo[List[ConformanceTest]]
+  case class ErrorConformanceTest(doc: JsValue,
+    patch: JsArray,
+    error: String,
+    comment: Option[String],
+    disabled: Option[Boolean]) extends ConformanceTest
 
-  def scalatest(t: ConformanceTest) = t match {
+  case class CommentConformanceTest(comment: Option[String]) extends ConformanceTest
+
+  def load(path: String): List[ConformanceTest]
+
+  def scalatest(t: ConformanceTest) =     t match {
     case SuccessConformanceTest(doc, patch, Some(expected), comment, Some(true)) =>
       ignore(comment.getOrElse(f"$doc patched with $patch")) {
         val p = JsonPatch(patch)
@@ -74,17 +85,17 @@ class TestRfcConformance extends FunSuite with ShouldMatchers {
       }
 
     case CommentConformanceTest(comment) =>
-      info(comment)
+      info(comment.getOrElse("Some comment"))
   }
 
   info("Specification conformance tests")
 
-  for (t <- specTests)
+  for (t <- load("/conformance/spec_tests.json"))
     scalatest(t)
 
   info("Misceallaneous tests")
 
-  for (t <- tests)
+  for (t <- load("/conformance/tests.json"))
     scalatest(t)
 
 }
