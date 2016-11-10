@@ -42,6 +42,7 @@ Snapshot versions are published:
 ```scala
 libraryDependencies += "org.gnieh" %% "diffson-spray-json" % "2.1.0-SNAPSHOT"
 libraryDependencies += "org.gnieh" %% "diffson-play-json" % "2.1.0-SNAPSHOT"
+libraryDependencies += "org.gnieh" %% "diffson-circe" % "2.1.0-SNAPSHOT"
 ```
 
 If you are using maven, add the following dependency to your `pom.xml`:
