@@ -142,7 +142,7 @@ trait JsonPatchSupport[JsValue] {
         }
         JsObject(fields1)
       case (JsArray(elems), (elem @ IntIndex(idx)) / tl) =>
-        if (idx > elems.size)
+        if (idx >= elems.size)
           throw new PatchException(f"element $idx does not exist at path $parent")
         val elems1 = elems.take(idx) ++ Vector(action(elems(idx), tl, parent / elem)) ++ elems.drop(idx + 1)
         JsArray(elems1)

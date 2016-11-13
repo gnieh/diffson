@@ -129,6 +129,11 @@ abstract class TestJsonPatch[JsValue, Instance <: DiffsonInstance[JsValue]](val 
       val op = Replace(pointer.parse("/20"), marshall(17))
       op(parseJson("[1, 2, 3, 4]"))
     }
+
+    a[PatchException] should be thrownBy {
+      val op = Replace(pointer.parse("/array/3/sub1"), marshall(17))
+      op(parseJson("{\"array\":[\"bar1\",\"bar2\",{\"sub1\":\"bar3\"}]}"))
+    }
   }
 
   "moving a value from an object to an array" should "result in the value being added to the array and removed from the object" in {
