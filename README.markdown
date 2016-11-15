@@ -21,36 +21,23 @@ Getting Started
 ---------------
 
 This library is published in the [Maven][7] [Central Repository][8] and is compiled against scala 2.11.
-You can add it to your sbt project by putting this line to your build description:
+You can add it to your sbt project by putting this line into your build description:
 ```scala
-libraryDependencies += "org.gnieh" %% "diffson" % "2.0.2"
+libraryDependencies += "org.gnieh" %% f"diffson-$jsonLib" % "2.1.0"
 ```
+
+where `jsonLib` is either:
+
+ - `spray-json`
+ - `play-json`
+ - `circe`
 
 If you are using maven, add the following dependency to your `pom.xml`:
 ```xml
 <dependency>
   <groupId>org.gnieh</groupId>
-  <artifactId>diffson_${scala.version}</artifactId>
-  <version>2.0.2</version>
-</dependency>
-```
-
-### Snapshot versions
-
-Snapshot versions are published:
-
-```scala
-libraryDependencies += "org.gnieh" %% "diffson-spray-json" % "2.1.0-SNAPSHOT"
-libraryDependencies += "org.gnieh" %% "diffson-play-json" % "2.1.0-SNAPSHOT"
-libraryDependencies += "org.gnieh" %% "diffson-circe" % "2.1.0-SNAPSHOT"
-```
-
-If you are using maven, add the following dependency to your `pom.xml`:
-```xml
-<dependency>
-  <groupId>org.gnieh</groupId>
-  <artifactId>diffson_${scala.version}-play-json</artifactId>
-  <version>2.1.0-SNAPSHOT</version>
+  <artifactId>diffson-${json.lib}_${scala.version}</artifactId>
+  <version>2.1.0</version>
 </dependency>
 ```
 
@@ -62,7 +49,7 @@ Json Library
 Diffson was first developped for [spray-json][3], however, it is possible to use it with any json library of your linking.
 The only requirement is to have a `DiffsonInstance` for your json library.
 
-At the moment, diffson provides two instances for [spray-json][3] and [Play! Json][9].
+At the moment, diffson provides two instances for [spray-json][3], [Play! Json][9], and [circe][10].
 To use these implementations you need to link with the correct module and import the instance:
 
 ```scala
@@ -70,11 +57,11 @@ To use these implementations you need to link with the correct module and import
 import gnieh.diffson.sprayJson._
 // play-json
 import gnieh.diffson.playJson._
+// circe
+import gnieh.diffson.circe._
 ```
 
-You also need to add the library in your classpath, as they are marked as `provided` by diffson to avoid depending on all json libraries when using diffson.
-
-If you want to add support for your favorite Json library, all you need to do is to implement the `gnieh.diffson.DiffsonInstance` class, which provide the `JsonProvider` for the specific library. Contribution of new Json libraries in this repository are more than welcome.
+If you want to add support for your favorite Json library, you may only depend on diffson core module `diffson-core` and all you need to do then is to implement the `gnieh.diffson.DiffsonInstance` class, which provides the `JsonProvider` for the specific library. Contribution of new Json libraries in this repository are more than welcome.
 
 Basic Usage
 -----------
@@ -180,8 +167,6 @@ val patch2: JsonPatch =
 Technical Details
 -----------------
 
-The implementation uses [spray-json][3] to manipulate Json objects.
-
 The _diff_ between two arrays is computed by using the [Patience Diff][4] algorithm to compute the [LCS][5] between both arrays, which is quite simple to implement.
 
 However one can replace the implementation by any other algorithm that implements the `gnieh.diffson.Lcs` trait, e.g.:
@@ -200,3 +185,4 @@ then use `diff` in lieu of `JsonDiff` in the first usage example.
 [7]: http://maven.apache.org/
 [8]: http://search.maven.org/
 [9]: https://www.playframework.com/documentation/latest/ScalaJson
+[10]: https://travisbrown.github.io/circe/
