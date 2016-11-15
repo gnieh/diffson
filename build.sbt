@@ -6,7 +6,7 @@ import UnidocKeys._
 lazy val commonSettings = Seq(
   organization := "org.gnieh",
   scalaVersion := "2.11.8",
-  version := "2.1.0",
+  version := "2.2.0-SNAPSHOT",
   description := "Json diff/patch library",
   licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://github.com/gnieh/diffson")),
