@@ -1,6 +1,8 @@
 Gnieh Diffson [![Build Status](https://travis-ci.org/gnieh/diffson.png)](https://travis-ci.org/gnieh/diffson) [![Code Coverage](https://codecov.io/github/gnieh/diffson/coverage.svg?branch=master)](https://codecov.io/github/gnieh/diffson?branch=master) [![Maven Central](https://img.shields.io/maven-central/v/org.gnieh/diffson-core_2.11.svg)](https://maven-badges.herokuapp.com/maven-central/org.gnieh/diffson-core_2.11)
 =============
 
+[![Join the chat at https://gitter.im/gnieh/diffson](https://badges.gitter.im/gnieh/diffson.svg)](https://gitter.im/gnieh/diffson?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 A [scala][6] implementation of the [RFC-6901][1] and [RFC-6902][2].
 It also provides methods to compute _diffs_ between two Json values that produce valid Json patches.
 
