@@ -3,14 +3,18 @@ import scalariform.formatter.preferences._
 
 import UnidocKeys._
 
+val scala210 = "2.10.6"
+val scala211 = "2.11.8"
+val scala212 = "2.12.1"
+
 lazy val commonSettings = Seq(
   organization := "org.gnieh",
-  scalaVersion := "2.11.8",
+  scalaVersion := scala212,
   version := "2.2.0-SNAPSHOT",
   description := "Json diff/patch library",
   licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://github.com/gnieh/diffson")),
-  crossScalaVersions := Seq("2.11.8", "2.12.0"),
+  crossScalaVersions := Seq(scala210, scala211, scala212),
   parallelExecution := false,
   fork in test := true,
   scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits"),
@@ -65,8 +69,8 @@ lazy val playJson = project.in(file("playJson"))
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-play-json",
-    libraryDependencies += "com.typesafe.play" %% "play-json" % "2.5.2",
-    crossScalaVersions := Seq("2.11.8"),
+    libraryDependencies += "com.typesafe.play" %% "play-json" % "2.6.0-M1",
+    crossScalaVersions -= scala210,
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Play! Json"
     ),
@@ -84,6 +88,7 @@ lazy val circe = project.in(file("circe"))
       "io.circe" %% "circe-parser"  % circeVersion,
       "io.circe" %% "circe-generic" % circeVersion % "test"
     ),
+    crossScalaVersions -= scala210,
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Circe"
     ),
