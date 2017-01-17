@@ -41,3 +41,10 @@ build.log
 
 #SHITTY output not in target directory
 build.log
+
+#mac
+.DS_Store
+
+#ensime
+.ensime*
+ensime.sbt
