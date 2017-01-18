@@ -48,7 +48,7 @@ class CirceConformance extends TestRfcConformance[Json, CirceInstance](circe) {
     else if (fields == Set("comment"))
       c.as[CommentConformanceTest]
     else
-      Left[DecodingFailure, ConformanceTest](DecodingFailure(f"Test record expected but got ${c.top.spaces2}", Nil))
+      Left[DecodingFailure, ConformanceTest](DecodingFailure(f"Test record expected but got ${c.top.get.spaces2}", Nil))
   }
 
   def load(path: String): List[ConformanceTest] =
