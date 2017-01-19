@@ -28,6 +28,7 @@ lazy val commonSettings = Seq(
       .setPreference(AlignSingleLineCaseStatements, true)
       .setPreference(DoubleIndentClassDeclaration, true)
       .setPreference(MultilineScaladocCommentsStartOnFirstLine, true)
+      .setPreference(DanglingCloseParenthesis, Prevent)
     }) ++ publishSettings
 
 lazy val diffson = project.in(file("."))

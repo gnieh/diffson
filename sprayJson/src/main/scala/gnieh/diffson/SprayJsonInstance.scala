@@ -48,50 +48,42 @@ class SprayJsonInstance extends DiffsonInstance[JsValue] {
               JsObject(
                 "op" -> JsString("add"),
                 "path" -> JsString(path.toString),
-                "value" -> value
-              )
+                "value" -> value)
             case Remove(path, None) =>
               JsObject(
                 "op" -> JsString("remove"),
-                "path" -> JsString(path.toString)
-              )
+                "path" -> JsString(path.toString))
             case Remove(path, Some(old)) =>
               JsObject(
                 "op" -> JsString("remove"),
                 "path" -> JsString(path.toString),
-                "old" -> old
-              )
+                "old" -> old)
             case Replace(path, value, None) =>
               JsObject(
                 "op" -> JsString("replace"),
                 "path" -> JsString(path.toString),
-                "value" -> value
-              )
+                "value" -> value)
             case Replace(path, value, Some(old)) =>
               JsObject(
                 "op" -> JsString("replace"),
                 "path" -> JsString(path.toString),
                 "value" -> value,
-                "old" -> old
-              )
+                "old" -> old)
             case Move(from, path) =>
               JsObject(
                 "op" -> JsString("move"),
                 "from" -> JsString(from.toString),
-                "path" -> JsString(path.toString)
-              )
+                "path" -> JsString(path.toString))
             case Copy(from, path) =>
               JsObject(
                 "op" -> JsString("copy"),
                 "from" -> JsString(from.toString),
-                "path" -> JsString(path.toString)
-              )
+                "path" -> JsString(path.toString))
             case Test(path, value) =>
               JsObject(
                 "op" -> JsString("test"),
                 "path" -> JsString(path.toString),
-                "value" -> value
-              )
+                "value" -> value)
           }
 
         def read(value: JsValue): Operation = value match {

@@ -67,8 +67,7 @@ trait JsonDiffSupport[JsValue] {
       def associate(
         fields1: List[(String, JsValue)],
         fields2: List[(String, JsValue)],
-        acc: List[(Option[(String, JsValue)], Option[(String, JsValue)])]
-      ): List[(Option[(String, JsValue)], Option[(String, JsValue)])] = (fields1, fields2) match {
+        acc: List[(Option[(String, JsValue)], Option[(String, JsValue)])]): List[(Option[(String, JsValue)], Option[(String, JsValue)])] = (fields1, fields2) match {
         case (f1 :: t1, f2 :: t2) if f1._1 == f2._1 =>
           // same name, associate both
           associate(t1, t2, (Some(f1), Some(f2)) :: acc)
