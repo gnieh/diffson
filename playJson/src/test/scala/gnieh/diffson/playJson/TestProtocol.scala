@@ -17,12 +17,10 @@ trait TestProtocol {
     (JsPath \ "a").write[Int] and
     (JsPath \ "b").write[Boolean] and
     (JsPath \ "c").write[String] and
-    (JsPath \ "d").write[List[Int]]
-  )(unlift(test.Json.unapply))
+    (JsPath \ "d").write[List[Int]])(unlift(test.Json.unapply))
   implicit def testJsonUnmarshaller: Reads[test.Json] = (
     (JsPath \ "a").read[Int] and
     (JsPath \ "b").read[Boolean] and
     (JsPath \ "c").read[String] and
-    (JsPath \ "d").read[List[Int]]
-  )(test.Json.apply _)
+    (JsPath \ "d").read[List[Int]])(test.Json.apply _)
 }
