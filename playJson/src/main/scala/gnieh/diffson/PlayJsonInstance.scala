@@ -30,8 +30,7 @@ class PlayJsonInstance extends DiffsonInstance[JsValue] {
           case JsString(s) => JsSuccess(pointer.parse(s))
           case value       => throw new FormatException(f"Pointer expected: $value")
         },
-        Writes(p => JsString(p.toString))
-      )
+        Writes(p => JsString(p.toString)))
 
     implicit def OperationFormat(implicit pointer: JsonPointer): Format[Operation] =
       Format[Operation](
@@ -131,8 +130,7 @@ class PlayJsonInstance extends DiffsonInstance[JsValue] {
               "op" -> JsString("test"),
               "path" -> JsString(path.toString),
               "value" -> value)
-        }
-      )
+        })
 
     implicit def JsonPatchFormat(implicit pointer: JsonPointer): Format[JsonPatch] =
       Format[JsonPatch](
@@ -141,8 +139,7 @@ class PlayJsonInstance extends DiffsonInstance[JsValue] {
             JsSuccess(JsonPatch(ops.map(_.as[Operation]).toList))
           case _ => throw new FormatException("JsonPatch expected")
         },
-        Writes(patch => JsArray(patch.ops.map(Json.toJson(_)).toVector))
-      )
+        Writes(patch => JsArray(patch.ops.map(Json.toJson(_)).toVector)))
 
   }
 

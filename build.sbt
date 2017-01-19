@@ -1,4 +1,4 @@
-import com.typesafe.sbt.SbtScalariform._
+import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import scalariform.formatter.preferences._
 
 import UnidocKeys._
@@ -28,6 +28,7 @@ lazy val commonSettings = Seq(
       .setPreference(AlignSingleLineCaseStatements, true)
       .setPreference(DoubleIndentClassDeclaration, true)
       .setPreference(MultilineScaladocCommentsStartOnFirstLine, true)
+      .setPreference(DanglingCloseParenthesis, Prevent)
     }) ++ publishSettings
 
 lazy val diffson = project.in(file("."))
@@ -45,8 +46,8 @@ lazy val core = project.in(file("core"))
   .settings(
     name := "diffson-core",
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.0.0" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"),
+      "org.scalatest" %% "scalatest" % "3.0.1" % Test,
+      "org.scalacheck" %% "scalacheck" % "1.13.4" % Test),
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Core"
     ),
@@ -57,7 +58,7 @@ lazy val sprayJson = project.in(file("sprayJson"))
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-spray-json",
-    libraryDependencies += "io.spray" %%  "spray-json" % "1.3.2",
+    libraryDependencies += "io.spray" %%  "spray-json" % "1.3.3",
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Spray Json"
     ),

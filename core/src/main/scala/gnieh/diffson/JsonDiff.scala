@@ -64,7 +64,8 @@ trait JsonDiffSupport[JsValue] {
       val sorted1 = fields1.sortBy(_._1)
       val sorted2 = fields2.sortBy(_._1)
       @tailrec
-      def associate(fields1: List[(String, JsValue)],
+      def associate(
+        fields1: List[(String, JsValue)],
         fields2: List[(String, JsValue)],
         acc: List[(Option[(String, JsValue)], Option[(String, JsValue)])]): List[(Option[(String, JsValue)], Option[(String, JsValue)])] = (fields1, fields2) match {
         case (f1 :: t1, f2 :: t2) if f1._1 == f2._1 =>
@@ -131,14 +132,15 @@ trait JsonDiffSupport[JsValue] {
 
       // now iterate over the first array to computes what was added, what was removed and what was modified
       @tailrec
-      def loop(arr1: List[JsValue], // the first array
+      def loop(
+        arr1: List[JsValue], // the first array
         arr2: List[JsValue], // the second array
         idx1: Int, // current index in the first array
         shift1: Int, // current index shift in the first array (due to elements being add or removed)
         idx2: Int, // current index in the second array
         lcs: List[(Int, Int)], // the list of remaining matching indices
         acc: List[Operation] // the already accumulated result
-        ): List[Operation] = (arr1, arr2) match {
+      ): List[Operation] = (arr1, arr2) match {
         case (_ :: tl1, _) if isCommon1(idx1, lcs) =>
           // all values in arr2 were added until the index of common value
           val until = lcs.head._2
