@@ -177,7 +177,7 @@ class CirceInstance extends DiffsonInstance[Json] {
       value.spaces2
 
     def unapplyArray(value: Json): Option[Vector[Json]] =
-      value.asArray.map(_.toVector)
+      value.asArray
 
     def unapplyObject(value: Json): Option[Map[String, Json]] =
       value.asObject.map(_.toMap)
