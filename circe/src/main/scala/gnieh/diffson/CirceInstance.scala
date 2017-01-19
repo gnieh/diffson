@@ -40,49 +40,47 @@ class CirceInstance extends DiffsonInstance[Json] {
       }
 
     implicit val operationEncoder: Encoder[Operation] =
-      new Encoder[Operation] {
-        override def apply(op: Operation): Json = op match {
-          case Add(path, value) =>
-            Json.obj(
-              "op" -> Json.fromString("add"),
-              "path" -> Json.fromString(path.toString),
-              "value" -> value)
-          case Remove(path, None) =>
-            Json.obj(
-              "op" -> Json.fromString("remove"),
-              "path" -> Json.fromString(path.toString))
-          case Remove(path, Some(old)) =>
-            Json.obj(
-              "op" -> Json.fromString("remove"),
-              "path" -> Json.fromString(path.toString),
-              "old" -> old)
-          case Replace(path, value, None) =>
-            Json.obj(
-              "op" -> Json.fromString("replace"),
-              "path" -> Json.fromString(path.toString),
-              "value" -> value)
-          case Replace(path, value, Some(old)) =>
-            Json.obj(
-              "op" -> Json.fromString("replace"),
-              "path" -> Json.fromString(path.toString),
-              "value" -> value,
-              "old" -> old)
-          case Move(from, path) =>
-            Json.obj(
-              "op" -> Json.fromString("move"),
-              "from" -> Json.fromString(from.toString),
-              "path" -> Json.fromString(path.toString))
-          case Copy(from, path) =>
-            Json.obj(
-              "op" -> Json.fromString("copy"),
-              "from" -> Json.fromString(from.toString),
-              "path" -> Json.fromString(path.toString))
-          case Test(path, value) =>
-            Json.obj(
-              "op" -> Json.fromString("test"),
-              "path" -> Json.fromString(path.toString),
-              "value" -> value)
-        }
+      Encoder.instance[Operation] {
+        case Add(path, value) =>
+          Json.obj(
+            "op" -> Json.fromString("add"),
+            "path" -> Json.fromString(path.toString),
+            "value" -> value)
+        case Remove(path, None) =>
+          Json.obj(
+            "op" -> Json.fromString("remove"),
+            "path" -> Json.fromString(path.toString))
+        case Remove(path, Some(old)) =>
+          Json.obj(
+            "op" -> Json.fromString("remove"),
+            "path" -> Json.fromString(path.toString),
+            "old" -> old)
+        case Replace(path, value, None) =>
+          Json.obj(
+            "op" -> Json.fromString("replace"),
+            "path" -> Json.fromString(path.toString),
+            "value" -> value)
+        case Replace(path, value, Some(old)) =>
+          Json.obj(
+            "op" -> Json.fromString("replace"),
+            "path" -> Json.fromString(path.toString),
+            "value" -> value,
+            "old" -> old)
+        case Move(from, path) =>
+          Json.obj(
+            "op" -> Json.fromString("move"),
+            "from" -> Json.fromString(from.toString),
+            "path" -> Json.fromString(path.toString))
+        case Copy(from, path) =>
+          Json.obj(
+            "op" -> Json.fromString("copy"),
+            "from" -> Json.fromString(from.toString),
+            "path" -> Json.fromString(path.toString))
+        case Test(path, value) =>
+          Json.obj(
+            "op" -> Json.fromString("test"),
+            "path" -> Json.fromString(path.toString),
+            "value" -> value)
       }
 
     implicit def operationDecoder(implicit pointer: JsonPointer): Decoder[Operation] =
