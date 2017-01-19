@@ -95,42 +95,50 @@ class PlayJsonInstance extends DiffsonInstance[JsValue] {
             Json.obj(
               "op" -> JsString("add"),
               "path" -> JsString(path.toString),
-              "value" -> value)
+              "value" -> value
+            )
           case Remove(path, None) =>
             Json.obj(
               "op" -> JsString("remove"),
-              "path" -> JsString(path.toString))
+              "path" -> JsString(path.toString)
+            )
           case Remove(path, Some(old)) =>
             Json.obj(
               "op" -> JsString("remove"),
               "path" -> JsString(path.toString),
-              "old" -> old)
+              "old" -> old
+            )
           case Replace(path, value, None) =>
             Json.obj(
               "op" -> JsString("replace"),
               "path" -> JsString(path.toString),
-              "value" -> value)
+              "value" -> value
+            )
           case Replace(path, value, Some(old)) =>
             Json.obj(
               "op" -> JsString("replace"),
               "path" -> JsString(path.toString),
               "value" -> value,
-              "old" -> old)
+              "old" -> old
+            )
           case Move(from, path) =>
             Json.obj(
               "op" -> JsString("move"),
               "from" -> JsString(from.toString),
-              "path" -> JsString(path.toString))
+              "path" -> JsString(path.toString)
+            )
           case Copy(from, path) =>
             Json.obj(
               "op" -> JsString("copy"),
               "from" -> JsString(from.toString),
-              "path" -> JsString(path.toString))
+              "path" -> JsString(path.toString)
+            )
           case Test(path, value) =>
             Json.obj(
               "op" -> JsString("test"),
               "path" -> JsString(path.toString),
-              "value" -> value)
+              "value" -> value
+            )
         }
       )
 
