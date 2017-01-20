@@ -27,13 +27,15 @@ abstract class TestRfcConformance[JsValue, Instance <: DiffsonInstance[JsValue]]
 
   trait ConformanceTest
 
-  case class SuccessConformanceTest(doc: JsValue,
+  case class SuccessConformanceTest(
+    doc: JsValue,
     patch: JsArray,
     expected: Option[JsValue],
     comment: Option[String],
     disabled: Option[Boolean]) extends ConformanceTest
 
-  case class ErrorConformanceTest(doc: JsValue,
+  case class ErrorConformanceTest(
+    doc: JsValue,
     patch: JsArray,
     error: String,
     comment: Option[String],
@@ -43,7 +45,7 @@ abstract class TestRfcConformance[JsValue, Instance <: DiffsonInstance[JsValue]]
 
   def load(path: String): List[ConformanceTest]
 
-  def scalatest(t: ConformanceTest) =     t match {
+  def scalatest(t: ConformanceTest) = t match {
     case SuccessConformanceTest(doc, patch, Some(expected), comment, Some(true)) =>
       ignore(comment.getOrElse(f"$doc patched with $patch")) {
         val p = JsonPatch(patch)

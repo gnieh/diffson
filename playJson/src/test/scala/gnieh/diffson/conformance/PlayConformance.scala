@@ -33,16 +33,14 @@ class PlayConformance extends TestRfcConformance[JsValue, PlayJsonInstance](play
     (JsPath \ "patch").read[JsArray] and
     (JsPath \ "expected").readNullable[JsValue] and
     (JsPath \ "comment").readNullable[String] and
-    (JsPath \ "disabled").readNullable[Boolean]
-  )(SuccessConformanceTest.apply _)
+    (JsPath \ "disabled").readNullable[Boolean])(SuccessConformanceTest.apply _)
 
   implicit lazy val errorConformanceTestUnmarshaller: Reads[ErrorConformanceTest] = (
     (JsPath \ "doc").read[JsValue] and
     (JsPath \ "patch").read[JsArray] and
     (JsPath \ "error").read[String] and
     (JsPath \ "comment").readNullable[String] and
-    (JsPath \ "disabled").readNullable[Boolean]
-  )(ErrorConformanceTest.apply _)
+    (JsPath \ "disabled").readNullable[Boolean])(ErrorConformanceTest.apply _)
 
   implicit lazy val commentConformanceTestUnMarshaller: Reads[CommentConformanceTest] =
     (JsPath \ "comment").read[String].map(CommentConformanceTest)

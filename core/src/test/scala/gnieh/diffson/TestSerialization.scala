@@ -78,8 +78,7 @@ abstract class TestSerialization[JsValue, Instance <: DiffsonInstance[JsValue]](
     Add(Pointer("c"), marshall("test2")),
     Test(Pointer("d"), marshall(false)),
     Copy(Pointer("c"), Pointer("e")),
-    Move(Pointer("d"), Pointer("f", "g"))
-  )
+    Move(Pointer("d"), Pointer("f", "g")))
 
   val jsonRemember = JsonPatch(
     Replace(Pointer("a"), marshall(6), Some(marshall(5))),
@@ -87,8 +86,7 @@ abstract class TestSerialization[JsValue, Instance <: DiffsonInstance[JsValue]](
     Add(Pointer("c"), marshall("test2")),
     Test(Pointer("d"), marshall(false)),
     Copy(Pointer("c"), Pointer("e")),
-    Move(Pointer("d"), Pointer("f", "g"))
-  )
+    Move(Pointer("d"), Pointer("f", "g")))
 
   "a patch json" should "be correctly deserialized from a Json object" in {
     unmarshall[JsonPatch](parsed) should be(json)

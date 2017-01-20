@@ -54,7 +54,7 @@ trait JsonPointerSupport[JsValue] {
         val parts = input.split("/")
           // the first element is always empty as the path starts with a '/'
           .drop(1)
-        if (parts.size == 0) {
+        if (parts.length == 0) {
           // the pointer was simply "/"
           Path(Root, "")
         } else {
