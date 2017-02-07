@@ -187,4 +187,4 @@ then use `diff` in lieu of `JsonDiff` in the first usage example.
 [7]: http://maven.apache.org/
 [8]: http://search.maven.org/
 [9]: https://www.playframework.com/documentation/latest/ScalaJson
-[10]: https://travisbrown.github.io/circe/
+[10]: https://circe.github.io/circe/
