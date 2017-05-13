@@ -5,6 +5,9 @@ branches:
   only:
     - master
 
+before_script:
+  - sudo chmod +x /usr/local/bin/sbt
+
 script:
   - sbt clean coverage test coverageReport coverageAggregate
 
