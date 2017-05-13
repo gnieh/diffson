@@ -46,7 +46,7 @@ lazy val core = project.in(file("core"))
   .settings(
     name := "diffson-core",
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.0.1" % Test,
+      "org.scalatest" %% "scalatest" % "3.0.3" % Test,
       "org.scalacheck" %% "scalacheck" % "1.13.4" % Test),
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Core"
