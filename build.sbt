@@ -78,7 +78,7 @@ lazy val playJson = project.in(file("playJson"))
     OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.play")
   .dependsOn(core % "test->test;compile->compile")
 
-val circeVersion = "0.7.0"
+val circeVersion = "0.8.0"
 lazy val circe = project.in(file("circe"))
   .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
   .settings(commonSettings: _*)
