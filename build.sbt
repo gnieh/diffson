@@ -4,8 +4,8 @@ import scalariform.formatter.preferences._
 import UnidocKeys._
 
 val scala210 = "2.10.6"
-val scala211 = "2.11.8"
-val scala212 = "2.12.1"
+val scala211 = "2.11.11"
+val scala212 = "2.12.2"
 
 lazy val commonSettings = Seq(
   organization := "org.gnieh",
@@ -46,8 +46,8 @@ lazy val core = project.in(file("core"))
   .settings(
     name := "diffson-core",
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.0.1" % Test,
-      "org.scalacheck" %% "scalacheck" % "1.13.4" % Test),
+      "org.scalatest" %% "scalatest" % "3.0.3" % Test,
+      "org.scalacheck" %% "scalacheck" % "1.13.5" % Test),
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Core"
     ),
@@ -70,7 +70,7 @@ lazy val playJson = project.in(file("playJson"))
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-play-json",
-    libraryDependencies += "com.typesafe.play" %% "play-json" % "2.6.0-M1",
+    libraryDependencies += "com.typesafe.play" %% "play-json" % "2.6.0-M7",
     crossScalaVersions -= scala210,
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Play! Json"
@@ -78,7 +78,7 @@ lazy val playJson = project.in(file("playJson"))
     OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.play")
   .dependsOn(core % "test->test;compile->compile")
 
-val circeVersion = "0.7.0"
+val circeVersion = "0.8.0"
 lazy val circe = project.in(file("circe"))
   .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
   .settings(commonSettings: _*)
