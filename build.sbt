@@ -70,7 +70,7 @@ lazy val playJson = project.in(file("playJson"))
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-play-json",
-    libraryDependencies += "com.typesafe.play" %% "play-json" % "2.6.0-M7",
+    libraryDependencies += "com.typesafe.play" %% "play-json" % "2.6.0-RC1",
     crossScalaVersions -= scala210,
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Play! Json"
