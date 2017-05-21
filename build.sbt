@@ -8,6 +8,8 @@ val scala211 = "2.11.11"
 val scala212 = "2.12.2"
 
 lazy val commonSettings = Seq(
+  resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
+  resolvers += "Sonatype Releases" at "https://oss.sonatype.org/content/repositories/releases/",
   organization := "org.gnieh",
   scalaVersion := scala212,
   version := "2.2.1",
@@ -46,6 +48,7 @@ lazy val core = project.in(file("core"))
   .settings(
     name := "diffson-core",
     libraryDependencies ++= Seq(
+      "org.gnieh" %% "tekstlib" % "0.1.2-SNAPSHOT",
       "org.scalatest" %% "scalatest" % "3.0.3" % Test,
       "org.scalacheck" %% "scalacheck" % "1.13.5" % Test),
     OsgiKeys.additionalHeaders := Map (

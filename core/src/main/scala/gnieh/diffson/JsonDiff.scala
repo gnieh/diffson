@@ -15,6 +15,8 @@
 */
 package gnieh.diffson
 
+import gnieh.diff._
+
 import scala.annotation.tailrec
 
 trait JsonDiffSupport[JsValue] {
@@ -33,6 +35,8 @@ trait JsonDiffSupport[JsValue] {
    *  @author Lucas Satabin
    */
   class JsonDiff(lcsalg: Lcs[JsValue]) {
+
+    private val diff = new LcsDiff(lcsalg)
 
     /** Computes the patch from `json1` to `json2`.
      *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
@@ -73,7 +77,7 @@ trait JsonDiffSupport[JsValue] {
     private def diff(json1: JsValue, json2: JsValue, remember: Boolean, arrayDiffs: Boolean, pointer: Pointer): List[Operation] = (json1, json2) match {
       case (v1, v2) if v1 == v2                         => Nil // if they are equal, this one is easy...
       case (JsObject(fields1), JsObject(fields2))       => fieldsDiff(fields1.toList, fields2.toList, remember, arrayDiffs, pointer)
-      case (JsArray(arr1), JsArray(arr2)) if arrayDiffs => arraysDiff(arr1.toList, arr2.toList, remember, pointer)
+      case (JsArray(arr1), JsArray(arr2)) if arrayDiffs => arraysDiff(arr1, arr2, remember, pointer)
       case (_, _)                                       => List(Replace(pointer, json2, if (remember) Some(json1) else None))
     }
 
@@ -120,67 +124,58 @@ trait JsonDiffSupport[JsValue] {
       fields(associate(sorted1, sorted2, Nil), Nil)
     }
 
-    private def arraysDiff(arr1: List[JsValue], arr2: List[JsValue], remember: Boolean, path: Pointer): List[Operation] = {
-      // get the longest common subsequence in the array
-      val lcs = lcsalg.lcs(arr1, arr2)
+    private def arraysDiff(arr1: Vector[JsValue], arr2: Vector[JsValue], remember: Boolean, path: Pointer): List[Operation] = {
 
-      // indicates whether the index is in the lcs of the first sequence
-      def isCommon1(idx1: Int, lcs: List[(Int, Int)]): Boolean = lcs match {
-        case (cidx1, _) :: _ if idx1 == cidx1 => true
-        case _                                => false
-      }
+      // compute the array difference
+      val adiff = diff.diff(arr1, arr2)
 
-      // indicates whether the index is in the lcs of the second sequence
-      def isCommon2(idx2: Int, lcs: List[(Int, Int)]): Boolean = lcs match {
-        case (_, cidx2) :: _ if idx2 == cidx2 => true
-        case _                                => false
-      }
-
-      // add a bunch of values to an array starting at the specified index
+      // then iterate over them to build the appropriate json-patch operations
       @tailrec
-      def add(arr: List[JsValue], idx: Int, acc: List[Operation]): List[Operation] = arr match {
-        case v :: tl => add(tl, idx + 1, Add(path / idx, v) :: acc)
-        case Nil     => acc.reverse
-      }
+      def loop(didx: Int, idx1: Int, shift1: Int, acc: List[Operation]): List[Operation] =
+        if (didx >= adiff.size) {
+          acc
+        } else adiff(didx) match {
+          case Both(start1, end1, start2, end2) =>
+            // ok nothing change for this chunk, go to end offset in both arrays
+            loop(didx + 1, idx1 + (end1 - start1), shift1, acc)
+          case First(start1, end1) =>
+            // this chunk is only in the first array, aka it was deleted
+            // we add the appropriate delete operations and decrement the shift by
+            // the amount of deleted elements
+            val length = end1 - start1
+            val ops =
+              for (idx <- (start1 until end1).toList)
+                yield Remove(path / (idx + shift1), if (remember) Some(arr1(idx)) else None)
+            loop(didx + 1, idx1 + length, shift1 - length, ops ::: acc)
 
-      // remove a bunch of array elements starting by the last one in the range
-      def remove(from: Int, until: Int, shift: Int, arr: List[JsValue]): List[Operation] =
-        (for (idx <- until to from by -1)
-          yield Remove(path / idx, if (remember) Some(arr(idx - shift)) else None)).toList
+          case Second(start2, end2) =>
+            // this chunk is only in the second array, aka it was added
+            // we add the appropriate add operations and increment the shift by
+            // the amounbt of deleted elements
+            val length = end2 - start2
+            val ops =
+              for (offset <- (0 until length).toList)
+                yield Add(if (idx1 < arr1.size) path / (idx1 + offset + shift1) else path / "-", arr2(start2 + offset))
 
-      // now iterate over the first array to computes what was added, what was removed and what was modified
+            loop(didx + 1, idx1, shift1 + length, ops reverse_::: acc)
+        }
+
+      val diff1 = loop(0, 0, 0, Nil)
+
       @tailrec
-      def loop(
-        arr1: List[JsValue], // the first array
-        arr2: List[JsValue], // the second array
-        idx1: Int, // current index in the first array
-        shift1: Int, // current index shift in the first array (due to elements being add or removed)
-        idx2: Int, // current index in the second array
-        lcs: List[(Int, Int)], // the list of remaining matching indices
-        acc: List[Operation] // the already accumulated result
-      ): List[Operation] = (arr1, arr2) match {
-        case (_ :: tl1, _) if isCommon1(idx1, lcs) =>
-          // all values in arr2 were added until the index of common value
-          val until = lcs.head._2
-          loop(tl1, arr2.drop(until - idx2 + 1), idx1 + 1, shift1 + until - idx2, until + 1, lcs.tail,
-            add(arr2.take(until - idx2), idx1 + shift1, Nil) reverse_::: acc)
-        case (_, _ :: tl2) if isCommon2(idx2, lcs) =>
-          // all values in arr1 were removed until the index of common value
-          val until = lcs.head._1
-          loop(arr1.drop(until - idx1 + 1), tl2, until + 1, shift1 - (until - idx1), idx2 + 1, lcs.tail,
-            remove(idx1 + shift1, until - 1 + shift1, idx1 + shift1, arr1) reverse_::: acc)
-        case (v1 :: tl1, v2 :: tl2) =>
-          // values are different, recursively compute the diff of these values
-          loop(tl1, tl2, idx1 + 1, shift1, idx2 + 1, lcs, diff(v1, v2, remember, true, path / (idx1 + shift1)) reverse_::: acc)
-        case (_, Nil) =>
-          // all subsequent values in arr1 were removed
-          remove(idx1 + shift1, idx1 + arr1.size - 1 + shift1, idx1 + shift1, arr1) reverse_::: acc
-        case (Nil, _) =>
-          // all subsequent value in arr2 were added
-          arr2.map(Add(path / "-", _)) reverse_::: acc
-      }
+      def compress(ops: List[Operation], acc: List[Operation]): List[Operation] =
+        ops match {
+          case Nil      => acc
+          case List(op) => op :: acc
+          case Add(_ :/ "-", v) :: Remove(prem @ (_ :/ IntIndex(idx)), old) :: rest if idx == arr1.size - 1 =>
+            compress(rest, Replace(prem, v, old) :: acc)
+          case Add(_ :/ IntIndex(aidx), v) :: Remove(prem @ (_ :/ IntIndex(ridx)), old) :: rest if aidx == ridx =>
+            compress(rest, Replace(prem, v, old) :: acc)
+          case op :: rest =>
+            compress(rest, op :: acc)
+        }
+      compress(diff1, Nil)
 
-      loop(arr1, arr2, 0, 0, 0, lcs, Nil).reverse
     }
 
   }

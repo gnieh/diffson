@@ -27,6 +27,8 @@ sealed abstract class Pointer {
   def /(elem: Int): Pointer =
     Path(this, elem.toString)
 
+  def isLast: Boolean
+
 }
 
 object Pointer {
@@ -60,11 +62,22 @@ object / {
   }
 }
 
+object :/ {
+  def unapply(pointer: Pointer): Option[(Pointer, String)] = pointer match {
+    case Root               => None
+    case Path(parent, elem) => Some(parent -> elem)
+  }
+}
+
 private case object Root extends Pointer {
   override def toString = ""
+
+  def isLast = false
 }
 
 private final case class Path(prefix: Pointer, elem: String) extends Pointer {
   override def toString =
     s"${prefix}/${elem.replace("~", "~0").replace("/", "~1")}"
+
+  def isLast = elem == "-"
 }

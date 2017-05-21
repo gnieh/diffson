@@ -15,7 +15,14 @@ abstract class TestArrayDiff[JsValue, Instance <: DiffsonInstance[JsValue]](val 
 
   property("arrayDiff") = forAll {
     (a: Seq[Int], b: Seq[Int]) =>
-      val p = JsonDiff.diff(a, b, false)
-      p(a) == b
+      try {
+        val diff = new JsonDiff(new gnieh.diff.Patience)
+        val p = diff.diff(a, b, false)
+        p(a) == b
+      } catch {
+        case e =>
+          e.printStackTrace
+          throw e
+      }
   }
 }

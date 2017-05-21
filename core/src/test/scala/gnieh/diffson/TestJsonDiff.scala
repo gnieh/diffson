@@ -113,7 +113,7 @@ abstract class TestJsonDiff[JsValue, Instance <: DiffsonInstance[JsValue]](val i
                    | ]""".stripMargin))
     diff(json4, json5, false) should be(
       JsonPatch.parse("""[
-                   |   {"op": "replace", "path": "/1/a", "value": 7}
+                   |   {"op": "replace", "path": "/1", "value": {"a": 7}}
                    | ]""".stripMargin))
     diff(json4, json3, false) should be(
       JsonPatch.parse("""[
