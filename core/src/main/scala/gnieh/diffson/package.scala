@@ -15,6 +15,43 @@
 */
 package gnieh
 
+import scala.collection.immutable.Queue
+
 /** This package contains an implementation of Json JsonPatch, according to [RFC-6902](http://tools.ietf.org/html/rfc6902)
  */
-package object diffson
+package object diffson {
+
+  private val IsDigit = "(0|[1-9][0-9]*)".r
+
+  type Pointer = Queue[Either[String, Int]]
+
+  implicit class PointerOps(val pointer: Pointer) extends AnyVal {
+    def /(key: String): Pointer = pointer :+ Left(key)
+    def /(idx: Int): Pointer = pointer :+ Right(idx)
+    def serialize: String = if (pointer.isEmpty) "" else "/" + pointer.map {
+      case Left(l)  => l.replace("~", "~0").replace("/", "~1")
+      case Right(r) => r.toString
+    }.mkString("/")
+  }
+
+  object Pointer {
+    val Root: Pointer = Queue.empty
+
+    def apply(elems: String*): Pointer = Queue(elems.map {
+      case IsDigit(idx) => Right(idx.toInt)
+      case key          => Left(key)
+    }: _*)
+
+    def unapplySeq(pointer: Pointer): Some[Queue[Either[String, Int]]] = Queue.unapplySeq(pointer)
+
+  }
+
+  protected[diffson] object ArrayIndex {
+    def unapply(e: Either[String, Int]): Option[Int] = e.toOption
+  }
+
+  protected[diffson] object ObjectField {
+    def unapply(e: Either[String, Int]): Option[String] = Some(e.fold(identity, _.toString))
+  }
+
+}

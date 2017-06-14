@@ -30,7 +30,7 @@ class PlayJsonInstance extends DiffsonInstance[JsValue] {
           case JsString(s) => JsSuccess(pointer.parse(s))
           case value       => throw new FormatException(f"Pointer expected: $value")
         },
-        Writes(p => JsString(p.toString)))
+        Writes(p => JsString(p.serialize)))
 
     implicit def OperationFormat(implicit pointer: JsonPointer): Format[Operation] =
       Format[Operation](
@@ -93,42 +93,42 @@ class PlayJsonInstance extends DiffsonInstance[JsValue] {
           case Add(path, value) =>
             Json.obj(
               "op" -> JsString("add"),
-              "path" -> JsString(path.toString),
+              "path" -> JsString(path.serialize),
               "value" -> value)
           case Remove(path, None) =>
             Json.obj(
               "op" -> JsString("remove"),
-              "path" -> JsString(path.toString))
+              "path" -> JsString(path.serialize))
           case Remove(path, Some(old)) =>
             Json.obj(
               "op" -> JsString("remove"),
-              "path" -> JsString(path.toString),
+              "path" -> JsString(path.serialize),
               "old" -> old)
           case Replace(path, value, None) =>
             Json.obj(
               "op" -> JsString("replace"),
-              "path" -> JsString(path.toString),
+              "path" -> JsString(path.serialize),
               "value" -> value)
           case Replace(path, value, Some(old)) =>
             Json.obj(
               "op" -> JsString("replace"),
-              "path" -> JsString(path.toString),
+              "path" -> JsString(path.serialize),
               "value" -> value,
               "old" -> old)
           case Move(from, path) =>
             Json.obj(
               "op" -> JsString("move"),
-              "from" -> JsString(from.toString),
-              "path" -> JsString(path.toString))
+              "from" -> JsString(from.serialize),
+              "path" -> JsString(path.serialize))
           case Copy(from, path) =>
             Json.obj(
               "op" -> JsString("copy"),
-              "from" -> JsString(from.toString),
-              "path" -> JsString(path.toString))
+              "from" -> JsString(from.serialize),
+              "path" -> JsString(path.serialize))
           case Test(path, value) =>
             Json.obj(
               "op" -> JsString("test"),
-              "path" -> JsString(path.toString),
+              "path" -> JsString(path.serialize),
               "value" -> value)
         })
 

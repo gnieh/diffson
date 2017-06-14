@@ -36,7 +36,7 @@ trait JsonSupport[JsValue] {
 
     implicit def defaultHandler: PointerErrorHandler = {
       case (_, name, parent) =>
-        throw new PointerException(s"element $name does not exist at path $parent")
+        throw new PointerException(s"element $name does not exist at path ${parent.serialize}")
     }
 
     implicit val patchMarshaller: Marshaller[JsonPatch]

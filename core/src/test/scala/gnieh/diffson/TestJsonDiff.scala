@@ -20,7 +20,7 @@ abstract class TestJsonDiff[JsValue, Instance <: DiffsonInstance[JsValue]](val i
   }
 
   it should "be a simple replacement if the two values are completely different" in {
-    diff(parseJson("true"), parseJson("13"), false) should be(JsonPatch(Replace(Pointer.root, marshall(13))))
+    diff(parseJson("true"), parseJson("13"), false) should be(JsonPatch(Replace(Pointer.Root, marshall(13))))
   }
 
   it should "contain an add operation for each added field" in {
@@ -48,7 +48,10 @@ abstract class TestJsonDiff[JsValue, Instance <: DiffsonInstance[JsValue]](val i
   it should "correctly handle array diffs in objects" in {
     val json1 = parseJson("""{"lbl": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}""")
     val json2 = parseJson("""{"lbl": [1, 4, 5, 11, 6, 7]}""")
-    diff(json1, json2, false) should be(JsonPatch(Remove(Pointer("lbl", "2")), Remove(Pointer("lbl", "1")), Add(Pointer("lbl", "3"), marshall(11)), Remove(Pointer("lbl", "8")), Remove(Pointer("lbl", "7")), Remove(Pointer("lbl", "6"))))
+    val patch = diff(json1, json2, false)
+    val patch1 = JsonPatch(Remove(Pointer("lbl", "2")), Remove(Pointer("lbl", "1")), Add(Pointer("lbl", "3"), marshall(11)), Remove(Pointer("lbl", "8")), Remove(Pointer("lbl", "7")), Remove(Pointer("lbl", "6")))
+
+    patch should be(patch1)
   }
 
   it should "contain a replace operation for each changed field value" in {
