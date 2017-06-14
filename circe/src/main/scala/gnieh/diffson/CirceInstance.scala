@@ -31,11 +31,11 @@ class CirceInstance extends DiffsonInstance[Json] {
   trait DiffsonProtocol {
 
     implicit val pointerEncoder: Encoder[Pointer] =
-      Encoder[String].contramap(_.toString)
+      Encoder[String].contramap(_.serialize)
 
-    implicit def pointerDecoder(implicit pointer: JsonPointer): Decoder[Pointer] =
+    implicit val pointerDecoder: Decoder[Pointer] =
       Decoder[String].emap { s =>
-        Either.catchNonFatal(pointer.parse(s))
+        Either.catchNonFatal(Pointer.parse(s))
           .leftMap(_.getMessage)
       }
 
@@ -44,46 +44,46 @@ class CirceInstance extends DiffsonInstance[Json] {
         case Add(path, value) =>
           Json.obj(
             "op" -> Json.fromString("add"),
-            "path" -> Json.fromString(path.toString),
+            "path" -> Json.fromString(path.serialize),
             "value" -> value)
         case Remove(path, None) =>
           Json.obj(
             "op" -> Json.fromString("remove"),
-            "path" -> Json.fromString(path.toString))
+            "path" -> Json.fromString(path.serialize))
         case Remove(path, Some(old)) =>
           Json.obj(
             "op" -> Json.fromString("remove"),
-            "path" -> Json.fromString(path.toString),
+            "path" -> Json.fromString(path.serialize),
             "old" -> old)
         case Replace(path, value, None) =>
           Json.obj(
             "op" -> Json.fromString("replace"),
-            "path" -> Json.fromString(path.toString),
+            "path" -> Json.fromString(path.serialize),
             "value" -> value)
         case Replace(path, value, Some(old)) =>
           Json.obj(
             "op" -> Json.fromString("replace"),
-            "path" -> Json.fromString(path.toString),
+            "path" -> Json.fromString(path.serialize),
             "value" -> value,
             "old" -> old)
         case Move(from, path) =>
           Json.obj(
             "op" -> Json.fromString("move"),
-            "from" -> Json.fromString(from.toString),
-            "path" -> Json.fromString(path.toString))
+            "from" -> Json.fromString(from.serialize),
+            "path" -> Json.fromString(path.serialize))
         case Copy(from, path) =>
           Json.obj(
             "op" -> Json.fromString("copy"),
-            "from" -> Json.fromString(from.toString),
-            "path" -> Json.fromString(path.toString))
+            "from" -> Json.fromString(from.serialize),
+            "path" -> Json.fromString(path.serialize))
         case Test(path, value) =>
           Json.obj(
             "op" -> Json.fromString("test"),
-            "path" -> Json.fromString(path.toString),
+            "path" -> Json.fromString(path.serialize),
             "value" -> value)
       }
 
-    implicit def operationDecoder(implicit pointer: JsonPointer): Decoder[Operation] =
+    implicit val operationDecoder: Decoder[Operation] =
       new Decoder[Operation] {
 
         private val A = Apply[Result]
@@ -114,10 +114,10 @@ class CirceInstance extends DiffsonInstance[Json] {
           }
       }
 
-    implicit def jsonPatchEncoder: Encoder[JsonPatch] =
+    implicit val jsonPatchEncoder: Encoder[JsonPatch] =
       Encoder[List[Json]].contramap(_.ops.map(_.asJson))
 
-    implicit def jsonPatchDecoder(implicit pointer: JsonPointer): Decoder[JsonPatch] =
+    implicit val jsonPatchDecoder: Decoder[JsonPatch] =
       new Decoder[JsonPatch] {
 
         private val F = FlatMap[Result]

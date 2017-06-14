@@ -125,15 +125,15 @@ trait JsonPatchSupport[JsValue] {
       compactPrint(apply(parseJson(json)))
 
     /** Applies this operation to the given Json value */
-    def apply(value: JsValue): JsValue = action(value, path, Pointer.root)
+    def apply(value: JsValue): JsValue = action(value, path, Pointer.Root)
 
     // internals
 
     // the action to perform in this operation. By default returns an object that is equal
     protected[this] def action(value: JsValue, pointer: Pointer, parent: Pointer): JsValue = (value, pointer) match {
-      case (_, Pointer.Empty) =>
+      case (_, Pointer.Root) =>
         value
-      case (JsObject(fields), elem / tl) if fields.contains(elem) =>
+      case (JsObject(fields), ObjectField(elem) +: tl) if fields.contains(elem) =>
         val fields1 = fields map {
           case (name, value) if name == elem =>
             (name, action(value, tl, parent / elem))
@@ -141,13 +141,13 @@ trait JsonPatchSupport[JsValue] {
             f
         }
         JsObject(fields1)
-      case (JsArray(elems), (elem @ IntIndex(idx)) / tl) =>
+      case (JsArray(elems), ArrayIndex(idx) +: tl) =>
         if (idx >= elems.size)
-          throw new PatchException(f"element $idx does not exist at path $parent")
-        val elems1 = elems.take(idx) ++ Vector(action(elems(idx), tl, parent / elem)) ++ elems.drop(idx + 1)
+          throw new PatchException(f"element $idx does not exist at path ${parent.serialize}")
+        val elems1 = elems.take(idx) ++ Vector(action(elems(idx), tl, Right(idx) +: parent)) ++ elems.drop(idx + 1)
         JsArray(elems1)
-      case (_, elem / _) =>
-        throw new PatchException(s"element $elem does not exist at path $parent")
+      case (_, elem +: _) =>
+        throw new PatchException(s"element ${elem.fold(identity, _.toString)} does not exist at path ${parent.serialize}")
     }
 
   }
@@ -156,19 +156,19 @@ trait JsonPatchSupport[JsValue] {
   case class Add(path: Pointer, value: JsValue) extends Operation {
 
     override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue = (original, pointer) match {
-      case (_, Pointer.Empty) =>
+      case (_, Pointer.Root) =>
         // we are at the root value, simply return the replacement value
         value
-      case (JsArray(arr), Pointer("-")) =>
+      case (JsArray(arr), Pointer(Left("-"))) =>
         // insert the value at the end of the array
         JsArray(arr ++ Vector(value))
-      case (JsArray(arr), Pointer(IntIndex(idx))) =>
+      case (JsArray(arr), Pointer(ArrayIndex(idx))) =>
         if (idx > arr.size)
-          throw new PatchException(f"element $idx does not exist at path $parent")
+          throw new PatchException(f"element $idx does not exist at path ${parent.serialize}")
         else
           // insert the value at the specified index
           JsArray(arr.take(idx) ++ Vector(value) ++ arr.drop(idx))
-      case (JsObject(obj), Pointer(lbl)) =>
+      case (JsObject(obj), Pointer(ObjectField(lbl))) =>
         // remove the label if it is present
         val cleaned = obj.filter(_._1 != lbl)
         // insert the new label
@@ -183,20 +183,20 @@ trait JsonPatchSupport[JsValue] {
 
     override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue =
       (original, pointer) match {
-        case (JsArray(arr), Pointer(IntIndex(idx))) =>
+        case (JsArray(arr), Pointer(ArrayIndex(idx))) =>
           if (idx >= arr.size)
             // we know thanks to the extractor that the index cannot be negative
-            throw new PatchException(f"element $idx does not exist at path $parent")
+            throw new PatchException(f"element $idx does not exist at path ${parent.serialize}")
           else
             // remove the element at the given index
             JsArray(arr.take(idx) ++ arr.drop(idx + 1))
-        case (JsArray(_), Pointer("-")) =>
+        case (JsArray(_), Pointer(Left("-"))) =>
           // how could we possibly remove an element that appears after the last one?
-          throw new PatchException(f"element - does not exist at path $parent")
-        case (JsObject(obj), Pointer(lbl)) if obj.contains(lbl) =>
+          throw new PatchException(f"element - does not exist at path ${parent.serialize}")
+        case (JsObject(obj), Pointer(ObjectField(lbl))) if obj.contains(lbl) =>
           // remove the field from the object if present, otherwise, ignore it
           JsObject(obj.filter(_._1 != lbl))
-        case (_, Pointer.Empty) =>
+        case (_, Pointer.Root) =>
           throw new PatchException("Cannot delete an empty path")
         case _ =>
           super.action(original, pointer, parent)
@@ -208,21 +208,23 @@ trait JsonPatchSupport[JsValue] {
 
     override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue =
       (original, pointer) match {
-        case (_, Pointer.Empty) =>
+        case (_, Pointer.Root) =>
           // simply replace the root value by the replacement value
           value
-        case (JsArray(arr), Pointer(IntIndex(idx))) =>
+        case (JsArray(arr), Pointer(Right(idx))) =>
           if (idx >= arr.size)
-            throw new PatchException(f"element $idx does not exist at path $parent")
+            throw new PatchException(f"element $idx does not exist at path ${parent.serialize}")
           else
             JsArray(arr.take(idx) ++ Vector(value) ++ arr.drop(idx + 1))
-        case (JsArray(_), Pointer("-")) =>
-          throw new PatchException(f"element - does not exist at path $parent")
-        case (JsObject(obj), Pointer(lbl)) if obj.contains(lbl) =>
-          val cleaned = obj.filter(_._1 != lbl)
-          JsObject(cleaned.updated(lbl, value))
-        case (JsObject(_), Pointer(lbl)) =>
-          throw new PatchException(s"element $lbl does not exist at path $parent")
+        case (JsArray(_), Pointer(Left("-"))) =>
+          throw new PatchException(f"element - does not exist at path ${parent.serialize}")
+        case (JsObject(obj), Pointer(ObjectField(lbl))) =>
+          if (obj.contains(lbl)) {
+            val cleaned = obj.filter(_._1 != lbl)
+            JsObject(cleaned.updated(lbl, value))
+          } else {
+            throw new PatchException(s"element $lbl does not exist at path ${parent.serialize}")
+          }
         case _ =>
           super.action(original, pointer, parent)
       }
@@ -235,12 +237,12 @@ trait JsonPatchSupport[JsValue] {
     override def apply(original: JsValue): JsValue = {
       @tailrec
       def prefix(p1: Pointer, p2: Pointer): Boolean = (p1, p2) match {
-        case (h1 / tl1, h2 / tl2) if h1 == h2 => prefix(tl1, tl2)
-        case (Root, _ / _)                    => true
-        case (_, _)                           => false
+        case (h1 +: tl1, h2 +: tl2) if h1 == h2 => prefix(tl1, tl2)
+        case (Pointer.Root, _ +: _)             => true
+        case (_, _)                             => false
       }
       if (prefix(from, path))
-        throw new PatchException("The path were to move cannot be a descendent of the from path")
+        throw new PatchException("The path were to move cannot be a descendant of the from path")
 
       val remove = Remove(from)
       val cleaned = remove(original)
@@ -265,7 +267,7 @@ trait JsonPatchSupport[JsValue] {
     override def apply(original: JsValue): JsValue = {
       val orig = pointer.evaluate(original, path)
       if (value != orig)
-        throw new PatchException(s"test failed at path $path")
+        throw new PatchException(s"test failed at path ${path.serialize}")
       else
         original
     }

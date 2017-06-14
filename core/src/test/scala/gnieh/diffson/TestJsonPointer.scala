@@ -12,33 +12,33 @@ abstract class TestJsonPointer[JsValue, Instance <: DiffsonInstance[JsValue]](va
   implicit def intUnmarshaller: Unmarshaller[Int]
 
   "an empty string" should "be parsed as an empty pointer" in {
-    pointer.parse("") should be(Pointer.empty)
+    Pointer.parse("") should be(Pointer.Root)
   }
 
   "the root pointer" should "be parsed as the pointer to empty element at root" in {
-    pointer.parse("/") should be(Pointer(""))
+    Pointer.parse("/") should be(Pointer(""))
   }
 
   "a pointer string with one chunk" should "be parsed as a pointer with one element" in {
-    pointer.parse("/test") should be(Pointer("test"))
+    Pointer.parse("/test") should be(Pointer("test"))
   }
 
   "occurrences of ~0" should "be replaced by occurrences of ~" in {
-    pointer.parse("/~0/test/~0~0plop") should be(Pointer("~", "test", "~~plop"))
+    Pointer.parse("/~0/test/~0~0plop") should be(Pointer("~", "test", "~~plop"))
   }
 
   "occurrences of ~1" should "be replaced by occurrences of /" in {
-    pointer.parse("/test~1/~1/plop") should be(Pointer("test/", "/", "plop"))
+    Pointer.parse("/test~1/~1/plop") should be(Pointer("test/", "/", "plop"))
   }
 
   "occurrences of ~" should "be directly followed by either 0 or 1" in {
-    a[PointerException] should be thrownBy { pointer.parse("/~") }
-    a[PointerException] should be thrownBy { pointer.parse("/~3") }
-    a[PointerException] should be thrownBy { pointer.parse("/~d") }
+    a[PointerException] should be thrownBy { Pointer.parse("/~") }
+    a[PointerException] should be thrownBy { Pointer.parse("/~3") }
+    a[PointerException] should be thrownBy { Pointer.parse("/~d") }
   }
 
   "a non empty pointer" should "start with a /" in {
-    a[PointerException] should be thrownBy { pointer.parse("test") }
+    a[PointerException] should be thrownBy { Pointer.parse("test") }
   }
 
   "a pointer to a label" should "be evaluated to the label value if it is one level deep" in {

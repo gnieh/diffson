@@ -33,89 +33,36 @@ trait JsonPointerSupport[JsValue] {
    */
   class JsonPointer {
 
-    private var errorHandler: PointerErrorHandler = null
-
-    private def handle(value: JsValue, pointer: String, parent: Pointer): JsValue =
-      if (errorHandler == null)
-        defaultHandler(value, pointer, parent)
-      else
-        errorHandler.orElse(defaultHandler)(value, pointer, parent)
-
-    /** Parses a JSON pointer and returns the resolved path. */
-    def parse(input: String): Pointer = {
-      if (input == null || input.isEmpty)
-        // shortcut if input is empty
-        Pointer.empty
-      else if (!input.startsWith("/")) {
-        // a pointer MUST start with a '/'
-        throw new PointerException("A JSON pointer must start with '/'")
-      } else {
-        // first gets the different parts of the pointer
-        val parts = input.split("/")
-          // the first element is always empty as the path starts with a '/'
-          .drop(1)
-        if (parts.length == 0) {
-          // the pointer was simply "/"
-          Path(Root, "")
-        } else {
-          // check that an occurrence of '~' is followed by '0' or '1'
-          if (parts.exists(_.matches(".*~(?![01]).*"))) {
-            throw new PointerException("Occurrences of '~' must be followed by '0' or '1'")
-          } else {
-            parts
-              // transform the occurrences of '~1' into occurrences of '/'
-              // transform the occurrences of '~0' into occurrences of '~'
-              .map(_.replace("~1", "/").replace("~0", "~"))
-              .foldLeft(Pointer.root)(_ / _)
-          }
-        }
-      }
-    }
-
     /** Evaluates the given path in the given JSON object.
      *  Upon missing elements in value, the error handler is called with the current value and element
      */
     def evaluate(value: String, path: String): JsValue =
-      evaluate(parseJson(value), parse(path), Pointer.root)
+      evaluate(parseJson(value), Pointer.parse(path), Pointer.Root)
 
     /** Evaluates the given path in the given JSON object.
      *  Upon missing elements in value, the error handler is called with the current value and element
      */
     final def evaluate(value: JsValue, path: Pointer): JsValue =
-      evaluate(value, path, Pointer.root)
-
-    /** Sets the error handler for this instance to the given handler value.
-     *  It always falls back to the default handler of the Json provider.
-     */
-    def handler_=(h: PointerErrorHandler): Unit =
-      errorHandler = h
+      evaluate(value, path, Pointer.Root)
 
     @tailrec
     private def evaluate(value: JsValue, path: Pointer, parent: Pointer): JsValue = (value, path) match {
-      case (JsObject(obj), elem / tl) =>
-        evaluate(obj.getOrElse(elem, JsNull), tl, parent / elem)
-      case (JsArray(arr), (p @ IntIndex(idx)) / tl) =>
+      case (JsObject(obj), Left(elem) +: tl) =>
+        evaluate(obj.getOrElse(elem, JsNull), tl, parent :+ Left(elem))
+      case (JsArray(arr), Right(idx) +: tl) =>
         if (idx >= arr.size)
           // we know (by construction) that the index is greater or equal to zero
-          evaluate(handle(value, p, parent), tl, parent / p)
+          evaluate(errorHandler(value, idx.toString, parent), tl, parent :+ Right(idx))
         else
-          evaluate(arr(idx), tl, parent / p)
-      case (arr @ JsArray(_), "-" / tl) =>
-        evaluate(handle(value, "-", parent), tl, parent / "-")
-      case (_, Pointer.Empty) =>
+          evaluate(arr(idx), tl, parent :+ Right(idx))
+      case (arr @ JsArray(_), Left("-") +: tl) =>
+        evaluate(errorHandler(value, "-", parent), tl, parent / "-")
+      case (_, Pointer.Root) =>
         value
-      case (_, elem / tl) =>
-        evaluate(handle(value, elem, parent), tl, parent / elem)
+      case (_, Left(elem) +: tl) =>
+        evaluate(errorHandler(value, elem, parent), tl, parent / elem)
     }
 
   }
 
-  protected[this] object IntIndex {
-    private[this] val int = "(0|[1-9][0-9]*)".r
-    def unapply(s: String): Option[Int] =
-      s match {
-        case int(i) => Some(i.toInt)
-        case _      => None
-      }
-  }
 }
