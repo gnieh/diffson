@@ -38,37 +38,37 @@ trait JsonDiffSupport[JsValue] {
      *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
      */
     def diff(json1: String, json2: String, remember: Boolean): JsonPatch =
-      new JsonPatch(diff(parseJson(json1), parseJson(json2), remember, true, Pointer.root))
+      new JsonPatch(diff(parseJson(json1), parseJson(json2), remember, true, Pointer.Root))
 
     /** Computes the patch from `json1` to `json2` without performing array diff.
      *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
      */
     def simpleDiff(json1: String, json2: String, remember: Boolean): JsonPatch =
-      new JsonPatch(diff(parseJson(json1), parseJson(json2), remember, false, Pointer.root))
+      new JsonPatch(diff(parseJson(json1), parseJson(json2), remember, false, Pointer.Root))
 
     /** Computes the patch from `json1` to `json2`
      *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
      */
     def diff(json1: JsValue, json2: JsValue, remember: Boolean): JsonPatch =
-      new JsonPatch(diff(json1, json2, remember, true, Pointer.root))
+      new JsonPatch(diff(json1, json2, remember, true, Pointer.Root))
 
     /** Computes the patch from `json1` to `json2` without performing array diff.
      *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
      */
     def simpleDiff(json1: JsValue, json2: JsValue, remember: Boolean): JsonPatch =
-      new JsonPatch(diff(json1, json2, remember, false, Pointer.root))
+      new JsonPatch(diff(json1, json2, remember, false, Pointer.Root))
 
     /** Computes the patch from `json1` to `json2`
      *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
      */
     def diff[T1: Marshaller, T2: Marshaller](json1: T1, json2: T2, remember: Boolean): JsonPatch =
-      new JsonPatch(diff(marshall(json1), marshall(json2), remember, true, Pointer.root))
+      new JsonPatch(diff(marshall(json1), marshall(json2), remember, true, Pointer.Root))
 
     /** Computes the patch from `json1` to `json2` without performing array diff.
      *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
      */
     def simpleDiff[T1: Marshaller, T2: Marshaller](json1: T1, json2: T2, remember: Boolean): JsonPatch =
-      new JsonPatch(diff(marshall(json1), marshall(json2), remember, false, Pointer.root))
+      new JsonPatch(diff(marshall(json1), marshall(json2), remember, false, Pointer.Root))
 
     private def diff(json1: JsValue, json2: JsValue, remember: Boolean, arrayDiffs: Boolean, pointer: Pointer): List[Operation] = (json1, json2) match {
       case (v1, v2) if v1 == v2                         => Nil // if they are equal, this one is easy...

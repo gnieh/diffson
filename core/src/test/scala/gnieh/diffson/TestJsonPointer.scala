@@ -12,7 +12,7 @@ abstract class TestJsonPointer[JsValue, Instance <: DiffsonInstance[JsValue]](va
   implicit def intUnmarshaller: Unmarshaller[Int]
 
   "an empty string" should "be parsed as an empty pointer" in {
-    pointer.parse("") should be(Pointer.empty)
+    pointer.parse("") should be(Pointer.Root)
   }
 
   "the root pointer" should "be parsed as the pointer to empty element at root" in {
