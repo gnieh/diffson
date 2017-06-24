@@ -10,7 +10,7 @@ val scala212 = "2.12.2"
 lazy val commonSettings = Seq(
   organization := "org.gnieh",
   scalaVersion := scala212,
-  version := "2.2.1-SNAPSHOT",
+  version := "2.2.1",
   description := "Json diff/patch library",
   licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://github.com/gnieh/diffson")),
@@ -70,7 +70,7 @@ lazy val playJson = project.in(file("playJson"))
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-play-json",
-    libraryDependencies += "com.typesafe.play" %% "play-json" % "2.6.0-RC1",
+    libraryDependencies += "com.typesafe.play" %% "play-json" % "2.6.0",
     crossScalaVersions -= scala210,
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Play! Json"
@@ -100,11 +100,12 @@ lazy val publishSettings = Seq(
   publishMavenStyle := true,
   publishArtifact in Test := false,
   // The Nexus repo we're publishing to.
-  publishTo := {
-    val nexus = "https://oss.sonatype.org/"
-    if (version.value.trim.endsWith("SNAPSHOT")) Some("snapshots" at nexus + "content/repositories/snapshots")
-    else Some("releases" at nexus + "service/local/staging/deploy/maven2")
-  },
+  publishTo := Some(
+  if (isSnapshot.value)
+    Opts.resolver.sonatypeSnapshots
+  else
+    Opts.resolver.sonatypeStaging
+  ),
   pomIncludeRepository := { x => false },
   pomExtra := (
     <scm>
