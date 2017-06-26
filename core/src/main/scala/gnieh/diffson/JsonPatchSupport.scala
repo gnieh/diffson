@@ -111,14 +111,13 @@ trait JsonPatchSupport[JsValue] {
     def collect[T](pf: PartialFunction[Operation, T]): Seq[T] =
       ops.collect(pf)
 
-    override def toString =
-      prettyPrint(marshall(this))
+    override def toString: String = prettyPrint(marshall(this))
 
   }
 
   /** A patch operation to apply to a Json value */
   sealed abstract class Operation {
-    val path: Pointer
+    val path: JsonPointer
 
     /** Applies this operation to the given Json value */
     def apply(json: String): String =
@@ -130,7 +129,7 @@ trait JsonPatchSupport[JsValue] {
     // internals
 
     // the action to perform in this operation. By default returns an object that is equal
-    protected[this] def action(value: JsValue, pointer: Pointer, parent: Pointer): JsValue = (value, pointer) match {
+    protected[this] def action(value: JsValue, pointer: JsonPointer, parent: JsonPointer): JsValue = (value, pointer.path) match {
       case (_, Pointer.Root) =>
         value
       case (JsObject(fields), ObjectField(elem) +: tl) if fields.contains(elem) =>
@@ -150,12 +149,20 @@ trait JsonPatchSupport[JsValue] {
         throw new PatchException(s"element ${elem.fold(identity, _.toString)} does not exist at path ${parent.serialize}")
     }
 
+    protected object ArrayIndex {
+      def unapply(e: Part): Option[Int] = e.toOption
+    }
+
+    protected object ObjectField {
+      def unapply(e: Part): Option[String] = Some(e.fold(identity, _.toString))
+    }
+
   }
 
   /** Add (or replace if existing) the pointed element */
-  case class Add(path: Pointer, value: JsValue) extends Operation {
+  case class Add(path: JsonPointer, value: JsValue) extends Operation {
 
-    override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue = (original, pointer) match {
+    override def action(original: JsValue, pointer: JsonPointer, parent: JsonPointer): JsValue = (original, pointer.path) match {
       case (_, Pointer.Root) =>
         // we are at the root value, simply return the replacement value
         value
@@ -179,10 +186,10 @@ trait JsonPatchSupport[JsValue] {
   }
 
   /** Remove the pointed element */
-  case class Remove(path: Pointer, old: Option[JsValue] = None) extends Operation {
+  case class Remove(path: JsonPointer, old: Option[JsValue] = None) extends Operation {
 
-    override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue =
-      (original, pointer) match {
+    override def action(original: JsValue, pointer: JsonPointer, parent: JsonPointer): JsValue =
+      (original, pointer.path) match {
         case (JsArray(arr), Pointer(ArrayIndex(idx))) =>
           if (idx >= arr.size)
             // we know thanks to the extractor that the index cannot be negative
@@ -204,10 +211,10 @@ trait JsonPatchSupport[JsValue] {
   }
 
   /** Replace the pointed element by the given value */
-  case class Replace(path: Pointer, value: JsValue, old: Option[JsValue] = None) extends Operation {
+  case class Replace(path: JsonPointer, value: JsValue, old: Option[JsValue] = None) extends Operation {
 
-    override def action(original: JsValue, pointer: Pointer, parent: Pointer): JsValue =
-      (original, pointer) match {
+    override def action(original: JsValue, pointer: JsonPointer, parent: JsonPointer): JsValue =
+      (original, pointer.path) match {
         case (_, Pointer.Root) =>
           // simply replace the root value by the replacement value
           value
@@ -232,11 +239,11 @@ trait JsonPatchSupport[JsValue] {
   }
 
   /** Move the pointed element to the new position */
-  case class Move(from: Pointer, path: Pointer)(implicit val pointer: JsonPointer) extends Operation {
+  case class Move(from: JsonPointer, path: JsonPointer) extends Operation {
 
     override def apply(original: JsValue): JsValue = {
       @tailrec
-      def prefix(p1: Pointer, p2: Pointer): Boolean = (p1, p2) match {
+      def prefix(p1: JsonPointer, p2: JsonPointer): Boolean = (p1.path, p2.path) match {
         case (h1 +: tl1, h2 +: tl2) if h1 == h2 => prefix(tl1, tl2)
         case (Pointer.Root, _ +: _)             => true
         case (_, _)                             => false
@@ -246,26 +253,26 @@ trait JsonPatchSupport[JsValue] {
 
       val remove = Remove(from)
       val cleaned = remove(original)
-      val add = Add(path, pointer.evaluate(original, from))
+      val add = Add(path, from.evaluate(original))
       add(cleaned)
     }
 
   }
 
   /** Copy the pointed element to the new position */
-  case class Copy(from: Pointer, path: Pointer)(implicit val pointer: JsonPointer) extends Operation {
+  case class Copy(from: JsonPointer, path: JsonPointer) extends Operation {
 
     override def apply(original: JsValue): JsValue = {
-      val add = Add(path, pointer.evaluate(original, from))
+      val add = Add(path, from.evaluate(original))
       add(original)
     }
   }
 
   /** Test that the pointed element is equal to the given value */
-  case class Test(path: Pointer, value: JsValue)(implicit val pointer: JsonPointer) extends Operation {
+  case class Test(path: JsonPointer, value: JsValue) extends Operation {
 
     override def apply(original: JsValue): JsValue = {
-      val orig = pointer.evaluate(original, path)
+      val orig = path.evaluate(original)
       if (value != orig)
         throw new PatchException(s"test failed at path ${path.serialize}")
       else

@@ -32,7 +32,7 @@ trait JsonSupport[JsValue] {
 
     type Unmarshaller[T]
 
-    type PointerErrorHandler = PartialFunction[(JsValue, String, Pointer), JsValue]
+    type PointerErrorHandler = PartialFunction[(JsValue, String, JsonPointer), JsValue]
 
     private val defaultHandler: PointerErrorHandler = {
       case (_, name, parent) =>

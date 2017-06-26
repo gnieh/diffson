@@ -21,24 +21,13 @@ import scala.collection.immutable.Queue
  */
 package object diffson {
 
-  private val IsDigit = "(0|[1-9][0-9]*)".r
-
   type Part = Either[String, Int]
   type Pointer = Queue[Part]
 
-  implicit class PointerOps(val pointer: Pointer) extends AnyVal {
-    def /(key: String): Pointer = pointer :+ Left(key)
-
-    def /(idx: Int): Pointer = pointer :+ Right(idx)
-
-    def serialize: String = if (pointer.isEmpty) "" else "/" + pointer.map {
-      case Left(l)  => l.replace("~", "~0").replace("/", "~1")
-      case Right(r) => r.toString
-    }.mkString("/")
-  }
-
   object Pointer {
     val Root: Pointer = Queue.empty
+
+    private val IsDigit = "(0|[1-9][0-9]*)".r
 
     def apply(elems: String*): Pointer = Queue(elems.map {
       case IsDigit(idx) => Right(idx.toInt)
@@ -47,44 +36,6 @@ package object diffson {
 
     def unapplySeq(pointer: Pointer): Option[Queue[Part]] = Queue.unapplySeq(pointer)
 
-    /** Parses a JSON pointer and returns the resolved path. */
-    def parse(input: String): Pointer = {
-      if (input == null || input.isEmpty)
-        // shortcut if input is empty
-        Pointer.Root
-      else if (!input.startsWith("/")) {
-        // a pointer MUST start with a '/'
-        throw new PointerException("A JSON pointer must start with '/'")
-      } else {
-        // first gets the different parts of the pointer
-        val parts = input.split("/")
-          // the first element is always empty as the path starts with a '/'
-          .drop(1)
-        if (parts.length == 0) {
-          // the pointer was simply "/"
-          Pointer("")
-        } else {
-          // check that an occurrence of '~' is followed by '0' or '1'
-          if (parts.exists(_.matches(".*~(?![01]).*"))) {
-            throw new PointerException("Occurrences of '~' must be followed by '0' or '1'")
-          } else {
-            val elems = parts
-              // transform the occurrences of '~1' into occurrences of '/'
-              // transform the occurrences of '~0' into occurrences of '~'
-              .map(_.replace("~1", "/").replace("~0", "~"))
-            Pointer(elems: _*)
-          }
-        }
-      }
-    }
-  }
-
-  protected[diffson] object ArrayIndex {
-    def unapply(e: Part): Option[Int] = e.toOption
-  }
-
-  protected[diffson] object ObjectField {
-    def unapply(e: Part): Option[String] = Some(e.fold(identity, _.toString))
   }
 
 }

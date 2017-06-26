@@ -30,12 +30,12 @@ class CirceInstance extends DiffsonInstance[Json] {
 
   trait DiffsonProtocol {
 
-    implicit val pointerEncoder: Encoder[Pointer] =
+    implicit val pointerEncoder: Encoder[JsonPointer] =
       Encoder[String].contramap(_.serialize)
 
-    implicit val pointerDecoder: Decoder[Pointer] =
+    implicit val pointerDecoder: Decoder[JsonPointer] =
       Decoder[String].emap { s =>
-        Either.catchNonFatal(Pointer.parse(s))
+        Either.catchNonFatal(JsonPointer.parse(s))
           .leftMap(_.getMessage)
       }
 
@@ -92,22 +92,22 @@ class CirceInstance extends DiffsonInstance[Json] {
         override def apply(c: HCursor): Result[Operation] =
           F.flatMap(c.get[String]("op").leftMap(_.withMessage("missing 'op' field"))) {
             case "add" =>
-              A.map2(c.get[Pointer]("path"), c.get[Json]("value"))(Add)
+              A.map2(c.get[JsonPointer]("path"), c.get[Json]("value"))(Add)
                 .leftMap(_.withMessage("missing 'path' or 'value' field"))
             case "remove" =>
-              A.map2(c.get[Pointer]("path"), c.get[Option[Json]]("old"))(Remove)
+              A.map2(c.get[JsonPointer]("path"), c.get[Option[Json]]("old"))(Remove)
                 .leftMap(_.withMessage("missing 'path' or 'old' field"))
             case "replace" =>
-              A.map3(c.get[Pointer]("path"), c.get[Json]("value"), c.get[Option[Json]]("old"))(Replace)
+              A.map3(c.get[JsonPointer]("path"), c.get[Json]("value"), c.get[Option[Json]]("old"))(Replace)
                 .leftMap(_.withMessage("missing 'path' or 'value' field"))
             case "move" =>
-              A.map2(c.get[Pointer]("from"), c.get[Pointer]("path"))(Move(_, _))
+              A.map2(c.get[JsonPointer]("from"), c.get[JsonPointer]("path"))(Move)
                 .leftMap(_.withMessage("missing 'from' or 'path' field"))
             case "copy" =>
-              A.map2(c.get[Pointer]("from"), c.get[Pointer]("path"))(Copy(_, _))
+              A.map2(c.get[JsonPointer]("from"), c.get[JsonPointer]("path"))(Copy)
                 .leftMap(_.withMessage("missing 'from' or 'path' field"))
             case "test" =>
-              A.map2(c.get[Pointer]("path"), c.get[Json]("value"))(Test(_, _))
+              A.map2(c.get[JsonPointer]("path"), c.get[Json]("value"))(Test)
                 .leftMap(_.withMessage("missing 'path' or 'value' field"))
             case other =>
               Left(DecodingFailure(s"""Unknown operation "$other"""", c.history))
