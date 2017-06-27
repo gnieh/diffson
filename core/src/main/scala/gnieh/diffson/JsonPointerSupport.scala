@@ -25,6 +25,15 @@ trait JsonPointerSupport[JsValue] {
 
   import provider._
 
+  type PointerErrorHandler = PartialFunction[(JsValue, String, JsonPointer), JsValue]
+
+  private val defaultHandler: PointerErrorHandler = {
+    case (_, name, parent) =>
+      throw new PointerException(s"element $name does not exist at path ${parent.serialize}")
+  }
+
+  implicit def errorHandler: PointerErrorHandler = defaultHandler
+
   /** A class to work with Json pointers according to http://tools.ietf.org/html/rfc6901.
    *  The behavior in case of invalid pointer is customizable by passing an error handler
    *  when instantiating.
