@@ -15,8 +15,12 @@
 */
 package gnieh.diffson
 
-abstract class DiffsonInstance[JsValue] extends JsonDiffSupport[JsValue] with JsonPatchSupport[JsValue] with JsonPointerSupport[JsValue] with JsonSupport[JsValue] with LowPriorityImplicits[JsValue] {
+trait LowPriorityImplicits[JsValue] {
+  this: JsonPointerSupport[JsValue] =>
 
-  val provider: JsonProvider
+  implicit val errorHandler: PointerErrorHandler = {
+    case (_, name, parent) =>
+      throw new PointerException(s"element $name does not exist at path ${parent.serialize}")
+  }
 
 }

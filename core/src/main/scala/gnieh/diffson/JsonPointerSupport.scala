@@ -27,13 +27,6 @@ trait JsonPointerSupport[JsValue] {
 
   type PointerErrorHandler = PartialFunction[(JsValue, String, JsonPointer), JsValue]
 
-  private val defaultHandler: PointerErrorHandler = {
-    case (_, name, parent) =>
-      throw new PointerException(s"element $name does not exist at path ${parent.serialize}")
-  }
-
-  implicit def errorHandler: PointerErrorHandler = defaultHandler
-
   /** A class to work with Json pointers according to http://tools.ietf.org/html/rfc6901.
    *  The behavior in case of invalid pointer is customizable by passing an error handler
    *  when instantiating.
@@ -45,7 +38,8 @@ trait JsonPointerSupport[JsValue] {
     /** Evaluates the given path in the given JSON object.
      *  Upon missing elements in value, the error handler is called with the current value and element
      */
-    final def evaluate(value: JsValue): JsValue = evaluate(value, this, Pointer.Root)
+    final def evaluate(value: JsValue)(implicit handler: PointerErrorHandler): JsValue =
+      evaluate(value, this, Pointer.Root, handler)
 
     def /(key: String): JsonPointer = path :+ Left(key)
 
@@ -61,22 +55,23 @@ trait JsonPointerSupport[JsValue] {
     }.mkString("/")
 
     @tailrec
-    private def evaluate(value: JsValue, path: JsonPointer, parent: JsonPointer): JsValue = (value, path.path) match {
-      case (JsObject(obj), Left(elem) +: tl) =>
-        evaluate(obj.getOrElse(elem, JsNull), tl, parent :+ Left(elem))
-      case (JsArray(arr), Right(idx) +: tl) =>
-        if (idx >= arr.size)
-          // we know (by construction) that the index is greater or equal to zero
-          evaluate(errorHandler(value, idx.toString, parent), tl, parent :+ Right(idx))
-        else
-          evaluate(arr(idx), tl, parent :+ Right(idx))
-      case (arr @ JsArray(_), Left("-") +: tl) =>
-        evaluate(errorHandler(value, "-", parent), tl, parent / "-")
-      case (_, Pointer.Root) =>
-        value
-      case (_, Left(elem) +: tl) =>
-        evaluate(errorHandler(value, elem, parent), tl, parent / elem)
-    }
+    private def evaluate(value: JsValue, path: JsonPointer, parent: JsonPointer, handler: PointerErrorHandler): JsValue =
+      (value, path.path) match {
+        case (JsObject(obj), Left(elem) +: tl) =>
+          evaluate(obj.getOrElse(elem, JsNull), tl, parent :+ Left(elem), handler)
+        case (JsArray(arr), Right(idx) +: tl) =>
+          if (idx >= arr.size)
+            // we know (by construction) that the index is greater or equal to zero
+            evaluate(handler(value, idx.toString, parent), tl, parent :+ Right(idx), handler)
+          else
+            evaluate(arr(idx), tl, parent :+ Right(idx), handler)
+        case (arr @ JsArray(_), Left("-") +: tl) =>
+          evaluate(handler(value, "-", parent), tl, parent / "-", handler)
+        case (_, Pointer.Root) =>
+          value
+        case (_, Left(elem) +: tl) =>
+          evaluate(handler(value, elem, parent), tl, parent / elem, handler)
+      }
 
   }
 
