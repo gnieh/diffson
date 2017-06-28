@@ -11,6 +11,11 @@ before_script:
 script:
   - sbt clean coverage test coverageReport coverageAggregate
 
+scala:
+   - 2.10.6
+   - 2.11.11
+   - 2.12.2
+
 before_install:
     - pip install --user codecov
 
