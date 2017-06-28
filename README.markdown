@@ -45,6 +45,8 @@ If you are using maven, add the following dependency to your `pom.xml`:
 
 These versions are built for Scala 2.11, 2.12, and 2.10 when the underlying json library still works with 2.10.
 
+A snapshot version is also published for the next major release 3. To use it add the dependency with release numer `3.0.0-SNAPSHOT` to your build.
+
 Json Library
 ------------
 
