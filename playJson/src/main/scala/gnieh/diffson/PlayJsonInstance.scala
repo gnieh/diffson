@@ -24,15 +24,15 @@ class PlayJsonInstance extends DiffsonInstance[JsValue] {
 
   object DiffsonProtocol {
 
-    implicit def PointerFormat(implicit pointer: JsonPointer): Format[Pointer] =
-      Format[Pointer](
+    implicit val PointerFormat: Format[JsonPointer] =
+      Format[JsonPointer](
         Reads {
-          case JsString(s) => JsSuccess(pointer.parse(s))
+          case JsString(s) => JsSuccess(JsonPointer.parse(s))
           case value       => throw new FormatException(f"Pointer expected: $value")
         },
-        Writes(p => JsString(p.toString)))
+        Writes(p => JsString(p.serialize)))
 
-    implicit def OperationFormat(implicit pointer: JsonPointer): Format[Operation] =
+    implicit val OperationFormat: Format[Operation] =
       Format[Operation](
         Reads {
           case obj @ JsObject(fields) if fields.contains("op") =>
@@ -40,46 +40,46 @@ class PlayJsonInstance extends DiffsonInstance[JsValue] {
               case JsString("add") =>
                 (fields.get("path"), fields.get("value")) match {
                   case (Some(JsString(path)), Some(value)) =>
-                    JsSuccess(Add(pointer.parse(path), value))
+                    JsSuccess(Add(JsonPointer.parse(path), value))
                   case _ =>
                     throw new FormatException("missing 'path' or 'value' field")
                 }
               case JsString("remove") =>
                 (fields.get("path"), fields.get("old")) match {
                   case (Some(JsString(path)), None) =>
-                    JsSuccess(Remove(pointer.parse(path)))
+                    JsSuccess(Remove(JsonPointer.parse(path)))
                   case (Some(JsString(path)), Some(value)) =>
-                    JsSuccess(Remove(pointer.parse(path), Some(value)))
+                    JsSuccess(Remove(JsonPointer.parse(path), Some(value)))
                   case _ =>
                     throw new FormatException("missing 'path' field")
                 }
               case JsString("replace") =>
                 (fields.get("path"), fields.get("value"), fields.get("old")) match {
                   case (Some(JsString(path)), Some(value), None) =>
-                    JsSuccess(Replace(pointer.parse(path), value))
+                    JsSuccess(Replace(JsonPointer.parse(path), value))
                   case (Some(JsString(path)), Some(value), Some(old)) =>
-                    JsSuccess(Replace(pointer.parse(path), value, Some(old)))
+                    JsSuccess(Replace(JsonPointer.parse(path), value, Some(old)))
                   case _ =>
                     throw new FormatException("missing 'path' or 'value' field")
                 }
               case JsString("move") =>
                 (fields.get("from"), fields.get("path")) match {
                   case (Some(JsString(from)), Some(JsString(path))) =>
-                    JsSuccess(Move(pointer.parse(from), pointer.parse(path)))
+                    JsSuccess(Move(JsonPointer.parse(from), JsonPointer.parse(path)))
                   case _ =>
                     throw new FormatException("missing 'from' or 'path' field")
                 }
               case JsString("copy") =>
                 (fields.get("from"), fields.get("path")) match {
                   case (Some(JsString(from)), Some(JsString(path))) =>
-                    JsSuccess(Copy(pointer.parse(from), pointer.parse(path)))
+                    JsSuccess(Copy(JsonPointer.parse(from), JsonPointer.parse(path)))
                   case _ =>
                     throw new FormatException("missing 'from' or 'path' field")
                 }
               case JsString("test") =>
                 (fields.get("path"), fields.get("value")) match {
                   case (Some(JsString(path)), Some(value)) =>
-                    JsSuccess(Test(pointer.parse(path), value))
+                    JsSuccess(Test(JsonPointer.parse(path), value))
                   case _ =>
                     throw new FormatException("missing 'path' or 'value' field")
                 }
@@ -93,46 +93,46 @@ class PlayJsonInstance extends DiffsonInstance[JsValue] {
           case Add(path, value) =>
             Json.obj(
               "op" -> JsString("add"),
-              "path" -> JsString(path.toString),
+              "path" -> JsString(path.serialize),
               "value" -> value)
           case Remove(path, None) =>
             Json.obj(
               "op" -> JsString("remove"),
-              "path" -> JsString(path.toString))
+              "path" -> JsString(path.serialize))
           case Remove(path, Some(old)) =>
             Json.obj(
               "op" -> JsString("remove"),
-              "path" -> JsString(path.toString),
+              "path" -> JsString(path.serialize),
               "old" -> old)
           case Replace(path, value, None) =>
             Json.obj(
               "op" -> JsString("replace"),
-              "path" -> JsString(path.toString),
+              "path" -> JsString(path.serialize),
               "value" -> value)
           case Replace(path, value, Some(old)) =>
             Json.obj(
               "op" -> JsString("replace"),
-              "path" -> JsString(path.toString),
+              "path" -> JsString(path.serialize),
               "value" -> value,
               "old" -> old)
           case Move(from, path) =>
             Json.obj(
               "op" -> JsString("move"),
-              "from" -> JsString(from.toString),
-              "path" -> JsString(path.toString))
+              "from" -> JsString(from.serialize),
+              "path" -> JsString(path.serialize))
           case Copy(from, path) =>
             Json.obj(
               "op" -> JsString("copy"),
-              "from" -> JsString(from.toString),
-              "path" -> JsString(path.toString))
+              "from" -> JsString(from.serialize),
+              "path" -> JsString(path.serialize))
           case Test(path, value) =>
             Json.obj(
               "op" -> JsString("test"),
-              "path" -> JsString(path.toString),
+              "path" -> JsString(path.serialize),
               "value" -> value)
         })
 
-    implicit def JsonPatchFormat(implicit pointer: JsonPointer): Format[JsonPatch] =
+    implicit val JsonPatchFormat: Format[JsonPatch] =
       Format[JsonPatch](
         Reads[JsonPatch] {
           case JsArray(ops) =>

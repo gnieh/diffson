@@ -26,20 +26,20 @@ class SprayJsonInstance extends DiffsonInstance[JsValue] {
 
   trait DiffsonProtocol extends DefaultJsonProtocol {
 
-    implicit def PointerFormat(implicit pointer: JsonPointer): JsonFormat[Pointer] =
-      new JsonFormat[Pointer] {
+    implicit val PointerFormat: JsonFormat[JsonPointer] =
+      new JsonFormat[JsonPointer] {
 
-        def write(p: Pointer): JsString =
-          JsString(p.toString)
+        def write(p: JsonPointer): JsString =
+          JsString(p.serialize)
 
-        def read(value: JsValue): Pointer = value match {
-          case JsString(s) => pointer.parse(s)
+        def read(value: JsValue): JsonPointer = value match {
+          case JsString(s) => JsonPointer.parse(s)
           case _           => throw new FormatException(f"Pointer expected: $value")
         }
 
       }
 
-    implicit def OperationFormat(implicit pointer: JsonPointer): RootJsonFormat[Operation] =
+    implicit val OperationFormat: RootJsonFormat[Operation] =
       new RootJsonFormat[Operation] {
 
         def write(op: Operation): JsObject =
@@ -47,42 +47,42 @@ class SprayJsonInstance extends DiffsonInstance[JsValue] {
             case Add(path, value) =>
               JsObject(
                 "op" -> JsString("add"),
-                "path" -> JsString(path.toString),
+                "path" -> JsString(path.serialize),
                 "value" -> value)
             case Remove(path, None) =>
               JsObject(
                 "op" -> JsString("remove"),
-                "path" -> JsString(path.toString))
+                "path" -> JsString(path.serialize))
             case Remove(path, Some(old)) =>
               JsObject(
                 "op" -> JsString("remove"),
-                "path" -> JsString(path.toString),
+                "path" -> JsString(path.serialize),
                 "old" -> old)
             case Replace(path, value, None) =>
               JsObject(
                 "op" -> JsString("replace"),
-                "path" -> JsString(path.toString),
+                "path" -> JsString(path.serialize),
                 "value" -> value)
             case Replace(path, value, Some(old)) =>
               JsObject(
                 "op" -> JsString("replace"),
-                "path" -> JsString(path.toString),
+                "path" -> JsString(path.serialize),
                 "value" -> value,
                 "old" -> old)
             case Move(from, path) =>
               JsObject(
                 "op" -> JsString("move"),
-                "from" -> JsString(from.toString),
-                "path" -> JsString(path.toString))
+                "from" -> JsString(from.serialize),
+                "path" -> JsString(path.serialize))
             case Copy(from, path) =>
               JsObject(
                 "op" -> JsString("copy"),
-                "from" -> JsString(from.toString),
-                "path" -> JsString(path.toString))
+                "from" -> JsString(from.serialize),
+                "path" -> JsString(path.serialize))
             case Test(path, value) =>
               JsObject(
                 "op" -> JsString("test"),
-                "path" -> JsString(path.toString),
+                "path" -> JsString(path.serialize),
                 "value" -> value)
           }
 
@@ -92,46 +92,46 @@ class SprayJsonInstance extends DiffsonInstance[JsValue] {
               case JsString("add") =>
                 obj.getFields("path", "value") match {
                   case Seq(JsString(path), value) =>
-                    Add(pointer.parse(path), value)
+                    Add(JsonPointer.parse(path), value)
                   case _ =>
                     throw new FormatException("missing 'path' or 'value' field")
                 }
               case JsString("remove") =>
                 obj.getFields("path", "old") match {
                   case Seq(JsString(path)) =>
-                    Remove(pointer.parse(path))
+                    Remove(JsonPointer.parse(path))
                   case Seq(JsString(path), value) =>
-                    Remove(pointer.parse(path), Some(value))
+                    Remove(JsonPointer.parse(path), Some(value))
                   case _ =>
                     throw new FormatException("missing 'path' field")
                 }
               case JsString("replace") =>
                 obj.getFields("path", "value", "old") match {
                   case Seq(JsString(path), value) =>
-                    Replace(pointer.parse(path), value)
+                    Replace(JsonPointer.parse(path), value)
                   case Seq(JsString(path), value, old) =>
-                    Replace(pointer.parse(path), value, Some(old))
+                    Replace(JsonPointer.parse(path), value, Some(old))
                   case _ =>
                     throw new FormatException("missing 'path' or 'value' field")
                 }
               case JsString("move") =>
                 obj.getFields("from", "path") match {
                   case Seq(JsString(from), JsString(path)) =>
-                    Move(pointer.parse(from), pointer.parse(path))
+                    Move(JsonPointer.parse(from), JsonPointer.parse(path))
                   case _ =>
                     throw new FormatException("missing 'from' or 'path' field")
                 }
               case JsString("copy") =>
                 obj.getFields("from", "path") match {
                   case Seq(JsString(from), JsString(path)) =>
-                    Copy(pointer.parse(from), pointer.parse(path))
+                    Copy(JsonPointer.parse(from), JsonPointer.parse(path))
                   case _ =>
                     throw new FormatException("missing 'from' or 'path' field")
                 }
               case JsString("test") =>
                 obj.getFields("path", "value") match {
                   case Seq(JsString(path), value) =>
-                    Test(pointer.parse(path), value)
+                    Test(JsonPointer.parse(path), value)
                   case _ =>
                     throw new FormatException("missing 'path' or 'value' field")
                 }
@@ -143,7 +143,7 @@ class SprayJsonInstance extends DiffsonInstance[JsValue] {
         }
       }
 
-    implicit def JsonPatchFormat(implicit pointer: JsonPointer): RootJsonFormat[JsonPatch] =
+    implicit val JsonPatchFormat: RootJsonFormat[JsonPatch] =
       new RootJsonFormat[JsonPatch] {
 
         def write(patch: JsonPatch): JsArray =

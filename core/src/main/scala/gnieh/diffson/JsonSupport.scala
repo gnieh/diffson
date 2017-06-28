@@ -32,13 +32,6 @@ trait JsonSupport[JsValue] {
 
     type Unmarshaller[T]
 
-    type PointerErrorHandler = PartialFunction[(JsValue, String, Pointer), JsValue]
-
-    implicit def defaultHandler: PointerErrorHandler = {
-      case (_, name, parent) =>
-        throw new PointerException(s"element $name does not exist at path $parent")
-    }
-
     implicit val patchMarshaller: Marshaller[JsonPatch]
 
     implicit val patchUnmarshaller: Unmarshaller[JsonPatch]

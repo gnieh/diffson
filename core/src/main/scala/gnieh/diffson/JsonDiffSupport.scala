@@ -38,46 +38,46 @@ trait JsonDiffSupport[JsValue] {
      *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
      */
     def diff(json1: String, json2: String, remember: Boolean): JsonPatch =
-      new JsonPatch(diff(parseJson(json1), parseJson(json2), remember, true, Pointer.root))
+      new JsonPatch(diff(parseJson(json1), parseJson(json2), remember, arrayDiffs = true, JsonPointer(Pointer.Root)))
 
     /** Computes the patch from `json1` to `json2` without performing array diff.
      *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
      */
     def simpleDiff(json1: String, json2: String, remember: Boolean): JsonPatch =
-      new JsonPatch(diff(parseJson(json1), parseJson(json2), remember, false, Pointer.root))
+      new JsonPatch(diff(parseJson(json1), parseJson(json2), remember, arrayDiffs = false, JsonPointer(Pointer.Root)))
 
     /** Computes the patch from `json1` to `json2`
      *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
      */
     def diff(json1: JsValue, json2: JsValue, remember: Boolean): JsonPatch =
-      new JsonPatch(diff(json1, json2, remember, true, Pointer.root))
+      new JsonPatch(diff(json1, json2, remember, arrayDiffs = true, JsonPointer(Pointer.Root)))
 
     /** Computes the patch from `json1` to `json2` without performing array diff.
      *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
      */
     def simpleDiff(json1: JsValue, json2: JsValue, remember: Boolean): JsonPatch =
-      new JsonPatch(diff(json1, json2, remember, false, Pointer.root))
+      new JsonPatch(diff(json1, json2, remember, arrayDiffs = false, JsonPointer(Pointer.Root)))
 
     /** Computes the patch from `json1` to `json2`
      *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
      */
     def diff[T1: Marshaller, T2: Marshaller](json1: T1, json2: T2, remember: Boolean): JsonPatch =
-      new JsonPatch(diff(marshall(json1), marshall(json2), remember, true, Pointer.root))
+      new JsonPatch(diff(marshall(json1), marshall(json2), remember, arrayDiffs = true, JsonPointer(Pointer.Root)))
 
     /** Computes the patch from `json1` to `json2` without performing array diff.
      *  If `remember` is set to true, the removed and replaced value are rememberd in the patch in a field named `old`.
      */
     def simpleDiff[T1: Marshaller, T2: Marshaller](json1: T1, json2: T2, remember: Boolean): JsonPatch =
-      new JsonPatch(diff(marshall(json1), marshall(json2), remember, false, Pointer.root))
+      new JsonPatch(diff(marshall(json1), marshall(json2), remember, arrayDiffs = false, JsonPointer(Pointer.Root)))
 
-    private def diff(json1: JsValue, json2: JsValue, remember: Boolean, arrayDiffs: Boolean, pointer: Pointer): List[Operation] = (json1, json2) match {
+    private def diff(json1: JsValue, json2: JsValue, remember: Boolean, arrayDiffs: Boolean, pointer: JsonPointer): List[Operation] = (json1, json2) match {
       case (v1, v2) if v1 == v2                         => Nil // if they are equal, this one is easy...
       case (JsObject(fields1), JsObject(fields2))       => fieldsDiff(fields1.toList, fields2.toList, remember, arrayDiffs, pointer)
       case (JsArray(arr1), JsArray(arr2)) if arrayDiffs => arraysDiff(arr1.toList, arr2.toList, remember, pointer)
       case (_, _)                                       => List(Replace(pointer, json2, if (remember) Some(json1) else None))
     }
 
-    private def fieldsDiff(fields1: List[(String, JsValue)], fields2: List[(String, JsValue)], remember: Boolean, arraysDiff: Boolean, path: Pointer): List[Operation] = {
+    private def fieldsDiff(fields1: List[(String, JsValue)], fields2: List[(String, JsValue)], remember: Boolean, arraysDiff: Boolean, path: JsonPointer): List[Operation] = {
       // sort fields by name in both objects
       val sorted1 = fields1.sortBy(_._1)
       val sorted2 = fields2.sortBy(_._1)
@@ -120,7 +120,7 @@ trait JsonDiffSupport[JsValue] {
       fields(associate(sorted1, sorted2, Nil), Nil)
     }
 
-    private def arraysDiff(arr1: List[JsValue], arr2: List[JsValue], remember: Boolean, path: Pointer): List[Operation] = {
+    private def arraysDiff(arr1: List[JsValue], arr2: List[JsValue], remember: Boolean, path: JsonPointer): List[Operation] = {
       // get the longest common subsequence in the array
       val lcs = lcsalg.lcs(arr1, arr2)
 
@@ -171,7 +171,7 @@ trait JsonDiffSupport[JsValue] {
             remove(idx1 + shift1, until - 1 + shift1, idx1 + shift1, arr1) reverse_::: acc)
         case (v1 :: tl1, v2 :: tl2) =>
           // values are different, recursively compute the diff of these values
-          loop(tl1, tl2, idx1 + 1, shift1, idx2 + 1, lcs, diff(v1, v2, remember, true, path / (idx1 + shift1)) reverse_::: acc)
+          loop(tl1, tl2, idx1 + 1, shift1, idx2 + 1, lcs, diff(v1, v2, remember, arrayDiffs = true, path / (idx1 + shift1)) reverse_::: acc)
         case (_, Nil) =>
           // all subsequent values in arr1 were removed
           remove(idx1 + shift1, idx1 + arr1.size - 1 + shift1, idx1 + shift1, arr1) reverse_::: acc

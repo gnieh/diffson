@@ -30,12 +30,12 @@ class CirceInstance extends DiffsonInstance[Json] {
 
   trait DiffsonProtocol {
 
-    implicit val pointerEncoder: Encoder[Pointer] =
-      Encoder[String].contramap(_.toString)
+    implicit val pointerEncoder: Encoder[JsonPointer] =
+      Encoder[String].contramap(_.serialize)
 
-    implicit def pointerDecoder(implicit pointer: JsonPointer): Decoder[Pointer] =
+    implicit val pointerDecoder: Decoder[JsonPointer] =
       Decoder[String].emap { s =>
-        Either.catchNonFatal(pointer.parse(s))
+        Either.catchNonFatal(JsonPointer.parse(s))
           .leftMap(_.getMessage)
       }
 
@@ -44,46 +44,46 @@ class CirceInstance extends DiffsonInstance[Json] {
         case Add(path, value) =>
           Json.obj(
             "op" -> Json.fromString("add"),
-            "path" -> Json.fromString(path.toString),
+            "path" -> Json.fromString(path.serialize),
             "value" -> value)
         case Remove(path, None) =>
           Json.obj(
             "op" -> Json.fromString("remove"),
-            "path" -> Json.fromString(path.toString))
+            "path" -> Json.fromString(path.serialize))
         case Remove(path, Some(old)) =>
           Json.obj(
             "op" -> Json.fromString("remove"),
-            "path" -> Json.fromString(path.toString),
+            "path" -> Json.fromString(path.serialize),
             "old" -> old)
         case Replace(path, value, None) =>
           Json.obj(
             "op" -> Json.fromString("replace"),
-            "path" -> Json.fromString(path.toString),
+            "path" -> Json.fromString(path.serialize),
             "value" -> value)
         case Replace(path, value, Some(old)) =>
           Json.obj(
             "op" -> Json.fromString("replace"),
-            "path" -> Json.fromString(path.toString),
+            "path" -> Json.fromString(path.serialize),
             "value" -> value,
             "old" -> old)
         case Move(from, path) =>
           Json.obj(
             "op" -> Json.fromString("move"),
-            "from" -> Json.fromString(from.toString),
-            "path" -> Json.fromString(path.toString))
+            "from" -> Json.fromString(from.serialize),
+            "path" -> Json.fromString(path.serialize))
         case Copy(from, path) =>
           Json.obj(
             "op" -> Json.fromString("copy"),
-            "from" -> Json.fromString(from.toString),
-            "path" -> Json.fromString(path.toString))
+            "from" -> Json.fromString(from.serialize),
+            "path" -> Json.fromString(path.serialize))
         case Test(path, value) =>
           Json.obj(
             "op" -> Json.fromString("test"),
-            "path" -> Json.fromString(path.toString),
+            "path" -> Json.fromString(path.serialize),
             "value" -> value)
       }
 
-    implicit def operationDecoder(implicit pointer: JsonPointer): Decoder[Operation] =
+    implicit val operationDecoder: Decoder[Operation] =
       new Decoder[Operation] {
 
         private val A = Apply[Result]
@@ -92,32 +92,32 @@ class CirceInstance extends DiffsonInstance[Json] {
         override def apply(c: HCursor): Result[Operation] =
           F.flatMap(c.get[String]("op").leftMap(_.withMessage("missing 'op' field"))) {
             case "add" =>
-              A.map2(c.get[Pointer]("path"), c.get[Json]("value"))(Add)
+              A.map2(c.get[JsonPointer]("path"), c.get[Json]("value"))(Add)
                 .leftMap(_.withMessage("missing 'path' or 'value' field"))
             case "remove" =>
-              A.map2(c.get[Pointer]("path"), c.get[Option[Json]]("old"))(Remove)
+              A.map2(c.get[JsonPointer]("path"), c.get[Option[Json]]("old"))(Remove)
                 .leftMap(_.withMessage("missing 'path' or 'old' field"))
             case "replace" =>
-              A.map3(c.get[Pointer]("path"), c.get[Json]("value"), c.get[Option[Json]]("old"))(Replace)
+              A.map3(c.get[JsonPointer]("path"), c.get[Json]("value"), c.get[Option[Json]]("old"))(Replace)
                 .leftMap(_.withMessage("missing 'path' or 'value' field"))
             case "move" =>
-              A.map2(c.get[Pointer]("from"), c.get[Pointer]("path"))(Move(_, _))
+              A.map2(c.get[JsonPointer]("from"), c.get[JsonPointer]("path"))(Move)
                 .leftMap(_.withMessage("missing 'from' or 'path' field"))
             case "copy" =>
-              A.map2(c.get[Pointer]("from"), c.get[Pointer]("path"))(Copy(_, _))
+              A.map2(c.get[JsonPointer]("from"), c.get[JsonPointer]("path"))(Copy)
                 .leftMap(_.withMessage("missing 'from' or 'path' field"))
             case "test" =>
-              A.map2(c.get[Pointer]("path"), c.get[Json]("value"))(Test(_, _))
+              A.map2(c.get[JsonPointer]("path"), c.get[Json]("value"))(Test)
                 .leftMap(_.withMessage("missing 'path' or 'value' field"))
             case other =>
               Left(DecodingFailure(s"""Unknown operation "$other"""", c.history))
           }
       }
 
-    implicit def jsonPatchEncoder: Encoder[JsonPatch] =
+    implicit val jsonPatchEncoder: Encoder[JsonPatch] =
       Encoder[List[Json]].contramap(_.ops.map(_.asJson))
 
-    implicit def jsonPatchDecoder(implicit pointer: JsonPointer): Decoder[JsonPatch] =
+    implicit val jsonPatchDecoder: Decoder[JsonPatch] =
       new Decoder[JsonPatch] {
 
         private val F = FlatMap[Result]

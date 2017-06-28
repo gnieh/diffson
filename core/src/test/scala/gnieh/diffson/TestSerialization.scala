@@ -115,7 +115,7 @@ abstract class TestSerialization[JsValue, Instance <: DiffsonInstance[JsValue]](
 
   "applying a patch" should "raise an exception if it changes the shape" in {
     val json = Json(1, true, "test", Nil)
-    val patch = JsonPatch(Replace(Pointer.root, marshall(true)))
+    val patch = JsonPatch(Replace(Pointer.Root, marshall(true)))
     a[Exception] should be thrownBy { patch(json) }
   }
 

@@ -20,7 +20,7 @@ abstract class TestJsonDiff[JsValue, Instance <: DiffsonInstance[JsValue]](val i
   }
 
   it should "be a simple replacement if the two values are completely different" in {
-    diff(parseJson("true"), parseJson("13"), false) should be(JsonPatch(Replace(Pointer.root, marshall(13))))
+    diff(parseJson("true"), parseJson("13"), false) should be(JsonPatch(Replace(Pointer.Root, marshall(13))))
   }
 
   it should "contain an add operation for each added field" in {
