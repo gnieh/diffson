@@ -105,7 +105,7 @@ class Patience[T](withFallback: Boolean = true) extends Lcs[T] {
       // this call is safe as we know that the list of occurrence is not empty here and that there are no empty stacks
       val greatest = sorted.last.head
       // make the lcs in increasing order
-      greatest.chain.reverse
+      greatest.chain
     }
   }
 
@@ -197,11 +197,16 @@ class Patience[T](withFallback: Boolean = true) extends Lcs[T] {
 }
 
 private case class Stacked(idx1: Int, idx2: Int, next: Option[Stacked]) {
-  lazy val chain: List[(Int, Int)] = next match {
-    case Some(stacked) =>
-      (idx1, idx2) :: stacked.chain
-    case None =>
-      List(idx1 -> idx2)
+  def chain: List[(Int, Int)] = {
+    @tailrec
+    def loop(stacked: Stacked, acc: List[(Int, Int)]): List[(Int, Int)] =
+      stacked.next match {
+        case Some(next) =>
+          loop(next, (stacked.idx1, stacked.idx2) :: acc)
+        case None =>
+          (stacked.idx1, stacked.idx2) :: acc
+      }
+    loop(this, Nil)
   }
 }
 
