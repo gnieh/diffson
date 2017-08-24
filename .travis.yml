@@ -4,6 +4,7 @@ language: scala
 branches:
   only:
     - master
+    - v2.2.x
 
 before_script:
   - sudo chmod +x /usr/local/bin/sbt
