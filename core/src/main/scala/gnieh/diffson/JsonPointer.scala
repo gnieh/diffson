@@ -62,7 +62,9 @@ trait JsonPointerSupport[JsValue] {
           if (parts.exists(_.matches(".*~(?![01]).*"))) {
             throw new PointerException("Occurrences of '~' must be followed by '0' or '1'")
           } else {
-            parts
+            val allParts = if (input.endsWith("/")) parts :+ "" else parts
+
+            allParts
               // transform the occurrences of '~1' into occurrences of '/'
               // transform the occurrences of '~0' into occurrences of '~'
               .map(_.replace("~1", "/").replace("~0", "~"))
