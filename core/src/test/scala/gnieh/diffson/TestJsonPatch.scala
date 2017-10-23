@@ -16,6 +16,11 @@ abstract class TestJsonPatch[JsValue, Instance <: DiffsonInstance[JsValue]](val 
     op(parseJson("{}")) should be(parseJson("{ \"lbl\": 17 } "))
   }
 
+  "applying an 'add' operation to /foo/" should "add a value with an empty string as the key" in {
+    val op = Add(JsonPointer.parse("/foo/"), marshall(17))
+    op(parseJson("{ \"foo\": {} }")) should be(parseJson("{ \"foo\": {\"\": 17 } }"))
+  }
+
   it should "replace the value if the pointer is the root" in {
     val op = Add(JsonPointer.parse(""), marshall(17))
     op(parseJson("[1, 2, 3, 4]")) should be(marshall(17))

@@ -21,6 +21,10 @@ abstract class TestJsonPointer[JsValue, Instance <: DiffsonInstance[JsValue]](va
     JsonPointer.parse("/").path should be(Pointer(""))
   }
 
+  "a string with a trailing forward slash" should "parse with an empty final element" in {
+    JsonPointer.parse("/foo/").path should be(Pointer("foo", ""))
+  }
+
   "a pointer string with one chunk" should "be parsed as a pointer with one element" in {
     JsonPointer.parse("/test").path should be(Pointer("test"))
   }
