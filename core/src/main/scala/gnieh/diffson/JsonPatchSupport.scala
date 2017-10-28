@@ -18,6 +18,8 @@ package diffson
 
 import scala.annotation.tailrec
 
+import scala.collection.immutable.VectorBuilder
+
 trait JsonPatchSupport[JsValue] {
   this: DiffsonInstance[JsValue] =>
 
@@ -125,7 +127,8 @@ trait JsonPatchSupport[JsValue] {
       compactPrint(apply(parseJson(json)))
 
     /** Applies this operation to the given Json value */
-    def apply(value: JsValue): JsValue = action(value, path, Pointer.Root)
+    def apply(value: JsValue): JsValue =
+      action(value, path, Pointer.Root)
 
     // internals
 
@@ -134,7 +137,7 @@ trait JsonPatchSupport[JsValue] {
       case (_, Pointer.Root) =>
         value
       case (JsObject(fields), ObjectField(elem) +: tl) if fields.contains(elem) =>
-        val fields1 = fields map {
+        val fields1 = fields.map {
           case (name, value) if name == elem =>
             (name, action(value, tl, parent / elem))
           case f =>
@@ -144,8 +147,13 @@ trait JsonPatchSupport[JsValue] {
       case (JsArray(elems), ArrayIndex(idx) +: tl) =>
         if (idx >= elems.size)
           throw new PatchException(f"element $idx does not exist at path ${parent.serialize}")
-        val elems1 = elems.take(idx) ++ Vector(action(elems(idx), tl, Right(idx) +: parent)) ++ elems.drop(idx + 1)
-        JsArray(elems1)
+        val (before, after) = elems.splitAt(idx)
+        val builder = new VectorBuilder[JsValue]
+        builder.sizeHint(elems.size)
+        builder ++= before
+        builder += action(elems(idx), tl, Right(idx) +: parent)
+        builder ++= after.view(1, after.size)
+        JsArray(builder.result)
       case (_, elem +: _) =>
         throw new PatchException(s"element ${elem.fold(identity, _.toString)} does not exist at path ${parent.serialize}")
     }
@@ -169,18 +177,23 @@ trait JsonPatchSupport[JsValue] {
         value
       case (JsArray(arr), Pointer(Left("-"))) =>
         // insert the value at the end of the array
-        JsArray(arr ++ Vector(value))
+        JsArray(arr :+ value)
       case (JsArray(arr), Pointer(ArrayIndex(idx))) =>
-        if (idx > arr.size)
+        if (idx > arr.size) {
           throw new PatchException(f"element $idx does not exist at path ${parent.serialize}")
-        else
+        } else {
           // insert the value at the specified index
-          JsArray(arr.take(idx) ++ Vector(value) ++ arr.drop(idx))
+          val (before, after) = arr.splitAt(idx)
+          val builder = new VectorBuilder[JsValue]
+          builder.sizeHint(arr.size + 1)
+          builder ++= before
+          builder += value
+          builder ++= after
+          JsArray(builder.result)
+        }
       case (JsObject(obj), Pointer(ObjectField(lbl))) =>
-        // remove the label if it is present
-        val cleaned = obj.filter(_._1 != lbl)
         // insert the new label
-        JsObject(cleaned.updated(lbl, value))
+        JsObject(obj.updated(lbl, value))
       case _ =>
         super.action(original, pointer, parent)
     }
@@ -192,18 +205,20 @@ trait JsonPatchSupport[JsValue] {
     override def action(original: JsValue, pointer: JsonPointer, parent: JsonPointer): JsValue =
       (original, pointer.path) match {
         case (JsArray(arr), Pointer(ArrayIndex(idx))) =>
-          if (idx >= arr.size)
+          if (idx >= arr.size) {
             // we know thanks to the extractor that the index cannot be negative
             throw new PatchException(f"element $idx does not exist at path ${parent.serialize}")
-          else
+          } else {
             // remove the element at the given index
-            JsArray(arr.take(idx) ++ arr.drop(idx + 1))
+            val (before, after) = arr.splitAt(idx)
+            JsArray(before ++ after.tail)
+          }
         case (JsArray(_), Pointer(Left("-"))) =>
           // how could we possibly remove an element that appears after the last one?
           throw new PatchException(f"element - does not exist at path ${parent.serialize}")
         case (JsObject(obj), Pointer(ObjectField(lbl))) if obj.contains(lbl) =>
           // remove the field from the object if present, otherwise, ignore it
-          JsObject(obj.filter(_._1 != lbl))
+          JsObject(obj - lbl)
         case (_, Pointer.Root) =>
           throw new PatchException("Cannot delete an empty path")
         case _ =>
@@ -220,16 +235,22 @@ trait JsonPatchSupport[JsValue] {
           // simply replace the root value by the replacement value
           value
         case (JsArray(arr), Pointer(Right(idx))) =>
-          if (idx >= arr.size)
+          if (idx >= arr.size) {
             throw new PatchException(f"element $idx does not exist at path ${parent.serialize}")
-          else
-            JsArray(arr.take(idx) ++ Vector(value) ++ arr.drop(idx + 1))
+          } else {
+            val (before, after) = arr.splitAt(idx)
+            val builder = new VectorBuilder[JsValue]
+            builder.sizeHint(arr.size)
+            builder ++= before
+            builder += value
+            builder ++= after.view(1, after.size)
+            JsArray(builder.result)
+          }
         case (JsArray(_), Pointer(Left("-"))) =>
           throw new PatchException(f"element - does not exist at path ${parent.serialize}")
         case (JsObject(obj), Pointer(ObjectField(lbl))) =>
           if (obj.contains(lbl)) {
-            val cleaned = obj.filter(_._1 != lbl)
-            JsObject(cleaned.updated(lbl, value))
+            JsObject(obj.updated(lbl, value))
           } else {
             throw new PatchException(s"element $lbl does not exist at path ${parent.serialize}")
           }
