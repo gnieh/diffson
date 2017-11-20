@@ -28,16 +28,37 @@ class DynamicProgLcs[T] extends Lcs[T] {
     } else {
       // we try to reduce the problem by stripping common suffix and prefix
       val (prefix, middle1, middle2, suffix) = splitPrefixSuffix(seq1, seq2, low1, low2)
+      val indexedMiddle1: Vector[T] = middle1.toVector
+      val indexedMiddle2: Vector[T] = middle2.toVector
       val offset = prefix.size
-      val lengths = Array.ofDim[Int](middle1.size + 1, middle2.size + 1)
+      val lengths: Array[Array[Int]] = Array.ofDim[Int](middle1.size + 1, middle2.size + 1)
+
       // fill up the length matrix
-      for {
-        i <- 0 until middle1.size
-        j <- 0 until middle2.size
-      } if (middle1(i) == middle2(j))
-        lengths(i + 1)(j + 1) = lengths(i)(j) + 1
-      else
-        lengths(i + 1)(j + 1) = math.max(lengths(i + 1)(j), lengths(i)(j + 1))
+      // impl chosen based on microbenchmarks
+      val cols = indexedMiddle1.length
+      val rows = indexedMiddle2.length
+
+      @tailrec
+      def fillJs(i: Int, j: Int): Unit = {
+        if (j < rows) {
+          if (indexedMiddle1(i) == indexedMiddle2(j))
+            lengths(i + 1)(j + 1) = lengths(i)(j) + 1
+          else
+            lengths(i + 1)(j + 1) = math.max(lengths(i + 1)(j), lengths(i)(j + 1))
+          fillJs(i, j + 1)
+        }
+      }
+
+      @tailrec
+      def fillIs(i: Int): Unit = {
+        if (i < cols) {
+          fillJs(i, 0)
+          fillIs(i + 1)
+        }
+      }
+
+      fillIs(0)
+
       // and compute the lcs out of the matrix
       @tailrec
       def loop(idx1: Int, idx2: Int, acc: List[(Int, Int)]): List[(Int, Int)] =
@@ -52,7 +73,7 @@ class DynamicProgLcs[T] extends Lcs[T] {
           loop(idx1 - 1, idx2 - 1, (low1 + offset + idx1 - 1, low2 + offset + idx2 - 1) :: acc)
         }
 
-      prefix ++ loop(middle1.size, middle2.size, Nil) ++ suffix
+      prefix ++ loop(indexedMiddle1.size, indexedMiddle2.size, Nil) ++ suffix
     }
   }
 

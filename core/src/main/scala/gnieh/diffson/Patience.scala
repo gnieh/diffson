@@ -109,6 +109,12 @@ class Patience[T](withFallback: Boolean = true) extends Lcs[T] {
     }
   }
 
+  /** Checks if two sequences have at least one common element */
+  private def haveCommonElements(s1: Seq[T], s2: Seq[T]): Boolean = {
+    val s2Set = s2.toSet
+    s1.exists(s2Set)
+  }
+
   /** Computes the longest common subsequence between both sequences.
    *  It is encoded as the list of common indices in the first and the second sequence.
    */
@@ -129,6 +135,9 @@ class Patience[T](withFallback: Boolean = true) extends Lcs[T] {
       // the first sequence is a prefix of the second one
       // the lcs is the first sequence
       seq1.indices.map(i => (i + low1, i + low2)).toList
+    } else if (!haveCommonElements(seq1, seq2)) {
+      // sequences have no common elements
+      Nil
     } else {
       // fill the holes with possibly common (not unique) elements
       def loop(low1: Int, low2: Int, high1: Int, high2: Int, acc: List[(Int, Int)]): List[(Int, Int)] =

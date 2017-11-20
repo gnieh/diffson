@@ -26,7 +26,7 @@ trait JsonDiffSupport[JsValue] {
    *
    *  @author Lucas Satabin
    */
-  object JsonDiff extends JsonDiff(new Patience[JsValue])
+  object JsonDiff extends JsonDiff(new HashedLcs[JsValue](new Patience[HashedLcs.Hashed[JsValue]]()))
 
   /** Methods to compute diffs between two Json values
    *
