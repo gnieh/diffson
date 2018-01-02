@@ -6,7 +6,7 @@ import io.circe._
 import io.circe.generic.semiauto._
 
 trait TestProtocol {
-  implicit def intSeqMarshaller: Encoder[Seq[Int]] = Encoder.encodeTraversableOnce[Int, Seq]
+  implicit def intSeqMarshaller: Encoder[Seq[Int]] = Encoder.encodeIterable[Int, Seq]
   implicit def intSeqUnmarshaller: Decoder[Seq[Int]] = Decoder[List[Int]].map(_.toSeq)
   implicit def boolMarshaller: Encoder[Boolean] = Encoder.encodeBoolean
   implicit def boolUnmarshaller: Decoder[Boolean] = Decoder.decodeBoolean
