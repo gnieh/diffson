@@ -271,7 +271,7 @@ trait JsonPatchSupport[JsValue] {
         case (_, _)                             => false
       }
       if (prefix(from, path))
-        throw new PatchException("The path were to move cannot be a descendant of the from path")
+        throw new PatchException("The destination path cannot be a descendant of the source path")
 
       val remove = Remove(from)
       val cleaned = remove(original)
