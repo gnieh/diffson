@@ -50,7 +50,7 @@ A snapshot version is also published for the next major release 3. To use it add
 Json Library
 ------------
 
-Diffson was first developped for [spray-json][3], however, it is possible to use it with any json library of your linking.
+Diffson was first developped for [spray-json][3], however, it is possible to use it with any json library of your liking.
 The only requirement is to have a `DiffsonInstance` for your json library.
 
 At the moment, diffson provides two instances for [spray-json][3], [Play! Json][9], and [circe][10].
@@ -151,14 +151,14 @@ patch(json2) // throws PatchException
 Remembering old values
 ----------------------
 
-The `diff` method takes three parameter. The third one indicates whether the generated patch remembers removed and replaced values.
+The `diff` method takes three parameters. The third one indicates whether the generated patch remembers removed and replaced values.
 When set to `true`, the `Replace` and `Remove` operations take an extra field named `old` giving the old value.
-The RFC does not define these fields, but it does not fordbid either to add extra fields. Hence, generated patches can still be interpreted by third party implementations.
+The RFC does not define these fields, but it does not forbid to add extra fields either. Hence, generated patches can still be interpreted by third party implementations.
 
 Patches as Collections of Operations
 ------------------------------------
 
-Patches may be seen as collections of operations on which you may which to apply some typical collection functions such as `map`, `flatMap`, filtering, folding, ...
+Patches may be seen as collections of operations on which you may want to apply some typical collection functions such as `map`, `flatMap`, filtering, folding, ...
 
 ```scala
 val patch: JsonPatch = ...
@@ -173,7 +173,7 @@ Technical Details
 
 The _diff_ between two arrays is computed by using the [Patience Diff][4] algorithm to compute the [LCS][5] between both arrays, which is quite simple to implement.
 
-However one can replace the implementation by any other algorithm that implements the `gnieh.diffson.Lcs` trait, e.g.:
+However, one can replace the implementation by any other algorithm that implements the `gnieh.diffson.Lcs` trait, e.g.:
 ```scala
 val diff = new JsonDiff(new MyLcsAlgorithm)
 ```
