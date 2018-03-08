@@ -1,11 +1,8 @@
-import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import scalariform.formatter.preferences._
-
-import UnidocKeys._
 
 val scala210 = "2.10.6"
 val scala211 = "2.11.11"
-val scala212 = "2.12.2"
+val scala212 = "2.12.4"
 
 lazy val commonSettings = Seq(
   organization := "org.gnieh",
@@ -14,39 +11,45 @@ lazy val commonSettings = Seq(
   description := "Json diff/patch library",
   licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://github.com/gnieh/diffson")),
-  crossScalaVersions := Seq(scala210, scala211, scala212),
   parallelExecution := false,
+  scalariformAutoformat := true,
+  scalariformPreferences := {
+    scalariformPreferences.value
+      .setPreference(AlignSingleLineCaseStatements, true)
+      .setPreference(DoubleIndentConstructorArguments, true)
+      .setPreference(MultilineScaladocCommentsStartOnFirstLine, true)
+  },
   fork in test := true,
   scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits"),
   autoAPIMappings := true,
   OsgiKeys.exportPackage := Seq("gnieh.diffson"),
   OsgiKeys.privatePackage := Seq(),
   resourceDirectories in Compile := List(),
-  scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked")) ++ scalariformSettings ++ Seq(
-    ScalariformKeys.preferences := {
-    ScalariformKeys.preferences.value
+  scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked")) ++ Seq(
+    scalariformPreferences := {
+    scalariformPreferences.value
       .setPreference(AlignSingleLineCaseStatements, true)
-      .setPreference(DoubleIndentClassDeclaration, true)
+      .setPreference(DoubleIndentConstructorArguments, true)
       .setPreference(MultilineScaladocCommentsStartOnFirstLine, true)
       .setPreference(DanglingCloseParenthesis, Prevent)
     }) ++ publishSettings
 
 lazy val diffson = project.in(file("."))
-  .enablePlugins(SbtOsgi, ScoverageSbtPlugin, CrossPerProjectPlugin)
+  .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
   .settings(commonSettings: _*)
-  .settings(unidocSettings: _*)
   .settings(
     name := "diffson",
     packagedArtifacts := Map())
   .aggregate(core, sprayJson, playJson, circe)
 
 lazy val core = project.in(file("core"))
-  .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
+  .enablePlugins(SbtOsgi, ScoverageSbtPlugin, ScalaUnidocPlugin)
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-core",
+    crossScalaVersions := Seq(scala210, scala211, scala212),
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.0.3" % Test,
+      "org.scalatest" %% "scalatest" % "3.0.5" % Test,
       "org.scalacheck" %% "scalacheck" % "1.13.5" % Test),
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Core"
@@ -58,7 +61,8 @@ lazy val sprayJson = project.in(file("sprayJson"))
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-spray-json",
-    libraryDependencies += "io.spray" %%  "spray-json" % "1.3.3",
+    crossScalaVersions := Seq(scala210, scala211, scala212),
+    libraryDependencies += "io.spray" %%  "spray-json" % "1.3.4",
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Spray Json"
     ),
@@ -70,15 +74,15 @@ lazy val playJson = project.in(file("playJson"))
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-play-json",
-    libraryDependencies += "com.typesafe.play" %% "play-json" % "2.6.0",
-    crossScalaVersions -= scala210,
+    libraryDependencies += "com.typesafe.play" %% "play-json" % "2.6.9",
+    crossScalaVersions := Seq(scala211, scala212),
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Play! Json"
     ),
     OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.play")
   .dependsOn(core % "test->test;compile->compile")
 
-val circeVersion = "0.9.0"
+val circeVersion = "0.9.1"
 lazy val circe = project.in(file("circe"))
   .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
   .settings(commonSettings: _*)
@@ -89,7 +93,7 @@ lazy val circe = project.in(file("circe"))
       "io.circe" %% "circe-parser"  % circeVersion,
       "io.circe" %% "circe-generic" % circeVersion % "test"
     ),
-    crossScalaVersions -= scala210,
+    crossScalaVersions := Seq(scala211, scala212),
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Circe"
     ),
