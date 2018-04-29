@@ -1,6 +1,5 @@
 import scalariform.formatter.preferences._
 
-val scala210 = "2.10.7"
 val scala211 = "2.11.12"
 val scala212 = "2.12.6"
 val scala213 = "2.13.0-M3"
@@ -8,7 +7,7 @@ val scala213 = "2.13.0-M3"
 lazy val commonSettings = Seq(
   organization := "org.gnieh",
   scalaVersion := scala212,
-  version := "3.0.0-SNAPSHOT",
+  version := "3.0.0",
   description := "Json diff/patch library",
   licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://github.com/gnieh/diffson")),
@@ -48,7 +47,7 @@ lazy val core = project.in(file("core"))
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-core",
-    crossScalaVersions := Seq(scala210, scala211, scala212, scala213),
+    crossScalaVersions := Seq(scala211, scala212, scala213),
     libraryDependencies ++= Seq(
       "org.scalatest" %% "scalatest" % "3.0.5-M1" % Test,
       "org.scalacheck" %% "scalacheck" % "1.14.0" % Test),
@@ -62,7 +61,7 @@ lazy val sprayJson = project.in(file("sprayJson"))
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-spray-json",
-    crossScalaVersions := Seq(scala210, scala211, scala212, scala213),
+    crossScalaVersions := Seq(scala211, scala212, scala213),
     libraryDependencies += "io.spray" %%  "spray-json" % "1.3.4",
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Spray Json"
@@ -83,7 +82,7 @@ lazy val playJson = project.in(file("playJson"))
     OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.play")
   .dependsOn(core % "test->test;compile->compile")
 
-val circeVersion = "0.9.1"
+val circeVersion = "0.9.3"
 lazy val circe = project.in(file("circe"))
   .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
   .settings(commonSettings: _*)
