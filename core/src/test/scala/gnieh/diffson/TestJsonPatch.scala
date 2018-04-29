@@ -4,7 +4,7 @@ package test
 import org.scalatest._
 
 abstract class TestJsonPatch[JsValue, Instance <: DiffsonInstance[JsValue]](val instance: Instance) extends FlatSpec
-    with Matchers {
+  with Matchers {
 
   import instance._
   import provider._
