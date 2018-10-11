@@ -15,7 +15,13 @@
 */
 package gnieh.diffson
 
-abstract class DiffsonInstance[JsValue] extends JsonDiffSupport[JsValue] with JsonPatchSupport[JsValue] with JsonPointerSupport[JsValue] with JsonSupport[JsValue] with LowPriorityImplicits[JsValue] {
+abstract class DiffsonInstance[JsValue]
+  extends JsonDiffSupport[JsValue]
+  with JsonMergePatchSupport[JsValue]
+  with JsonPatchSupport[JsValue]
+  with JsonPointerSupport[JsValue]
+  with JsonSupport[JsValue]
+  with LowPriorityImplicits[JsValue] {
 
   val provider: JsonProvider
 

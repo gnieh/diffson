@@ -66,11 +66,24 @@ abstract class TestSerialization[JsValue, Instance <: DiffsonInstance[JsValue]](
                         |  "path":"/f/g"
                         |}]""".stripMargin
 
+  val mergePatch = """{
+                     |  "a": 1,
+                     |  "b": true
+                     |}""".stripMargin
+
+  val mergePatchValue = """"test""""
+
   val parsed =
     parseJson(patch)
 
   val parsedRemember =
     parseJson(patchRemember)
+
+  val mergeParsed =
+    parseJson(mergePatch)
+
+  val mergeValueParsed =
+    parseJson(mergePatchValue)
 
   val json = JsonPatch(
     Replace(Pointer("a"), marshall(6)),
@@ -87,6 +100,10 @@ abstract class TestSerialization[JsValue, Instance <: DiffsonInstance[JsValue]](
     Test(Pointer("d"), marshall(false)),
     Copy(Pointer("c"), Pointer("e")),
     Move(Pointer("d"), Pointer("f", "g")))
+
+  val mergeJson: JsonMergePatch = JsonMergePatch.Object(Map("a" -> marshall(1), "b" -> marshall(true)))
+
+  val mergeValueJson: JsonMergePatch = JsonMergePatch.Value(marshall("test"))
 
   "a patch json" should "be correctly deserialized from a Json object" in {
     unmarshall[JsonPatch](parsed) should be(json)
@@ -119,7 +136,22 @@ abstract class TestSerialization[JsValue, Instance <: DiffsonInstance[JsValue]](
     a[Exception] should be thrownBy { patch(json) }
   }
 
+  "a merge patch" should "be correctly deserialized from a Json object" in {
+    unmarshall[JsonMergePatch](mergeParsed) should be(mergeJson)
+  }
+
+  it should "be correctly deserialized from a non-object Json value" in {
+    unmarshall[JsonMergePatch](mergeValueParsed) should be(mergeValueJson)
+  }
+
+  "a merge patch object" should "be correctly serialized" in {
+    marshall(mergeJson) should be(mergeParsed)
+  }
+
+  "a non-object patch" should "be correctly serialized" in {
+    marshall(mergeValueJson) should be(mergeValueParsed)
+  }
+
 }
 
 case class Json(a: Int, b: Boolean, c: String, d: List[Int])
-

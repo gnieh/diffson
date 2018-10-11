@@ -127,6 +127,18 @@ class CirceInstance extends DiffsonInstance[Json] {
             F.map(list.traverse(_.as[Operation]))(JsonPatch(_))
           }
       }
+
+    implicit val jsonMergePatchEncoder: Encoder[JsonMergePatch] =
+      Encoder.instance[JsonMergePatch](_.toJson)
+
+    implicit val jsonMergePatchDecoder: Decoder[JsonMergePatch] =
+      new Decoder[JsonMergePatch] {
+        override def apply(c: HCursor): Result[JsonMergePatch] =
+          c.value.asObject match {
+            case Some(obj) => Right(JsonMergePatch.Object(obj.toMap))
+            case None      => Right(JsonMergePatch.Value(c.value))
+          }
+      }
   }
 
   object provider extends JsonProvider {
@@ -162,6 +174,12 @@ class CirceInstance extends DiffsonInstance[Json] {
 
     implicit val patchUnmarshaller: Unmarshaller[JsonPatch] =
       DiffsonProtocol.jsonPatchDecoder
+
+    implicit val mergePatchMarshaller: Marshaller[JsonMergePatch] =
+      DiffsonProtocol.jsonMergePatchEncoder
+
+    implicit val mergePatchUnmarshaller: Unmarshaller[JsonMergePatch] =
+      DiffsonProtocol.jsonMergePatchDecoder
 
     def prettyPrint(value: Json): String =
       value.spaces2

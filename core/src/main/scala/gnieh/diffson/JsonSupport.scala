@@ -36,6 +36,10 @@ trait JsonSupport[JsValue] {
 
     implicit val patchUnmarshaller: Unmarshaller[JsonPatch]
 
+    implicit val mergePatchMarshaller: Marshaller[JsonMergePatch]
+
+    implicit val mergePatchUnmarshaller: Unmarshaller[JsonMergePatch]
+
     def parseJson(s: String): JsValue
 
     def unapplyArray(value: JsValue): Option[Vector[JsValue]]

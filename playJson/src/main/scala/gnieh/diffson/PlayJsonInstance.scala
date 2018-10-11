@@ -141,6 +141,17 @@ class PlayJsonInstance extends DiffsonInstance[JsValue] {
         },
         Writes(patch => JsArray(patch.ops.map(Json.toJson(_)).toVector)))
 
+    implicit val JsonMergePatchFormat: Format[JsonMergePatch] =
+      Format[JsonMergePatch](
+        Reads[JsonMergePatch] {
+          case JsObject(flds) => JsSuccess(JsonMergePatch.Object(flds.toMap))
+          case value          => JsSuccess(JsonMergePatch.Value(value))
+        },
+        Writes {
+          case JsonMergePatch.Object(flds) => JsObject(flds)
+          case JsonMergePatch.Value(v)     => v
+        })
+
   }
 
   object provider extends JsonProvider {
@@ -174,6 +185,12 @@ class PlayJsonInstance extends DiffsonInstance[JsValue] {
 
     implicit val patchUnmarshaller: Unmarshaller[JsonPatch] =
       DiffsonProtocol.JsonPatchFormat
+
+    implicit val mergePatchMarshaller: Marshaller[JsonMergePatch] =
+      DiffsonProtocol.JsonMergePatchFormat
+
+    implicit val mergePatchUnmarshaller: Unmarshaller[JsonMergePatch] =
+      DiffsonProtocol.JsonMergePatchFormat
 
     def prettyPrint(value: JsValue): String =
       Json.prettyPrint(value)

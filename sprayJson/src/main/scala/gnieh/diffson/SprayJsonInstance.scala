@@ -157,6 +157,23 @@ class SprayJsonInstance extends DiffsonInstance[JsValue] {
 
       }
 
+    implicit val JsonMergePatchFormat: JsonFormat[JsonMergePatch] =
+      new JsonFormat[JsonMergePatch] {
+
+        def write(patch: JsonMergePatch): JsValue =
+          patch match {
+            case JsonMergePatch.Object(fields) => JsObject(fields)
+            case JsonMergePatch.Value(value)   => value
+          }
+
+        def read(json: JsValue): JsonMergePatch =
+          json match {
+            case JsObject(fields) => JsonMergePatch.Object(fields)
+            case _                => JsonMergePatch.Value(json)
+          }
+
+      }
+
   }
 
   object provider extends JsonProvider {
@@ -190,6 +207,12 @@ class SprayJsonInstance extends DiffsonInstance[JsValue] {
 
     implicit val patchUnmarshaller: Unmarshaller[JsonPatch] =
       DiffsonProtocol.JsonPatchFormat
+
+    implicit val mergePatchMarshaller: Marshaller[JsonMergePatch] =
+      DiffsonProtocol.JsonMergePatchFormat
+
+    implicit val mergePatchUnmarshaller: Unmarshaller[JsonMergePatch] =
+      DiffsonProtocol.JsonMergePatchFormat
 
     def prettyPrint(value: JsValue): String =
       value.prettyPrint
