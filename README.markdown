@@ -149,7 +149,7 @@ patch(json2) // throws PatchException
 Remembering old values
 ----------------------
 
-The `diff` method takes three parameters. The third one indicates whether or not the generated patch remembers removed and replaced values.
+The `diff` method takes three parameters. The third one indicates whether the generated patch remembers removed and replaced values.
 When set to `true`, the `Replace` and `Remove` operations take an extra field named `old` giving the old value.
 The RFC does not define these fields, but it does not forbid to add extra fields, either. Hence, generated patches can still be interpreted by third party implementations.
 
