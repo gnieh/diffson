@@ -40,7 +40,7 @@ class CirceConformance extends TestRfcConformance[Json, CirceInstance](circe) {
     deriveDecoder[CommentConformanceTest]
 
   implicit lazy val conformanceTestUnmarshaller: Decoder[ConformanceTest] = Decoder.instance[ConformanceTest] { c: HCursor =>
-    val fields = c.fieldSet.getOrElse(Set())
+    val fields = c.keys.fold(Set.empty[String])(_.toSet)
     if (fields contains "error")
       c.as[ErrorConformanceTest]
     else if (fields contains "doc")
