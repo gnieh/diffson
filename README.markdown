@@ -142,7 +142,7 @@ val patch = JsonPatch.parse(raw)
 
 val json1 = """{ "a": 4 }"""
 val json2 = """{ "a": 7 }"""
-patch(json1) // ok json1 is returned unchanched
+patch(json1) // ok json1 is returned unchanged
 patch(json2) // throws PatchException
 ```
 
@@ -151,7 +151,7 @@ Remembering old values
 
 The `diff` method takes three parameters. The third one indicates whether the generated patch remembers removed and replaced values.
 When set to `true`, the `Replace` and `Remove` operations take an extra field named `old` giving the old value.
-The RFC does not define these fields, but it does not forbid to add extra fields either. Hence, generated patches can still be interpreted by third party implementations.
+The RFC does not define these fields, but it does not forbid to add extra fields, either. Hence, generated patches can still be interpreted by third party implementations.
 
 Patches as Collections of Operations
 ------------------------------------
