@@ -1,7 +1,7 @@
 import scalariform.formatter.preferences._
 
 val scala211 = "2.11.12"
-val scala212 = "2.12.6"
+val scala212 = "2.12.7"
 val scala213 = "2.13.0-M3"
 
 lazy val commonSettings = Seq(

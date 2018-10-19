@@ -45,11 +45,11 @@ trait JsonMergePatchSupport[JsValue] {
   object JsonMergePatch {
 
     /** Parses a Json patch as per http://tools.ietf.org/html/rfc6902 */
-    def parse(patch: String): JsonPatch =
-      unmarshall[JsonPatch](parseJson(patch))
+    def parse(patch: String): JsonMergePatch =
+      unmarshall[JsonMergePatch](parseJson(patch))
 
-    def apply(json: JsValue): JsonPatch =
-      unmarshall[JsonPatch](json)
+    def apply(json: JsValue): JsonMergePatch =
+      unmarshall[JsonMergePatch](json)
 
     case class Value(toJson: JsValue) extends JsonMergePatch {
       def apply(json: JsValue): JsValue = toJson
@@ -67,8 +67,8 @@ trait JsonMergePatchSupport[JsValue] {
           fields.foldLeft(toPatch) {
             case (acc, (k, JsNull)) =>
               acc - k
-            case (acc, (k, p @ Object(_))) =>
-              acc.updated(k, p(acc.getOrElse(k, JsNull)))
+            case (acc, (k, JsObject(flds))) =>
+              acc.updated(k, Object(flds)(acc.getOrElse(k, JsNull)))
             case (acc, (k, v)) =>
               acc.updated(k, v)
           }
