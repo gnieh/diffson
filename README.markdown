@@ -12,10 +12,12 @@ It also provides methods to compute _diffs_ between two Json values that produce
 
 - [Getting Started](#getting-started)
 - [Json Library](#json-library)
-- [Basic Usage](#basic-usage)
-- [Remembering old values](#remembering-old-values)
-- [Patches as Collections of Operations](#patches-as-collections-of-operations)
-- [Technical Details](#technical-details)
+- [Json Patch (RFC-6902)](#json-patch-rfc-6902)
+  - [Basic Usage](#basic-usage)
+  - [Remembering old values (RFC-6902)](#remembering-old-values-rfc-6902)
+  - [Patches as Collections of Operations](#patches-as-collections-of-operations)
+  - [Technical Details](#technical-details)
+- [Json Merge Patches (RFC-7396)](#json-merge-patches-rfc-7396)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
