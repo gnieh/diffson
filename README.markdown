@@ -3,8 +3,8 @@ Gnieh Diffson [![Build Status](https://travis-ci.org/gnieh/diffson.png)](https:/
 
 [![Join the chat at https://gitter.im/gnieh/diffson](https://badges.gitter.im/gnieh/diffson.svg)](https://gitter.im/gnieh/diffson?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-A [scala][6] implementation of the [RFC-6901][1] and [RFC-6902][2].
-It also provides methods to compute _diffs_ between two Json values that produce valid Json patches.
+A [scala][6] implementation of the [RFC-6901][1], [RFC-6902][2], and [RFC-7396][11].
+It also provides methods to compute _diffs_ between two Json values that produce valid Json patches or merge patches.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -65,12 +65,14 @@ import gnieh.diffson.circe._
 
 If you want to add support for your favorite Json library, you may only depend on diffson core module `diffson-core` and all you need to do then is to implement the `gnieh.diffson.DiffsonInstance` class, which provides the `JsonProvider` for the specific library. Contribution of new Json libraries in this repository are more than welcome.
 
-Basic Usage
------------
+Json Patch (RFC-6902)
+---------------------
+
+### Basic Usage
 
 Although the library is quite small and easy to use, here comes a summary of its basic usage.
 
-There are three different entities living in the `gnieh.diffson` package:
+There are three different entities living in the `gnieh.diffson` package usefull to work with Json patches:
  - `JsonPointer` which allows to parse and manipulate Json pointers as defined in [RFC-6901][1],
  - `JsonPatch` which allows to parse, create and apply Json patches as defined in [RFC-6902][2],
  - `JsonDiff` which allows to compute the diff between two Json values and create Json patches.
@@ -146,15 +148,13 @@ patch(json1) // ok json1 is returned unchanged
 patch(json2) // throws PatchException
 ```
 
-Remembering old values
-----------------------
+### Remembering old values (RFC-6902)
 
 The `diff` method takes three parameters. The third one indicates whether the generated patch remembers removed and replaced values.
 When set to `true`, the `Replace` and `Remove` operations take an extra field named `old` giving the old value.
 The RFC does not define these fields, but it does not forbid to add extra fields, either. Hence, generated patches can still be interpreted by third party implementations.
 
-Patches as Collections of Operations
-------------------------------------
+### Patches as Collections of Operations
 
 Patches may be seen as collections of operations on which you may want to apply some typical collection functions such as `map`, `flatMap`, filtering, folding, ...
 
@@ -166,8 +166,7 @@ val patch2: JsonPatch =
     yield op
 ```
 
-Technical Details
------------------
+### Technical Details
 
 The _diff_ between two arrays is computed by using the [Patience Diff][4] algorithm to compute the [LCS][5] between both arrays, which is quite simple to implement.
 
@@ -177,6 +176,56 @@ val diff = new JsonDiff(new MyLcsAlgorithm)
 ```
 
 then use `diff` in lieu of `JsonDiff` in the first usage example.
+
+Json Merge Patches (RFC-7396)
+-----------------------------
+
+There are two different entities living in the `gnieh.diffson` package usefull to work with Json merge patches:
+ - `JsonMergePatch` which allows to parse, create and apply Json merge patches as defined in [RFC-7396][11],
+ - `JsonMergeDiff` which allows to compute the diff between two Json values and create Json merge patches.
+
+Basically if one wants to compute the diff between two Json objects, on can execute the following:
+```scala
+val json1 = """{
+              |  "a": 1,
+              |  "b": true,
+              |  "c": "test"
+              |}""".stripMargin
+
+val json2 = """{
+              |  "a": 6,
+              |  "c": "test2",
+              |  "d": false
+              |}""".stripMargin
+
+val patch = JsonMergeDiff.diff(json1, json2)
+
+println(patch)
+```
+which will print the following in the console:
+```json
+{
+  "a": 6,
+  "b": null,
+  "c": "test2",
+  "d": false
+}
+```
+You can then apply the patch to `json1`:
+```scala
+val json3 = patch(json1)
+println(json3)
+```
+
+which prints something like:
+```json
+{
+  "d":false,
+  "c":"test2",
+  "a":6
+}
+```
+which we can easily verify is the same as `json2` modulo reordering of fields.
 
 [1]: http://tools.ietf.org/html/rfc6901
 [2]: http://tools.ietf.org/html/rfc6902
@@ -188,3 +237,4 @@ then use `diff` in lieu of `JsonDiff` in the first usage example.
 [8]: http://search.maven.org/
 [9]: https://www.playframework.com/documentation/latest/ScalaJson
 [10]: https://circe.github.io/circe/
+[11]: http://tools.ietf.org/html/rfc7396
