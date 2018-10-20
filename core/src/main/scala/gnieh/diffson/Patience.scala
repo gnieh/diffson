@@ -67,11 +67,11 @@ class Patience[T](withFallback: Boolean = true) extends Lcs[T] {
   }
 
   /** Returns the list of elements that appear only once in both l1 and l2 ordered as they appear in l2 with their index in l1 */
-  private def uniqueCommons(seq1: Seq[T], seq2: Seq[T]): List[(Occurrence, Int)] = {
+  private def uniqueCommons(seq1: List[T], seq2: List[T]): List[(Occurrence, Int)] = {
     // the values that occur only once in the first sequence
-    val uniques1 = uniques(seq1.toList)
+    val uniques1 = uniques(seq1)
     // the values that occur only once in the second sequence
-    val uniques2 = uniques(seq2.toList)
+    val uniques2 = uniques(seq2)
     // now order the unique occurrences as they appear in the second list
     common(uniques1, uniques2)
   }
@@ -147,7 +147,7 @@ class Patience[T](withFallback: Boolean = true) extends Lcs[T] {
           var lastPos1 = low1 - 1
           var lastPos2 = low2 - 1
           var answer = acc
-          for ((p1, p2) <- longest(uniqueCommons(seq1.view(low1, high1), seq2.view(low2, high2)))) {
+          for ((p1, p2) <- longest(uniqueCommons(seq1.view(low1, high1).toList, seq2.view(low2, high2).toList))) {
             // recurse between lines which are unique in each sequence
             val pos1 = p1 + low1
             val pos2 = p2 + low2

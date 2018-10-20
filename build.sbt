@@ -2,7 +2,7 @@ import scalariform.formatter.preferences._
 
 val scala211 = "2.11.12"
 val scala212 = "2.12.7"
-val scala213 = "2.13.0-M3"
+val scala213 = "2.13.0-M5"
 
 lazy val commonSettings = Seq(
   organization := "org.gnieh",
@@ -49,7 +49,7 @@ lazy val core = project.in(file("core"))
     name := "diffson-core",
     crossScalaVersions := Seq(scala211, scala212, scala213),
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.0.5-M1" % Test,
+      "org.scalatest" %% "scalatest" % "3.0.6-SNAP3" % Test,
       "org.scalacheck" %% "scalacheck" % "1.14.0" % Test),
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Core"
@@ -61,7 +61,7 @@ lazy val sprayJson = project.in(file("sprayJson"))
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-spray-json",
-    crossScalaVersions := Seq(scala211, scala212, scala213),
+    crossScalaVersions := Seq(scala211, scala212),
     libraryDependencies += "io.spray" %%  "spray-json" % "1.3.4",
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Spray Json"
@@ -74,8 +74,8 @@ lazy val playJson = project.in(file("playJson"))
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-play-json",
-    libraryDependencies += "com.typesafe.play" %% "play-json" % "2.6.9",
-    crossScalaVersions := Seq(scala211, scala212, scala213),
+    libraryDependencies += "com.typesafe.play" %% "play-json" % "2.6.10",
+    crossScalaVersions := Seq(scala211, scala212),
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Play! Json"
     ),

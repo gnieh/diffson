@@ -14,9 +14,9 @@ script:
   - sbt clean coverage test coverageReport coverageAggregate codacyCoverage
 
 scala:
-   - 2.10.6
    - 2.11.12
    - 2.12.7
+   - 2.13.0-M5
 
 before_install:
     - pip install --user codecov

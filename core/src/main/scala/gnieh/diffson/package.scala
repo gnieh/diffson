@@ -34,7 +34,7 @@ package object diffson {
       case key          => Left(key)
     }: _*)
 
-    def unapplySeq(pointer: Pointer): Option[Queue[Part]] = Queue.unapplySeq(pointer)
+    def unapplySeq(pointer: Pointer) = Queue.unapplySeq(pointer)
 
   }
 
