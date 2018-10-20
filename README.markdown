@@ -27,7 +27,7 @@ Getting Started
 This library is published in the [Maven][7] [Central Repository][8].
 You can add it to your sbt project by putting this line into your build description:
 ```scala
-libraryDependencies += "org.gnieh" %% f"diffson-$jsonLib" % "3.0.0"
+libraryDependencies += "org.gnieh" %% f"diffson-$jsonLib" % "3.1.0"
 ```
 
 where `jsonLib` is either:
@@ -41,11 +41,11 @@ If you are using maven, add the following dependency to your `pom.xml`:
 <dependency>
   <groupId>org.gnieh</groupId>
   <artifactId>diffson-${json.lib}_${scala.version}</artifactId>
-  <version>3.0.0</version>
+  <version>3.1.0</version>
 </dependency>
 ```
 
-These versions are built for Scala 2.11, 2.12, and 2.13-M3 when the underlying json library already works with 2.13.
+These versions are built for Scala 2.11, 2.12, and 2.13.0-M5 (only `core`).
 
 Json Library
 ------------
