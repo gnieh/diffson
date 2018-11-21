@@ -16,6 +16,8 @@
 package gnieh.diffson
 
 import scala.annotation.tailrec
+import scala.collection.SortedMap
+import scala.collection.immutable.TreeMap
 
 /** Implementation of the patience algorithm [1] to compute the longest common subsequence
  *
@@ -34,9 +36,9 @@ class Patience[T](withFallback: Boolean = true) extends Lcs[T] {
   type Occurrence = (T, Int)
 
   /** Returns occurrences that appear only once in the list, associated with their index */
-  private def uniques(l: List[T]): List[Occurrence] = {
+  private def uniques(l: List[T]): Map[T, Int] = {
     @tailrec
-    def loop(l: List[Occurrence], acc: Map[T, Int]): List[Occurrence] = l match {
+    def loop(l: List[Occurrence], acc: Map[T, Int]): Map[T, Int] = l match {
       case (value, idx) :: tl =>
         if (acc.contains(value))
           // not unique, remove it from the accumulator and go further
@@ -44,26 +46,26 @@ class Patience[T](withFallback: Boolean = true) extends Lcs[T] {
         else
           loop(tl, acc + (value -> idx))
       case Nil =>
-        acc.toList
+        acc
     }
-    loop(l.zipWithIndex, Map())
+    loop(l.zipWithIndex, Map.empty)
   }
 
   /** Takes all occurences from the first sequence and order them as in the second sequence if it is present */
-  private def common(l1: List[Occurrence], l2: List[Occurrence]): List[(Occurrence, Int)] = {
+  private def common(l1: Map[T, Int], l2: Map[T, Int]): List[(Occurrence, Int)] = {
     @tailrec
     def loop(l: List[Occurrence], acc: List[(Occurrence, Int)]): List[(Occurrence, Int)] = l match {
       case occ :: tl =>
         // find the element in the second sequence if present
-        l2.find(_._1 == occ._1) match {
-          case Some((_, idx2)) => loop(tl, (occ -> idx2) :: acc)
-          case None            => loop(tl, acc)
+        l2.get(occ._1) match {
+          case Some(idx2) => loop(tl, (occ -> idx2) :: acc)
+          case None       => loop(tl, acc)
         }
       case Nil =>
         // sort by order of appearance in the second sequence
         acc sortWith (_._2 < _._2)
     }
-    loop(l1, Nil)
+    loop(l1.toList, Nil)
   }
 
   /** Returns the list of elements that appear only once in both l1 and l2 ordered as they appear in l2 with their index in l1 */
@@ -81,29 +83,40 @@ class Patience[T](withFallback: Boolean = true) extends Lcs[T] {
     if (l.isEmpty) {
       Nil
     } else {
-      @tailrec
-      def push(idx1: Int, idx2: Int, stacks: List[List[Stacked]], last: Option[Stacked], acc: List[List[Stacked]]): List[List[Stacked]] = stacks match {
-        case (stack @ (Stacked(idx, _, _) :: _)) :: tl if idx > idx1 =>
-          // we found the right stack
-          acc.reverse ::: (Stacked(idx1, idx2, last) :: stack) :: tl
-        case (stack @ (stacked :: _)) :: tl =>
-          // try the next one
-          push(idx1, idx2, tl, Some(stacked), stack :: acc)
-        case Nil =>
-          // no stack corresponds, create a new one
-          acc.reverse ::: List(List(Stacked(idx1, idx2, last)))
-        case Nil :: _ =>
-          // this case should NEVER happen
-          throw new Exception("No empty stack must exist")
-      }
-      def sort(l: List[(Occurrence, Int)]): List[List[Stacked]] =
-        l.foldLeft(List[List[Stacked]]()) {
-          case (acc, ((_, idx1), idx2)) =>
-            push(idx1, idx2, acc, None, Nil)
+      type Stack = List[Stacked]
+
+      def push(idx1: Int, idx2: Int, stacks: TreeMap[Int, Stack]): TreeMap[Int, Stack] = {
+        stacks.iteratorFrom(idx1).take(1).toList.headOption match {
+          case None =>
+            // corresponding stack not found, create a new one
+            val chainCont = stacks.lastOption.flatMap(_._2.headOption)
+            stacks.updated(idx1, Stacked(idx1, idx2, chainCont) :: Nil)
+          case Some((idx, oldStack)) =>
+            // we found the right stack, replace it by new version
+            val chainCont = {
+              // we have to find a previous stack
+              // don't know how efficient `until` is...
+              stacks.until(idx).lastOption.flatMap(_._2.headOption)
+            }
+            (stacks - idx).updated(idx1, Stacked(idx1, idx2, chainCont) :: oldStack)
         }
+      }
+
+      def sort(l: List[(Occurrence, Int)]): TreeMap[Int, Stack] = {
+        // foreach item push it onto earliest stack for which: stack.idx1 > item.idx1
+        // or create a new stack for it if none can be found
+
+        // stacks are kept in a treeMap (minValue -> stack)
+        // it makes it efficient to find the correct stack to update
+
+        l.foldLeft(TreeMap.empty[Int, Stack]) {
+          case (acc, ((_, idx1), idx2)) =>
+            push(idx1, idx2, acc)
+        }
+      }
       val sorted = sort(l)
       // this call is safe as we know that the list of occurrence is not empty here and that there are no empty stacks
-      val greatest = sorted.last.head
+      val greatest = sorted.last._2.head
       // make the lcs in increasing order
       greatest.chain
     }
