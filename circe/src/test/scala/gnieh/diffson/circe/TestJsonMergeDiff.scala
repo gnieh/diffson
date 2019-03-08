@@ -1,5 +1,7 @@
-package gnieh.diffson
+package diffson
 package test
-package circe
 
-class CirceJsonMergeDiff extends TestJsonMergeDiff[io.circe.Json, CirceInstance](gnieh.diffson.circe) with TestProtocol
+import circe._
+import jsonmergepatch.test._
+
+class CirceJsonMergeDiff extends TestJsonMergeDiff[io.circe.Json] with TestProtocol

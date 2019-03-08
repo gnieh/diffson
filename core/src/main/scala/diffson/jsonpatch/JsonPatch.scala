@@ -35,11 +35,11 @@ sealed abstract class Operation[Json: Jsony] {
   protected[this] def action[F[_]](value: Json, pointer: Pointer, parent: Pointer)(implicit F: MonadError[F, Throwable]): F[Json] = (value, pointer) match {
     case (_, Pointer.Root) =>
       F.pure(value)
-    case (JsObject(fields), Pointer(ObjectField(elem), tl)) if fields.contains(elem) =>
+    case (JsObject(fields), Inner(ObjectField(elem), tl)) if fields.contains(elem) =>
       action[F](fields(elem), tl, parent / elem)
         .map(fields.updated(elem, _))
         .map(JsObject(_))
-    case (JsArray(elems), Pointer(ArrayIndex(idx), tl)) =>
+    case (JsArray(elems), Inner(ArrayIndex(idx), tl)) =>
       if (idx >= elems.size) {
         F.raiseError(new PatchException(show"element $idx does not exist at path $parent"))
       } else {
@@ -49,7 +49,7 @@ sealed abstract class Operation[Json: Jsony] {
             JsArray(before ++ (updated +: after))
           }
       }
-    case (_, Pointer(elem, _)) =>
+    case (_, Inner(elem, _)) =>
       F.raiseError(new PatchException(show"element ${elem.fold(identity[String], _.toString)} does not exist at path $parent"))
   }
 
@@ -59,7 +59,7 @@ sealed abstract class Operation[Json: Jsony] {
 case class Add[Json: Jsony](path: Pointer, value: Json) extends Operation[Json] {
 
   override protected[this] def action[F[_]](original: Json, pointer: Pointer, parent: Pointer)(implicit F: MonadError[F, Throwable]): F[Json] =
-    (value, pointer) match {
+    (original, pointer) match {
       case (_, Pointer.Root) =>
         // we are at the root value, simply return the replacement value
         F.pure(value)
@@ -143,18 +143,18 @@ case class Move[Json: Jsony](from: Pointer, path: Pointer) extends Operation[Jso
   override def apply[F[_]](original: Json)(implicit F: MonadError[F, Throwable]): F[Json] = {
     @tailrec
     def prefix(p1: Pointer, p2: Pointer): Boolean = (p1, p2) match {
-      case (Pointer(h1, tl1), Pointer(h2, tl2)) if h1 == h2 => prefix(tl1, tl2)
-      case (Pointer.Root, Pointer(_, _)) => true
-      case (_, _) => false
+      case (Inner(h1, tl1), Inner(h2, tl2)) if h1 == h2 => prefix(tl1, tl2)
+      case (Pointer.Root, Inner(_, _))                  => true
+      case (_, _)                                       => false
     }
     if (prefix(from, path))
       F.raiseError(new PatchException("The destination path cannot be a descendant of the source path"))
-
-    for {
-      value <- from.evaluate[F, Json](original)
-      cleaned <- Remove[Json](from).apply[F](original)
-      res <- Add[Json](path, value).apply[F](cleaned)
-    } yield res
+    else
+      for {
+        value <- from.evaluate[F, Json](original)
+        cleaned <- Remove[Json](from).apply[F](original)
+        res <- Add[Json](path, value).apply[F](cleaned)
+      } yield res
   }
 
 }

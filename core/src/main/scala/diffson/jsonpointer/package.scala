@@ -19,26 +19,50 @@ import cats._
 import cats.implicits._
 import cats.data.Chain
 
-import scala.language.higherKinds
+import io.estatico.newtype.macros.newtype
+
+import scala.language.{ implicitConversions, higherKinds }
 
 package object jsonpointer {
 
   type Part = Either[String, Int]
-  type Pointer = Chain[Part]
+  @newtype case class Pointer(parts: Chain[Part]) {
+
+    def /(s: String): Pointer =
+      Pointer(parts.append(Left(s)))
+
+    def /(i: Int): Pointer =
+      Pointer(parts.append(Right(i)))
+
+    def evaluate[F[_], Json](json: Json)(implicit F: MonadError[F, Throwable], Json: Jsony[Json]): F[Json] =
+      F.tailRecM((json, Pointer(parts), Pointer.Root)) {
+        case (JsObject(obj), Inner(Left(elem), tl), parent) =>
+          F.pure(Left((obj.getOrElse(elem, Json.Null), tl, parent / elem)))
+        case (JsArray(arr), Inner(Right(idx), tl), parent) =>
+          if (idx >= arr.size)
+            // we know (by construction) that the index is greater or equal to zero
+            F.raiseError(new PointerException(show"element $idx does not exist at path $parent"))
+          else
+            F.pure(Left(arr(idx), tl, parent / idx))
+        case (value, Pointer.Root, _) =>
+          F.pure(Right(value))
+        case (_, Inner(elem, tl), parent) =>
+          val elems = elem.fold(identity, _.toString)
+          F.raiseError(new PointerException(show"element $elems does not exist at path $parent"))
+      }
+
+  }
 
   object Pointer {
 
-    val Root: Pointer = Chain.empty
+    val Root: Pointer = Pointer(Chain.empty)
 
     private val IsDigit = "(0|[1-9][0-9]*)".r
 
-    def apply(elems: String*): Pointer = Chain.fromSeq(elems.map {
+    def apply(elems: String*): Pointer = Pointer(Chain.fromSeq(elems.map {
       case IsDigit(idx) => Right(idx.toInt)
       case key          => Left(key)
-    })
-
-    def unapply(p: Pointer): Option[(Part, Pointer)] =
-      p.uncons
+    }))
 
     def parse[F[_]](input: String)(implicit F: MonadError[F, Throwable]): F[Pointer] =
       if (input == null || input.isEmpty) {
@@ -71,14 +95,30 @@ package object jsonpointer {
         }
       }
 
+    implicit val show: Show[Pointer] = Show.show[Pointer](pointer =>
+      if (pointer.parts.isEmpty)
+        ""
+      else
+        "/" + pointer.parts.map {
+          case Left(l)  => l.replace("~", "~0").replace("/", "~1")
+          case Right(r) => r.toString
+        }.toList.mkString("/"))
+
+  }
+
+  object Inner {
+
+    def unapply(parts: Pointer): Option[(Part, Pointer)] =
+      parts.parts.uncons.map { case (h, t) => (h, Pointer(t)) }
+
   }
 
   object Leaf {
 
     def unapply(p: Pointer): Option[Part] =
-      p.uncons.flatMap {
-        case (a, Chain.nil) => Some(a)
-        case _              => None
+      p.parts.uncons.flatMap {
+        case (a, rest) if rest.isEmpty => Some(a)
+        case _                         => None
       }
 
   }
@@ -89,32 +129,6 @@ package object jsonpointer {
 
   object ObjectField {
     def unapply(e: Part): Option[String] = Some(e.fold(identity, _.toString))
-  }
-
-  implicit class PointerOps(val p: Pointer) extends AnyVal {
-
-    def /(s: String): Pointer =
-      p.append(Left(s))
-
-    def /(i: Int): Pointer =
-      p.append(Right(i))
-
-    def evaluate[F[_], Json](json: Json)(implicit F: MonadError[F, Throwable], Json: Jsony[Json]): F[Json] =
-      F.tailRecM((json, p, Pointer.Root)) {
-        case (JsObject(obj), Pointer(Left(elem), tl), parent) =>
-          F.pure(Left((obj.getOrElse(elem, Json.Null), tl, parent.append(Left(elem)))))
-        case (JsArray(arr), Pointer(Right(idx), tl), parent) =>
-          if (idx >= arr.size)
-            // we know (by construction) that the index is greater or equal to zero
-            F.raiseError(new PatchException(show"element $idx does not exist at path $parent"))
-          else
-            F.pure(Left(arr(idx), tl, parent.append(Right(idx))))
-        case (value, Pointer.Root, _) =>
-          F.pure(Right(value))
-        case (_, Pointer(Left(elem), tl), parent) =>
-          F.raiseError(new PatchException(show"element $elem does not exist at path $parent"))
-      }
-
   }
 
 }

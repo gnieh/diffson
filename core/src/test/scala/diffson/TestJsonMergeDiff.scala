@@ -23,7 +23,7 @@ abstract class TestJsonMergeDiff[Json](implicit Json: Jsony[Json]) extends FlatS
   }
 
   it should "be a simple replacement if the two values are completely different" in {
-    diff(parseJson("true"), parseJson("13")) should be(JsonMergePatch.Value(13))
+    diff(parseJson("true"), parseJson("13")) should be(JsonMergePatch.Value(13: Json))
   }
 
   it should "be generated correctly for nested structures" in {

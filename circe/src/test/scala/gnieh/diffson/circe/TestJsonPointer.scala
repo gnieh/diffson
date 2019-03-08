@@ -1,5 +1,7 @@
-package gnieh.diffson
+package diffson
 package test
-package circe
 
-class CirceTestJsonPointer extends TestJsonPointer[io.circe.Json, CirceInstance](gnieh.diffson.circe) with TestProtocol
+import circe._
+import jsonpointer.test._
+
+class CirceTestJsonPointer extends TestJsonPointer[io.circe.Json] with TestProtocol

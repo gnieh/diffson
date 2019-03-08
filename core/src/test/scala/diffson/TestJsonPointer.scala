@@ -24,7 +24,7 @@ abstract class TestJsonPointer[Json](implicit Json: Jsony[Json]) extends FlatSpe
     parsePointer("") should be(Pointer.Root)
   }
 
-  "the root pointer" should "be parsed as the pointer to empty element at root" in {
+  "the slash pointer" should "be parsed as the pointer to empty element at root" in {
     parsePointer("/") should be(Pointer(""))
   }
 
@@ -71,7 +71,7 @@ abstract class TestJsonPointer[Json](implicit Json: Jsony[Json]) extends FlatSpe
   }
 
   "a pointer to an array element" should "be evaluated to the value at the given index" in {
-    parsePointer("/1").evaluate[Try, Json](parseJson("[1, 2, 3]")).get should be(2)
+    parsePointer("/1").evaluate[Try, Json](parseJson("[1, 2, 3]")).get should be(2: Json)
     parsePointer("/lbl/4").evaluate[Try, Json](parseJson("{ \"lbl\": [3, 7, 5, 4, 7] }")).get should be(7: Json)
   }
 

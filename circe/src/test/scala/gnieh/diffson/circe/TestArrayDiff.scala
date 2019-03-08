@@ -1,5 +1,7 @@
-package gnieh.diffson
+package diffson
 package test
-package circe
 
-class CirceTestArrayDiff extends TestArrayDiff[io.circe.Json, CirceInstance](gnieh.diffson.circe) with TestProtocol
+import circe._
+import jsonpatch.test._
+
+class CirceTestArrayDiff extends TestArrayDiff[io.circe.Json] with TestProtocol

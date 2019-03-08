@@ -24,6 +24,6 @@ abstract class TestArrayDiff[Json](implicit Json: Jsony[Json]) extends Propertie
   property("arrayDiff") = forAll {
     (a: Seq[Int], b: Seq[Int]) =>
       val p = diff(a: Json, b: Json)
-      p[Try](a).get == b
+      p[Try](a).get == (b: Json)
   }
 }

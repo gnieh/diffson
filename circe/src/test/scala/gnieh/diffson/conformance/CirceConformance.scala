@@ -13,8 +13,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package gnieh.diffson
-package conformance
+package diffson
+package test
+
+import circe._
+import jsonpatch.conformance._
 
 import io.circe._
 import io.circe.syntax._
@@ -23,12 +26,7 @@ import cats.implicits._
 
 import scala.io.Source
 
-class CirceConformance extends TestRfcConformance[Json, CirceInstance](circe) {
-
-  import circe._
-
-  // [[io.circe.Json.JArray]] is private
-  type JsArray = io.circe.Json
+class CirceConformance extends TestRfcConformance[Json] with TestProtocol {
 
   implicit lazy val successConformanceTestUnmarshaller: Decoder[SuccessConformanceTest] =
     deriveDecoder[SuccessConformanceTest]

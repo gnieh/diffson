@@ -1,18 +1,31 @@
-package gnieh.diffson
+package diffson
 package test
-package circe
+
+import circe._
+import jsonpatch._
+import jsonmergepatch._
 
 import io.circe._
+import io.circe.parser._
+import io.circe.syntax._
 import io.circe.generic.semiauto._
 
+import scala.language.implicitConversions
+
 trait TestProtocol {
-  implicit def intSeqMarshaller: Encoder[Seq[Int]] = Encoder.encodeIterable[Int, Seq]
-  implicit def intSeqUnmarshaller: Decoder[Seq[Int]] = Decoder[List[Int]].map(_.toSeq)
-  implicit def boolMarshaller: Encoder[Boolean] = Encoder.encodeBoolean
-  implicit def boolUnmarshaller: Decoder[Boolean] = Decoder.decodeBoolean
-  implicit def intMarshaller: Encoder[Int] = Encoder.encodeInt
-  implicit def intUnmarshaller: Decoder[Int] = Decoder.decodeInt
-  implicit def stringMarshaller: Encoder[String] = Encoder.encodeString
-  implicit def testJsonMarshaller: Encoder[test.Json] = deriveEncoder[test.Json]
-  implicit def testJsonUnmarshaller: Decoder[test.Json] = deriveDecoder[test.Json]
+  implicit def intSeqMarshaller(is: Seq[Int]) = is.asJson
+  implicit def intSeqUnmarshaller(json: Json) = json.as[Seq[Int]].right.get
+  implicit def boolMarshaller(b: Boolean) = Json.fromBoolean(b)
+  implicit def intMarshaller(i: Int) = Json.fromInt(i)
+  implicit def stringMarshaller(s: String) = Json.fromString(s)
+  implicit def jsonEq = Json.eqJson
+
+  def parseJson(s: String): Json =
+    parse(s).right.get
+  def parsePatch(s: String): JsonPatch[Json] =
+    parse(s).flatMap(_.as[JsonPatch[Json]]).toTry.get
+  def parsePatch(json: Json): JsonPatch[Json] =
+    json.as[JsonPatch[Json]].toTry.get
+  def parseMergePatch(s: String): JsonMergePatch[Json] =
+    parse(s).flatMap(_.as[JsonMergePatch[Json]]).toTry.get
 }

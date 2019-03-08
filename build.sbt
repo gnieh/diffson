@@ -12,6 +12,8 @@ lazy val commonSettings = Seq(
   licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://github.com/gnieh/diffson")),
   parallelExecution := false,
+  addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
+  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.9" cross CrossVersion.binary),
   scalariformAutoformat := true,
   scalariformPreferences := {
     scalariformPreferences.value
@@ -40,7 +42,7 @@ lazy val diffson = project.in(file("."))
   .settings(
     name := "diffson",
     packagedArtifacts := Map())
-  .aggregate(core)//, sprayJson, playJson, circe)
+  .aggregate(core, circe)//, sprayJson, playJson)
 
 lazy val core = project.in(file("core"))
   .enablePlugins(SbtOsgi, ScoverageSbtPlugin, ScalaUnidocPlugin)
@@ -50,6 +52,7 @@ lazy val core = project.in(file("core"))
     crossScalaVersions := Seq(scala211, scala212, scala213),
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-core" % "1.6.0",
+      "io.estatico" %% "newtype" % "0.4.2",
       "org.scalatest" %% "scalatest" % "3.1.0-SNAP7" % Test,
       "org.scalacheck" %% "scalacheck" % "1.14.0" % Test),
     OsgiKeys.additionalHeaders := Map (
@@ -82,24 +85,24 @@ lazy val core = project.in(file("core"))
 //    ),
 //    OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.play")
 //  .dependsOn(core % "test->test;compile->compile")
-//
-//val circeVersion = "0.10.0"
-//lazy val circe = project.in(file("circe"))
-//  .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
-//  .settings(commonSettings: _*)
-//  .settings(
-//    name := "diffson-circe",
-//    libraryDependencies ++= Seq(
-//      "io.circe" %% "circe-core"    % circeVersion,
-//      "io.circe" %% "circe-parser"  % circeVersion,
-//      "io.circe" %% "circe-generic" % circeVersion % "test"
-//    ),
-//    crossScalaVersions := Seq(scala211, scala212),
-//    OsgiKeys.additionalHeaders := Map (
-//      "Bundle-Name" -> "Gnieh Diffson Circe"
-//    ),
-//    OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.circe")
-//  .dependsOn(core % "test->test;compile->compile")
+
+val circeVersion = "0.11.1"
+lazy val circe = project.in(file("circe"))
+  .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    name := "diffson-circe",
+    libraryDependencies ++= Seq(
+      "io.circe" %% "circe-core"    % circeVersion,
+      "io.circe" %% "circe-parser"  % circeVersion,
+      "io.circe" %% "circe-generic" % circeVersion % "test"
+    ),
+    crossScalaVersions := Seq(scala211, scala212),
+    OsgiKeys.additionalHeaders := Map (
+      "Bundle-Name" -> "Gnieh Diffson Circe"
+    ),
+    OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.circe")
+  .dependsOn(core % "test->test;compile->compile")
 
 lazy val publishSettings = Seq(
   publishMavenStyle := true,

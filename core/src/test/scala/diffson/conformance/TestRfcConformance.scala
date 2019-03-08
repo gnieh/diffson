@@ -52,29 +52,29 @@ abstract class TestRfcConformance[Json: Jsony] extends AnyFunSuite with Matchers
     case SuccessConformanceTest(doc, patch, Some(expected), comment, Some(true)) =>
       ignore(comment.getOrElse(f"$doc patched with $patch")) {
         val p = parsePatch(patch)
-        p[Try](doc) should be(expected)
+        p[Try](doc).get should be(expected)
       }
     case SuccessConformanceTest(doc, patch, Some(expected), comment, _) =>
       test(comment.getOrElse(f"$doc patched with $patch")) {
         val p = parsePatch(patch)
-        p[Try](doc) should be(expected)
+        p[Try](doc).get should be(expected)
       }
     case SuccessConformanceTest(doc, patch, None, comment, Some(true)) =>
       ignore(comment.getOrElse(f"$doc patched with $patch")) {
         val p = parsePatch(patch)
-        p[Try](doc)
+        p[Try](doc).get
       }
     case SuccessConformanceTest(doc, patch, None, comment, _) =>
       test(comment.getOrElse(f"$doc patched with $patch")) {
         val p = parsePatch(patch)
-        p[Try](doc)
+        p[Try](doc).get
       }
 
     case ErrorConformanceTest(doc, patch, error, comment, Some(true)) =>
       ignore(comment.getOrElse(f"$doc patched with $patch")) {
         val exn = intercept[Exception] {
           val p = parsePatch(patch)
-          p[Try](doc)
+          p[Try](doc).get
         }
         exn.getMessage should be(error)
       }
@@ -82,7 +82,7 @@ abstract class TestRfcConformance[Json: Jsony] extends AnyFunSuite with Matchers
       test(comment.getOrElse(f"$doc patched with $patch")) {
         val exn = intercept[Exception] {
           val p = parsePatch(patch)
-          p[Try](doc)
+          p[Try](doc).get
         }
         exn.getMessage should be(error)
       }

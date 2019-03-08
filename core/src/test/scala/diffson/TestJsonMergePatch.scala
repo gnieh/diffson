@@ -11,7 +11,7 @@ import scala.util.Try
 abstract class TestJsonMergePatch[Json](implicit Json: Jsony[Json]) extends FlatSpec with Matchers {
 
   def parseJson(s: String): Json
-  def parsePatch(s: String): JsonMergePatch[Json]
+  def parseMergePatch(s: String): JsonMergePatch[Json]
 
   val samples = List(
     ("""{"a":"b"}""", """{"a":"c"}""", """{"a":"c"}"""),
@@ -33,7 +33,7 @@ abstract class TestJsonMergePatch[Json](implicit Json: Jsony[Json]) extends Flat
   for ((original, patch, result) <- samples)
     s"patching $original with $patch" should s"result in $result" in {
       val orig = parseJson(original)
-      val p = parsePatch(patch)
+      val p = parseMergePatch(patch)
       val res = parseJson(result)
       p[Try](orig).get should be(res)
     }
