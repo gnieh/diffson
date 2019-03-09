@@ -35,7 +35,8 @@ package object jsonpatch {
   }
 
   object simplediff {
-    private implicit def nolcs[Json] = new Lcs[Json] {
+    private implicit def nolcs[Json]: Lcs[Json] = new Lcs[Json] {
+      def savedHashes = this
       def lcs(seq1: List[Json], seq2: List[Json], low1: Int, high1: Int, low2: Int, high2: Int): List[(Int, Int)] = Nil
     }
     implicit def JsonDiffDiff[Json: Jsony]: Diff[Json, JsonPatch[Json]] =

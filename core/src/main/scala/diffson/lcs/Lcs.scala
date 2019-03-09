@@ -22,6 +22,11 @@ package diffson.lcs
  */
 abstract class Lcs[T] {
 
+  /** Returns an instance of this Lcs algorithm that
+   *  precomputes and store hashes of elements to diff.
+   */
+  def savedHashes: Lcs[T]
+
   /** Computes the longest commons subsequence between both inputs.
    *  Returns an ordered list containing the indices in the first sequence and in the second sequence.
    */

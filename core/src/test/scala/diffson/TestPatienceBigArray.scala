@@ -7,7 +7,7 @@ import org.scalatest._
 
 class TestPatienceBigArray extends FlatSpec with Matchers {
 
-  val lcsImpl = new HashedLcs(new Patience[Int])
+  val lcsImpl = new Patience[Int].savedHashes
 
   "patience algorithm" should "be able to compute Lcs for big arrays of unique commons" in {
     val a = Stream.from(0).take(5000).toList

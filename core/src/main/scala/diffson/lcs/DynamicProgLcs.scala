@@ -95,4 +95,6 @@ class DynamicProgLcs[T: Eq] extends Lcs[T] {
     (prefix, seq1.drop(prefix.size).dropRight(suffix.size), seq2.drop(prefix.size).dropRight(suffix.size), suffix)
   }
 
+  def savedHashes: Lcs[T] =
+    new HashedLcs(new DynamicProgLcs[Hashed[T]])
 }

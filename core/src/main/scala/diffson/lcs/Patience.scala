@@ -178,21 +178,21 @@ class Patience[T: Eq](withFallback: Boolean = true) extends Lcs[T] {
             // the size of the accumulator increased, find
             // matches between the last match and the end
             loop(lastPos1 + 1, lastPos2 + 1, high1, high2, answer)
-          } else if (seq1(low1) == seq2(low2)) {
+          } else if (seq1(low1) === seq2(low2)) {
             // find lines that match at the beginning
             var newLow1 = low1
             var newLow2 = low2
-            while (newLow1 < high1 && newLow2 < high2 && seq1(newLow1) == seq2(newLow2)) {
+            while (newLow1 < high1 && newLow2 < high2 && seq1(newLow1) === seq2(newLow2)) {
               answer = (newLow1, newLow2) :: answer
               newLow1 += 1
               newLow2 += 1
             }
             loop(newLow1, newLow2, high1, high2, answer)
-          } else if (seq1(high1 - 1) == seq2(high2 - 1)) {
+          } else if (seq1(high1 - 1) === seq2(high2 - 1)) {
             // find lines that match at the end
             var newHigh1 = high1 - 1
             var newHigh2 = high2 - 1
-            while (newHigh1 > low1 && newHigh2 > low2 && seq1(newHigh1 - 1) == seq2(newHigh2 - 1)) {
+            while (newHigh1 > low1 && newHigh2 > low2 && seq1(newHigh1 - 1) === seq2(newHigh2 - 1)) {
               newHigh1 -= 1
               newHigh2 -= 1
             }
@@ -218,6 +218,9 @@ class Patience[T: Eq](withFallback: Boolean = true) extends Lcs[T] {
       loop(low1, low2, high1, high2, Nil).reverse
     }
   }
+
+  def savedHashes: Lcs[T] =
+    new HashedLcs(new Patience[Hashed[T]](withFallback))
 
 }
 
