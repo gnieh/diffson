@@ -1,13 +1,13 @@
 import scalariform.formatter.preferences._
 
 val scala211 = "2.11.12"
-val scala212 = "2.12.7"
+val scala212 = "2.12.8"
 val scala213 = "2.13.0-M5"
 
 lazy val commonSettings = Seq(
   organization := "org.gnieh",
   scalaVersion := scala212,
-  version := "3.2.0-SNAPSHOT",
+  version := "3.1.1",
   description := "Json diff/patch library",
   licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://github.com/gnieh/diffson")),
@@ -82,7 +82,7 @@ lazy val playJson = project.in(file("playJson"))
     OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.play")
   .dependsOn(core % "test->test;compile->compile")
 
-val circeVersion = "0.10.0"
+val circeVersion = "0.11.1"
 lazy val circe = project.in(file("circe"))
   .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
   .settings(commonSettings: _*)
