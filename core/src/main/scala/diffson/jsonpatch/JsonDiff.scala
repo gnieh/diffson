@@ -143,7 +143,3 @@ class JsonDiff[Json](diffArray: Boolean)(implicit J: Jsony[Json], Lcs: Lcs[Json]
     loop(arr1, arr2, 0, 0, 0, lcs, Nil).reverse
   }
 }
-
-object JsonDiff {
-
-}
