@@ -4,8 +4,7 @@ language: scala
 branches:
   only:
     - master
-    - v2.1.x
-    - v2.2.x
+    - v3.1.x
 
 before_script:
   - sudo chmod +x /usr/local/bin/sbt
@@ -15,7 +14,7 @@ script:
 
 scala:
    - 2.11.12
-   - 2.12.7
+   - 2.12.8
    - 2.13.0-M5
 
 before_install:
