@@ -23,7 +23,7 @@ import cats._
 trait Jsony[Json] extends Eq[Json] with Show[Json] {
   def makeObject(fields: Map[String, Json]): Json
   def fields(json: Json): Option[Map[String, Json]]
-  def makeArray(values: List[Json]): Json
-  def array(json: Json): Option[List[Json]]
+  def makeArray(values: Vector[Json]): Json
+  def array(json: Json): Option[Vector[Json]]
   def Null: Json
 }

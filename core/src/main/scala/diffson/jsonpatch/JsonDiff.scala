@@ -33,7 +33,7 @@ class JsonDiff[Json](diffArray: Boolean)(implicit J: Jsony[Json], Lcs: Lcs[Json]
       Nil
     else (json1, json2) match {
       case (JsObject(fields1), JsObject(fields2))      => fieldsDiff(fields1.toList, fields2.toList, pointer)
-      case (JsArray(arr1), JsArray(arr2)) if diffArray => arraysDiff(arr1, arr2, pointer)
+      case (JsArray(arr1), JsArray(arr2)) if diffArray => arraysDiff(arr1.toList, arr2.toList, pointer)
       case (_, _)                                      => List(Replace(pointer, json2))
     }
 

@@ -45,8 +45,8 @@ sealed abstract class Operation[Json: Jsony] {
       } else {
         action[F](elems(idx), tl, parent / idx)
           .map { updated =>
-            val (before, (_ :: after)) = elems.splitAt(idx)
-            JsArray(before ++ (updated +: after))
+            val (before, after) = elems.splitAt(idx)
+            JsArray(before ++ (updated +: after.tail))
           }
       }
     case (_, Inner(elem, _)) =>

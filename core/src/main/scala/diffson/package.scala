@@ -18,9 +18,9 @@ import scala.language.higherKinds
 package object diffson {
 
   object JsArray {
-    def apply[Json](values: List[Json])(implicit Json: Jsony[Json]): Json =
+    def apply[Json](values: Vector[Json])(implicit Json: Jsony[Json]): Json =
       Json.makeArray(values)
-    def unapply[Json](json: Json)(implicit Json: Jsony[Json]): Option[List[Json]] =
+    def unapply[Json](json: Json)(implicit Json: Jsony[Json]): Option[Vector[Json]] =
       Json.array(json)
   }
 

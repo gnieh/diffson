@@ -32,13 +32,13 @@ package object circe {
 
     def Null: Json = Json.Null
 
-    def array(json: Json): Option[List[Json]] =
-      json.asArray.map(_.toList)
+    def array(json: Json): Option[Vector[Json]] =
+      json.asArray
 
     def fields(json: Json): Option[Map[String, Json]] =
       json.asObject.map(_.toMap)
 
-    def makeArray(values: List[Json]): Json =
+    def makeArray(values: Vector[Json]): Json =
       Json.fromValues(values)
 
     def makeObject(fields: Map[String, Json]): Json =

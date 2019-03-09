@@ -58,7 +58,7 @@ abstract class TestSimpleDiff[Json](implicit val Json: Jsony[Json]) extends Flat
   it should "correctly handle array diffs in objects (i.e. just replaced)" in {
     val json1 = parseJson("""{"lbl": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}""")
     val json2 = parseJson("""{"lbl": [1, 4, 5, 11, 6, 7]}""")
-    diff(json1, json2) should be(JsonPatch[Json](Replace(Pointer("lbl"), JsArray(List[Json](1, 4, 5, 11, 6, 7)))))
+    diff(json1, json2) should be(JsonPatch[Json](Replace(Pointer("lbl"), JsArray(Vector[Json](1, 4, 5, 11, 6, 7)))))
   }
 
   it should "contain a replace operation for each changed field value" in {
