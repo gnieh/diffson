@@ -189,6 +189,12 @@ case class JsonPatch[Json: Jsony](ops: List[Operation[Json]]) {
 
 object JsonPatch {
 
+  implicit def JsonPatchPatch[F[_], Json](implicit F: MonadError[F, Throwable], Json: Jsony[Json]): Patch[F, Json, JsonPatch[Json]] =
+    new Patch[F, Json, JsonPatch[Json]] {
+      def apply(json: Json, patch: JsonPatch[Json]): F[Json] =
+        patch[F](json)
+    }
+
   def apply[Json: Jsony](ops: Operation[Json]*): JsonPatch[Json] =
     JsonPatch(ops.toList)
 

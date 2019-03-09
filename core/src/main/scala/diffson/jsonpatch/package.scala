@@ -23,12 +23,6 @@ import scala.language.higherKinds
 
 package object jsonpatch {
 
-  implicit def JsonPatchPatch[F[_], Json](implicit F: MonadError[F, Throwable], Json: Jsony[Json]): Patch[F, Json, JsonPatch[Json]] =
-    new Patch[F, Json, JsonPatch[Json]] {
-      def apply(json: Json, patch: JsonPatch[Json]): F[Json] =
-        patch[F](json)
-    }
-
   object lcsdiff {
     implicit def JsonDiffDiff[Json: Jsony: Lcs]: Diff[Json, JsonPatch[Json]] =
       new JsonDiff[Json](true)
