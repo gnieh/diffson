@@ -42,7 +42,7 @@ lazy val diffson = project.in(file("."))
   .settings(
     name := "diffson",
     packagedArtifacts := Map())
-  .aggregate(core, sprayJson, circe, playJson)
+  .aggregate(core, sprayJson, circe, playJson, testkit)
 
 lazy val core = project.in(file("core"))
   .enablePlugins(SbtOsgi, ScoverageSbtPlugin, ScalaUnidocPlugin)
@@ -52,13 +52,22 @@ lazy val core = project.in(file("core"))
     crossScalaVersions := Seq(scala211, scala212, scala213),
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-core" % "1.6.0",
-      "io.estatico" %% "newtype" % "0.4.2",
-      "org.scalatest" %% "scalatest" % "3.1.0-SNAP7" % Test,
-      "org.scalacheck" %% "scalacheck" % "1.14.0" % Test),
+      "io.estatico" %% "newtype" % "0.4.2"),
     OsgiKeys.additionalHeaders := Map (
       "Bundle-Name" -> "Gnieh Diffson Core"
     ),
     OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.core")
+
+lazy val testkit = project.in(file("testkit"))
+  .enablePlugins(ScoverageSbtPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    name := "diffson-testkit",
+    crossScalaVersions := Seq(scala211, scala212, scala213),
+    libraryDependencies ++= Seq(
+      "org.scalatest" %% "scalatest" % "3.1.0-SNAP7",
+      "org.scalacheck" %% "scalacheck" % "1.14.0"))
+  .dependsOn(core)
 
 lazy val sprayJson = project.in(file("sprayJson"))
   .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
@@ -71,7 +80,7 @@ lazy val sprayJson = project.in(file("sprayJson"))
       "Bundle-Name" -> "Gnieh Diffson Spray Json"
     ),
     OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.spray")
-  .dependsOn(core % "test->test;compile->compile")
+  .dependsOn(core, testkit % Test)
 
 lazy val playJson = project.in(file("playJson"))
   .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
@@ -84,7 +93,7 @@ lazy val playJson = project.in(file("playJson"))
       "Bundle-Name" -> "Gnieh Diffson Play! Json"
     ),
     OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.play")
-  .dependsOn(core % "test->test;compile->compile")
+  .dependsOn(core, testkit % Test)
 
 val circeVersion = "0.11.1"
 lazy val circe = project.in(file("circe"))
@@ -102,7 +111,7 @@ lazy val circe = project.in(file("circe"))
       "Bundle-Name" -> "Gnieh Diffson Circe"
     ),
     OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.circe")
-  .dependsOn(core % "test->test;compile->compile")
+  .dependsOn(core, testkit % Test)
 
 lazy val publishSettings = Seq(
   publishMavenStyle := true,
