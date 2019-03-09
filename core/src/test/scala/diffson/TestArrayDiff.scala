@@ -15,7 +15,7 @@ import scala.language.implicitConversions
 
 abstract class TestArrayDiff[Json](implicit Json: Jsony[Json]) extends Properties("TestArrayDiff") {
 
-  implicit val lcsalg = new lcs.Patience[Json]
+  implicit val lcsalg = new lcs.HashedLcs(lcs.Patience[Json])
 
   implicit def intSeqMarshaller(s: Seq[Int]): Json
 
