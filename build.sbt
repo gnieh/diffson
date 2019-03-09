@@ -1,7 +1,7 @@
 import scalariform.formatter.preferences._
 
 val scala211 = "2.11.12"
-val scala212 = "2.12.7"
+val scala212 = "2.12.8"
 val scala213 = "2.13.0-M5"
 
 lazy val commonSettings = Seq(
@@ -82,7 +82,7 @@ lazy val playJson = project.in(file("playJson"))
     OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.play")
   .dependsOn(core % "test->test;compile->compile")
 
-val circeVersion = "0.10.0"
+val circeVersion = "0.11.1"
 lazy val circe = project.in(file("circe"))
   .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
   .settings(commonSettings: _*)
