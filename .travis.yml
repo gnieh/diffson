@@ -10,7 +10,7 @@ before_script:
   - sudo chmod +x /usr/local/bin/sbt
 
 script:
-  - sbt clean coverage test coverageReport coverageAggregate codacyCoverage
+  - sbt ++$TRAVIS_SCALA_VERSION clean coverage test coverageReport coverageAggregate codacyCoverage
 
 scala:
    - 2.11.12
