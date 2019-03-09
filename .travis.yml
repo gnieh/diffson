@@ -10,7 +10,7 @@ before_script:
   - sudo chmod +x /usr/local/bin/sbt
 
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION clean coverage test coverageReport coverageAggregate codacyCoverage
+  - if [[ $TRAVIS_SCALA_VERSION == 2.12* ]]; then sbt ++$TRAVIS_SCALA_VERSION clean coverage test coverageReport coverageAggregate codacyCoverage; else sbt ++$TRAVIS_SCALA_VERSION test; fi
 
 scala:
    - 2.11.12
@@ -21,7 +21,7 @@ before_install:
     - pip install --user codecov
 
 after_success:
-  - codecov
+  - if [[ $TRAVIS_SCALA_VERSION == 2.12* ]]; then codecov; fi
 
 jdk:
   - openjdk8
