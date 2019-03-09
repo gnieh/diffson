@@ -24,4 +24,4 @@ after_success:
   - codecov
 
 jdk:
-  - oraclejdk8
+  - openjdk8
