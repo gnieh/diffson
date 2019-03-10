@@ -65,7 +65,9 @@ lazy val core = project.in(file("core"))
     crossScalaVersions := Seq(scala211, scala212/*, scala213*/),
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-core" % "1.6.0",
-      "io.estatico" %% "newtype" % "0.4.2"))
+      "io.estatico" %% "newtype" % "0.4.2",
+      "org.scalatest" %% "scalatest" % "3.1.0-SNAP7",
+      "org.scalacheck" %% "scalacheck" % "1.14.0"))
 
 lazy val testkit = project.in(file("testkit"))
   .enablePlugins(ScoverageSbtPlugin)
