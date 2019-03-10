@@ -37,6 +37,7 @@ lazy val commonSettings = Seq(
       .setPreference(MultilineScaladocCommentsStartOnFirstLine, true)
   },
   fork in test := true,
+  coverageExcludedPackages := "<empty>;.*Test.*",
   scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits"),
   autoAPIMappings := true,
   scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked")) ++ Seq(
