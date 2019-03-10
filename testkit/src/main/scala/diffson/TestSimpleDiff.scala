@@ -1,6 +1,5 @@
 package diffson
 package jsonpatch
-package test
 
 import simplediff._
 import jsonpointer._
@@ -14,15 +13,7 @@ import scala.util.Try
 
 import scala.language.implicitConversions
 
-abstract class TestSimpleDiff[Json](implicit val Json: Jsony[Json]) extends FlatSpec with Matchers {
-
-  def parseJson(s: String): Json
-  def parsePatch(s: String): JsonPatch[Json]
-
-  implicit def boolMarshaller(b: Boolean): Json
-  implicit def intMarshaller(i: Int): Json
-  implicit def stringMarshaller(s: String): Json
-  implicit def jsonEq: Eq[Json]
+abstract class TestSimpleDiff[Json](implicit val Json: Jsony[Json]) extends FlatSpec with Matchers with TestProtocol[Json] {
 
   "a diff" should "be empty if created between two equal values" in {
     val json = parseJson("true")

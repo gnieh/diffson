@@ -1,7 +1,6 @@
 package diffson
-package test
+package playJson
 
-import playJson._
 import jsonpatch._
 import jsonmergepatch._
 
@@ -9,7 +8,7 @@ import play.api.libs.json._
 
 import scala.language.implicitConversions
 
-trait TestProtocol {
+trait PlayJsonTestProtocol extends TestProtocol[JsValue] {
   import DiffsonProtocol._
 
   implicit def intSeqMarshaller(is: Seq[Int]) = Json.toJson(is)
@@ -27,4 +26,10 @@ trait TestProtocol {
     json.as[JsonPatch[JsValue]]
   def parseMergePatch(s: String): JsonMergePatch[JsValue] =
     Json.parse(s).as[JsonMergePatch[JsValue]]
+  def parseMergePatch(json: JsValue): JsonMergePatch[JsValue] =
+    json.as[JsonMergePatch[JsValue]]
+  def serializePatch(p: JsonPatch[JsValue]): JsValue =
+    Json.toJson(p)
+  def serializeMergePatch(p: JsonMergePatch[JsValue]): JsValue =
+    Json.toJson(p)
 }

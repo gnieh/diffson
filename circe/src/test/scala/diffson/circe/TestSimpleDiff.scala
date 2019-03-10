@@ -1,7 +1,6 @@
 package diffson
-package test
+package circe
 
-import circe._
-import jsonpatch.test._
+import jsonpatch._
 
-class CirceSimpleDiff extends TestSimpleDiff[io.circe.Json] with TestProtocol
+class CirceSimpleDiff extends TestSimpleDiff[io.circe.Json] with CirceTestProtocol

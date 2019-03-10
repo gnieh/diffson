@@ -1,6 +1,5 @@
 package diffson
 package jsonpatch
-package test
 
 import lcsdiff._
 
@@ -13,13 +12,9 @@ import scala.util.Try
 
 import scala.language.implicitConversions
 
-abstract class TestArrayDiff[Json](implicit Json: Jsony[Json]) extends Properties("TestArrayDiff") {
+abstract class TestArrayDiff[Json](implicit Json: Jsony[Json]) extends Properties("TestArrayDiff") with TestProtocol[Json] {
 
   implicit val lcsalg = new lcs.Patience[Json]
-
-  implicit def intSeqMarshaller(s: Seq[Int]): Json
-
-  implicit def intSeqUnmarshaller(j: Json): Seq[Int]
 
   property("arrayDiff") = forAll {
     (a: Seq[Int], b: Seq[Int]) =>

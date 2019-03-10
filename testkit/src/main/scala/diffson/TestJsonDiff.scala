@@ -1,6 +1,5 @@
 package diffson
 package jsonpatch
-package test
 
 import lcsdiff._
 import jsonpointer._
@@ -14,15 +13,7 @@ import scala.util.Try
 
 import scala.language.implicitConversions
 
-abstract class TestJsonDiff[Json](implicit Json: Jsony[Json]) extends FlatSpec with Matchers {
-
-  def parseJson(s: String): Json
-  def parsePatch(s: String): JsonPatch[Json]
-
-  implicit def boolMarshaller(b: Boolean): Json
-  implicit def intMarshaller(i: Int): Json
-  implicit def stringMarshaller(s: String): Json
-  implicit def jsonEq: Eq[Json]
+abstract class TestJsonDiff[Json](implicit Json: Jsony[Json]) extends FlatSpec with Matchers with TestProtocol[Json] {
 
   implicit val lcsalg = new lcs.Patience[Json]
 

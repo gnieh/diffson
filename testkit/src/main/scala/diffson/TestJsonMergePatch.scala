@@ -1,6 +1,5 @@
 package diffson
 package jsonmergepatch
-package test
 
 import cats.implicits._
 
@@ -8,10 +7,7 @@ import org.scalatest._
 
 import scala.util.Try
 
-abstract class TestJsonMergePatch[Json](implicit Json: Jsony[Json]) extends FlatSpec with Matchers {
-
-  def parseJson(s: String): Json
-  def parseMergePatch(s: String): JsonMergePatch[Json]
+abstract class TestJsonMergePatch[Json](implicit Json: Jsony[Json]) extends FlatSpec with Matchers with TestProtocol[Json] {
 
   val samples = List(
     ("""{"a":"b"}""", """{"a":"c"}""", """{"a":"c"}"""),

@@ -1,5 +1,4 @@
 package diffson.lcs
-package test
 
 import org.scalatest._
 

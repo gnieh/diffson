@@ -1,7 +1,6 @@
 package diffson
-package test
+package sprayJson
 
-import sprayJson._
-import jsonmergepatch.test._
+import jsonmergepatch._
 
-class SprayJsonJsonMergeDiff extends TestJsonMergeDiff[spray.json.JsValue] with TestProtocol
+class SprayJsonJsonMergeDiff extends TestJsonMergeDiff[spray.json.JsValue] with SprayJsonTestProtocol

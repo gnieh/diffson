@@ -1,7 +1,6 @@
 package diffson
-package test
+package playJson
 
-import playJson._
-import jsonpointer.test._
+import jsonpointer._
 
-class PlayJsonTestJsonPointer extends TestJsonPointer[play.api.libs.json.JsValue] with TestProtocol
+class PlayJsonTestJsonPointer extends TestJsonPointer[play.api.libs.json.JsValue] with PlayJsonTestProtocol

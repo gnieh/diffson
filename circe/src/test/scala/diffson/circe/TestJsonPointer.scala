@@ -1,7 +1,6 @@
 package diffson
-package test
+package circe
 
-import circe._
-import jsonpointer.test._
+import jsonpointer._
 
-class CirceTestJsonPointer extends TestJsonPointer[io.circe.Json] with TestProtocol
+class CirceTestJsonPointer extends TestJsonPointer[io.circe.Json] with CirceTestProtocol

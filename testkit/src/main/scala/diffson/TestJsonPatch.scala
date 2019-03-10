@@ -1,6 +1,5 @@
 package diffson
 package jsonpatch
-package test
 
 import jsonpointer._
 
@@ -13,14 +12,7 @@ import scala.util.Try
 import scala.language.implicitConversions
 
 abstract class TestJsonPatch[Json](implicit Json: Jsony[Json]) extends FlatSpec
-  with Matchers {
-
-  def parseJson(s: String): Json
-
-  implicit def intMarshaller(i: Int): Json
-
-  def parsePointer(s: String): Pointer =
-    Pointer.parse[Try](s).get
+  with Matchers with TestProtocol[Json] {
 
   "applying an 'add' operation" should "add the field to the object if it does not exist" in {
     val op = Add[Json](parsePointer("/lbl"), 17)

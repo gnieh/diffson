@@ -14,9 +14,8 @@
 * limitations under the License.
 */
 package diffson
-package test
+package circe
 
-import circe._
 import jsonpatch.conformance._
 
 import io.circe._
@@ -26,7 +25,7 @@ import cats.implicits._
 
 import scala.io.Source
 
-class CirceConformance extends TestRfcConformance[Json] with TestProtocol {
+class CirceConformance extends TestRfcConformance[Json] with CirceTestProtocol {
 
   implicit lazy val successConformanceTestUnmarshaller: Decoder[SuccessConformanceTest] =
     deriveDecoder[SuccessConformanceTest]

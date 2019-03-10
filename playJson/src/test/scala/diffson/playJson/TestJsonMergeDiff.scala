@@ -1,7 +1,6 @@
 package diffson
-package test
+package playJson
 
-import playJson._
-import jsonmergepatch.test._
+import jsonmergepatch._
 
-class PlayJsonJsonMergeDiff extends TestJsonMergeDiff[play.api.libs.json.JsValue] with TestProtocol
+class PlayJsonJsonMergeDiff extends TestJsonMergeDiff[play.api.libs.json.JsValue] with PlayJsonTestProtocol

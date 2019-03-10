@@ -1,7 +1,6 @@
 package diffson
-package test
+package sprayJson
 
-import sprayJson._
-import jsonpatch.test._
+import jsonpatch._
 
-class SprayJsonTestJsonPatch extends TestJsonPatch[spray.json.JsValue] with TestProtocol
+class SprayJsonTestJsonPatch extends TestJsonPatch[spray.json.JsValue] with SprayJsonTestProtocol

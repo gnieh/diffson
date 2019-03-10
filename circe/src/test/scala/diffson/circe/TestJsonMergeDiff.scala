@@ -1,7 +1,6 @@
 package diffson
-package test
+package circe
 
-import circe._
-import jsonmergepatch.test._
+import jsonmergepatch._
 
-class CirceJsonMergeDiff extends TestJsonMergeDiff[io.circe.Json] with TestProtocol
+class CirceJsonMergeDiff extends TestJsonMergeDiff[io.circe.Json] with CirceTestProtocol

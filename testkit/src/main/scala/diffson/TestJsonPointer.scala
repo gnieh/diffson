@@ -1,6 +1,5 @@
 package diffson
 package jsonpointer
-package test
 
 import cats.implicits._
 
@@ -10,15 +9,7 @@ import scala.util.Try
 
 import scala.language.implicitConversions
 
-abstract class TestJsonPointer[Json](implicit Json: Jsony[Json]) extends FlatSpec with Matchers {
-
-  def parseJson(s: String): Json
-
-  implicit def boolMarshaller(b: Boolean): Json
-  implicit def intMarshaller(i: Int): Json
-
-  def parsePointer(s: String): Pointer =
-    Pointer.parse[Try](s).get
+abstract class TestJsonPointer[Json](implicit Json: Jsony[Json]) extends FlatSpec with Matchers with TestProtocol[Json] {
 
   "an empty string" should "be parsed as an empty pointer" in {
     parsePointer("") should be(Pointer.Root)

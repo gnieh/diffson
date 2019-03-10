@@ -1,7 +1,6 @@
 package diffson
-package test
+package sprayJson
 
-import sprayJson._
 import jsonpatch._
 import jsonmergepatch._
 
@@ -9,7 +8,7 @@ import spray.json._
 
 import scala.language.implicitConversions
 
-trait TestProtocol {
+trait SprayJsonTestProtocol extends TestProtocol[JsValue] {
   import DiffsonProtocol._
 
   implicit def intSeqMarshaller(is: Seq[Int]) = is.toJson
@@ -27,4 +26,10 @@ trait TestProtocol {
     json.convertTo[JsonPatch[JsValue]]
   def parseMergePatch(s: String): JsonMergePatch[JsValue] =
     s.parseJson.convertTo[JsonMergePatch[JsValue]]
+  def parseMergePatch(json: JsValue): JsonMergePatch[JsValue] =
+    json.convertTo[JsonMergePatch[JsValue]]
+  def serializePatch(p: JsonPatch[JsValue]): JsValue =
+    p.toJson
+  def serializeMergePatch(p: JsonMergePatch[JsValue]): JsValue =
+    p.toJson
 }

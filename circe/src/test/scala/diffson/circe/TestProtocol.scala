@@ -1,7 +1,6 @@
 package diffson
-package test
+package circe
 
-import circe._
 import jsonpatch._
 import jsonmergepatch._
 
@@ -14,7 +13,7 @@ import io.circe.generic.semiauto._
 
 import scala.language.implicitConversions
 
-trait TestProtocol {
+trait CirceTestProtocol extends TestProtocol[Json] {
   implicit def intSeqMarshaller(is: Seq[Int]) = is.asJson
   implicit def intSeqUnmarshaller(json: Json) = json.as[Seq[Int]].right.get
   implicit def boolMarshaller(b: Boolean) = Json.fromBoolean(b)
@@ -30,4 +29,10 @@ trait TestProtocol {
     json.as[JsonPatch[Json]].toTry.get
   def parseMergePatch(s: String): JsonMergePatch[Json] =
     parse(s).flatMap(_.as[JsonMergePatch[Json]]).toTry.get
+  def parseMergePatch(json: Json): JsonMergePatch[Json] =
+    json.as[JsonMergePatch[Json]].toTry.get
+  def serializePatch(p: JsonPatch[Json]): Json =
+    p.asJson
+  def serializeMergePatch(p: JsonMergePatch[Json]): Json =
+    p.asJson
 }
