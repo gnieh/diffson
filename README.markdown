@@ -6,6 +6,8 @@ Gnieh Diffson [![Build Status](https://travis-ci.org/gnieh/diffson.png)](https:/
 A [scala][6] implementation of the [RFC-6901][1], [RFC-6902][2], and [RFC-7396][11].
 It also provides methods to compute _diffs_ between two Json values that produce valid Json patches or merge patches.
 
+**Note:** if you still want to use the `3.x.y` series (without cats), please see [this documentation][diffson3]
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 ## Table of Contents
@@ -25,7 +27,7 @@ Getting Started
 This library is published in the [Maven][7] [Central Repository][8].
 You can add it to your sbt project by putting this line into your build description:
 ```scala
-libraryDependencies += "org.gnieh" %% f"diffson-$jsonLib" % "4.0.0"
+libraryDependencies += "org.gnieh" %% f"diffson-$jsonLib" % "4.0.0-SNAPSHOT"
 ```
 
 where `jsonLib` is either:
@@ -34,16 +36,7 @@ where `jsonLib` is either:
  - `play-json`
  - `circe`
 
-If you are using maven, add the following dependency to your `pom.xml`:
-```xml
-<dependency>
-  <groupId>org.gnieh</groupId>
-  <artifactId>diffson-${json.lib}_${scala.version}</artifactId>
-  <version>3.0.0</version>
-</dependency>
-```
-
-These versions are built for Scala 2.12 and 2.13.0-M5 (only `core`).
+These versions are built for Scala 2.11, 2.12, and 2.13.0-M5 (only `core`).
 
 Json Library
 ------------
@@ -271,3 +264,4 @@ which we can easily verify is the same as `json2` modulo reordering of fields.
 [11]: http://tools.ietf.org/html/rfc7396
 [cats]: https://typelevel.org/cats/
 [Foldable]: https://typelevel.org/cats/typeclasses/foldable.html
+[diffson3]: https://github.com/gnieh/diffson/tree/v3.1.x
