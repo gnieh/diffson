@@ -7,11 +7,28 @@ val scala213 = "2.13.0-M5"
 lazy val commonSettings = Seq(
   organization := "org.gnieh",
   scalaVersion := scala212,
-  version := "3.2.0-SNAPSHOT",
+  version := "4.0.0-SNAPSHOT",
   description := "Json diff/patch library",
   licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://github.com/gnieh/diffson")),
   parallelExecution := false,
+  scalacOptions ++= PartialFunction.condOpt(CrossVersion.partialVersion(scalaVersion.value)) {
+    case Some((2, n)) if n >= 13 =>
+      Seq(
+        "-Ymacro-annotations"
+      )
+  }.toList.flatten,
+  libraryDependencies ++=
+    (CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, v)) if v <= 12 =>
+        Seq(
+          compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full)
+        )
+      case _ =>
+        // if scala 2.13.0-M4 or later, macro annotations merged into scala-reflect
+        Nil
+    }),
+  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.9" cross CrossVersion.binary),
   scalariformAutoformat := true,
   scalariformPreferences := {
     scalariformPreferences.value
@@ -22,9 +39,6 @@ lazy val commonSettings = Seq(
   fork in test := true,
   scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits"),
   autoAPIMappings := true,
-  OsgiKeys.exportPackage := Seq("gnieh.diffson"),
-  OsgiKeys.privatePackage := Seq(),
-  resourceDirectories in Compile := List(),
   scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked")) ++ Seq(
     scalariformPreferences := {
     scalariformPreferences.value
@@ -35,56 +49,55 @@ lazy val commonSettings = Seq(
     }) ++ publishSettings
 
 lazy val diffson = project.in(file("."))
-  .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
+  .enablePlugins(ScoverageSbtPlugin)
   .settings(commonSettings: _*)
   .settings(
     name := "diffson",
     packagedArtifacts := Map())
-  .aggregate(core, sprayJson, playJson, circe)
+  .aggregate(core, sprayJson, circe, playJson, testkit)
 
 lazy val core = project.in(file("core"))
-  .enablePlugins(SbtOsgi, ScoverageSbtPlugin, ScalaUnidocPlugin)
+  .enablePlugins(ScoverageSbtPlugin, ScalaUnidocPlugin)
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-core",
-    crossScalaVersions := Seq(scala211, scala212, scala213),
+    crossScalaVersions := Seq(scala211, scala212/*, scala213*/),
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.0.6-SNAP3" % Test,
-      "org.scalacheck" %% "scalacheck" % "1.14.0" % Test),
-    OsgiKeys.additionalHeaders := Map (
-      "Bundle-Name" -> "Gnieh Diffson Core"
-    ),
-    OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.core")
+      "org.typelevel" %% "cats-core" % "1.6.0",
+      "io.estatico" %% "newtype" % "0.4.2"))
+
+lazy val testkit = project.in(file("testkit"))
+  .enablePlugins(ScoverageSbtPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    name := "diffson-testkit",
+    crossScalaVersions := Seq(scala211, scala212/*, scala213*/),
+    libraryDependencies ++= Seq(
+      "org.scalatest" %% "scalatest" % "3.1.0-SNAP7",
+      "org.scalacheck" %% "scalacheck" % "1.14.0"))
+  .dependsOn(core)
 
 lazy val sprayJson = project.in(file("sprayJson"))
-  .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
+  .enablePlugins(ScoverageSbtPlugin)
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-spray-json",
     crossScalaVersions := Seq(scala211, scala212),
-    libraryDependencies += "io.spray" %%  "spray-json" % "1.3.4",
-    OsgiKeys.additionalHeaders := Map (
-      "Bundle-Name" -> "Gnieh Diffson Spray Json"
-    ),
-    OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.spray")
-  .dependsOn(core % "test->test;compile->compile")
+    libraryDependencies += "io.spray" %%  "spray-json" % "1.3.5")
+  .dependsOn(core, testkit % Test)
 
 lazy val playJson = project.in(file("playJson"))
-  .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
+  .enablePlugins(ScoverageSbtPlugin)
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-play-json",
     libraryDependencies += "com.typesafe.play" %% "play-json" % "2.7.1",
-    crossScalaVersions := Seq(scala211, scala212),
-    OsgiKeys.additionalHeaders := Map (
-      "Bundle-Name" -> "Gnieh Diffson Play! Json"
-    ),
-    OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.play")
-  .dependsOn(core % "test->test;compile->compile")
+    crossScalaVersions := Seq(scala211, scala212))
+  .dependsOn(core, testkit % Test)
 
 val circeVersion = "0.11.1"
 lazy val circe = project.in(file("circe"))
-  .enablePlugins(SbtOsgi, ScoverageSbtPlugin)
+  .enablePlugins(ScoverageSbtPlugin)
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-circe",
@@ -93,12 +106,8 @@ lazy val circe = project.in(file("circe"))
       "io.circe" %% "circe-parser"  % circeVersion,
       "io.circe" %% "circe-generic" % circeVersion % "test"
     ),
-    crossScalaVersions := Seq(scala211, scala212),
-    OsgiKeys.additionalHeaders := Map (
-      "Bundle-Name" -> "Gnieh Diffson Circe"
-    ),
-    OsgiKeys.bundleSymbolicName := "org.gnieh.diffson.circe")
-  .dependsOn(core % "test->test;compile->compile")
+    crossScalaVersions := Seq(scala211, scala212))
+  .dependsOn(core, testkit % Test)
 
 lazy val publishSettings = Seq(
   publishMavenStyle := true,
