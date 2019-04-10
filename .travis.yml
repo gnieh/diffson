@@ -25,3 +25,11 @@ after_success:
 
 jdk:
   - openjdk8
+
+notifications:
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/8bca0308f59d7ad2cb1f
+    on_success: always
+    on_failure: always
+    on_start: never
