@@ -64,10 +64,11 @@ lazy val core = project.in(file("core"))
     name := "diffson-core",
     crossScalaVersions := Seq(scala211, scala212/*, scala213*/),
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-core" % "1.6.0",
-      "io.estatico" %% "newtype" % "0.4.2",
-      "org.scalatest" %% "scalatest" % "3.1.0-SNAP7",
-      "org.scalacheck" %% "scalacheck" % "1.14.0"))
+      "org.typelevel"  %% "cats-core"  % "1.6.0",
+      "io.estatico"    %% "newtype"    % "0.4.2",
+      "org.scalatest"  %% "scalatest"  % "3.1.0-SNAP7" % Test,
+      "org.scalacheck" %% "scalacheck" % "1.14.0"      % Test
+    ))
 
 lazy val testkit = project.in(file("testkit"))
   .enablePlugins(ScoverageSbtPlugin)
@@ -107,7 +108,7 @@ lazy val circe = project.in(file("circe"))
     libraryDependencies ++= Seq(
       "io.circe" %% "circe-core"    % circeVersion,
       "io.circe" %% "circe-parser"  % circeVersion,
-      "io.circe" %% "circe-generic" % circeVersion % "test"
+      "io.circe" %% "circe-generic" % circeVersion % Test
     ),
     crossScalaVersions := Seq(scala211, scala212))
   .dependsOn(core, testkit % Test)
