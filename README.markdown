@@ -27,7 +27,7 @@ Getting Started
 This library is published in the [Maven][7] [Central Repository][8].
 You can add it to your sbt project by putting this line into your build description:
 ```scala
-libraryDependencies += "org.gnieh" %% f"diffson-$jsonLib" % "4.0.0-SNAPSHOT"
+libraryDependencies += "org.gnieh" %% f"diffson-$jsonLib" % "4.0.0-M1"
 ```
 
 where `jsonLib` is either:
