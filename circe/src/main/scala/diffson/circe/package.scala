@@ -65,11 +65,22 @@ package object circe {
           "op" -> Json.fromString("add"),
           "path" -> Json.fromString(path.show),
           "value" -> value)
-      case Remove(path) =>
+      case Remove(path, Some(old)) =>
+        Json.obj(
+          "op" -> Json.fromString("remove"),
+          "path" -> Json.fromString(path.show),
+          "old" -> old)
+      case Remove(path, None) =>
         Json.obj(
           "op" -> Json.fromString("remove"),
           "path" -> Json.fromString(path.show))
-      case Replace(path, value) =>
+      case Replace(path, value, Some(old)) =>
+        Json.obj(
+          "op" -> Json.fromString("replace"),
+          "path" -> Json.fromString(path.show),
+          "value" -> value,
+          "old" -> old)
+      case Replace(path, value, None) =>
         Json.obj(
           "op" -> Json.fromString("replace"),
           "path" -> Json.fromString(path.show),
@@ -103,10 +114,10 @@ package object circe {
             A.map2(c.get[Pointer]("path"), c.get[Json]("value"))(Add[Json])
               .leftMap(_.copy(history = Nil, message = "missing 'path' or 'value' field"))
           case "remove" =>
-            A.map(c.get[Pointer]("path"))(Remove[Json])
+            A.map2(c.get[Pointer]("path"), c.get[Option[Json]]("old"))(Remove[Json])
               .leftMap(_.copy(history = Nil, message = "missing 'path' field"))
           case "replace" =>
-            A.map2(c.get[Pointer]("path"), c.get[Json]("value"))(Replace[Json] _)
+            A.map3(c.get[Pointer]("path"), c.get[Json]("value"), c.get[Option[Json]]("old"))(Replace[Json] _)
               .leftMap(_.copy(history = Nil, message = "missing 'path' or 'value' field"))
           case "move" =>
             A.map2(c.get[Pointer]("from"), c.get[Pointer]("path"))(Move[Json])

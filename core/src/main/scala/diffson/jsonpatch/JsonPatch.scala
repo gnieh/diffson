@@ -84,7 +84,7 @@ case class Add[Json: Jsony](path: Pointer, value: Json) extends Operation[Json] 
 }
 
 /** Remove the pointed element */
-case class Remove[Json: Jsony](path: Pointer) extends Operation[Json] {
+case class Remove[Json: Jsony](path: Pointer, old: Option[Json] = None) extends Operation[Json] {
 
   override protected[this] def action[F[_]](value: Json, pointer: Pointer, parent: Pointer)(implicit F: MonadError[F, Throwable]): F[Json] =
     (value, pointer) match {
@@ -112,7 +112,7 @@ case class Remove[Json: Jsony](path: Pointer) extends Operation[Json] {
 }
 
 /** Replace the pointed element by the given value */
-case class Replace[Json: Jsony](path: Pointer, value: Json) extends Operation[Json] {
+case class Replace[Json: Jsony](path: Pointer, value: Json, old: Option[Json] = None) extends Operation[Json] {
 
   override protected[this] def action[F[_]](original: Json, pointer: Pointer, parent: Pointer)(implicit F: MonadError[F, Throwable]): F[Json] =
     (original, pointer) match {

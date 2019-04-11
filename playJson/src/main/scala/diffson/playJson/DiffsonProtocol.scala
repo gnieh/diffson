@@ -80,16 +80,16 @@ object DiffsonProtocol {
                   JsError("missing 'path' or 'value' field")
               }
             case JsString("remove") =>
-              fields.get("path") match {
-                case Some(JsString(path)) =>
-                  JsSuccess(Remove(Pointer.parse[JsResult](path).get))
+              (fields.get("path"), fields.get("old")) match {
+                case (Some(JsString(path)), old) =>
+                  JsSuccess(Remove(Pointer.parse[JsResult](path).get, old))
                 case _ =>
                   JsError("missing 'path' field")
               }
             case JsString("replace") =>
-              (fields.get("path"), fields.get("value")) match {
-                case (Some(JsString(path)), Some(value)) =>
-                  JsSuccess(Replace(Pointer.parse[JsResult](path).get, value))
+              (fields.get("path"), fields.get("value"), fields.get("old")) match {
+                case (Some(JsString(path)), Some(value), old) =>
+                  JsSuccess(Replace(Pointer.parse[JsResult](path).get, value, old))
                 case _ =>
                   JsError("missing 'path' or 'value' field")
               }
@@ -126,11 +126,22 @@ object DiffsonProtocol {
             "op" -> JsString("add"),
             "path" -> JsString(path.show),
             "value" -> value)
-        case Remove(path) =>
+        case Remove(path, Some(old)) =>
+          Json.obj(
+            "op" -> JsString("remove"),
+            "path" -> JsString(path.show),
+            "old" -> old)
+        case Remove(path, None) =>
           Json.obj(
             "op" -> JsString("remove"),
             "path" -> JsString(path.show))
-        case Replace(path, value) =>
+        case Replace(path, value, Some(old)) =>
+          Json.obj(
+            "op" -> JsString("replace"),
+            "path" -> JsString(path.show),
+            "value" -> value,
+            "old" -> old)
+        case Replace(path, value, None) =>
           Json.obj(
             "op" -> JsString("replace"),
             "path" -> JsString(path.show),

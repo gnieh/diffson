@@ -17,6 +17,7 @@ It also provides methods to compute _diffs_ between two Json values that produce
 - [Json Patch (RFC-6902)](#json-patch-rfc-6902)
   - [Basic Usage](#basic-usage)
   - [Simple diffs](#simple-diffs)
+  - [Remembering old values](#remembering-old-values)
 - [Json Merge Patches (RFC-7396)](#json-merge-patches-rfc-7396)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -192,6 +193,79 @@ For instance, the resulting simple diff for the example above is:
 ```
 
 Note the `replace` operation for the entire array, instead of the single modified element.
+
+### Remembering old values
+
+Whether you use the LCS based or simple diff, you can make it remember old values for `remove` and `replace` operations.
+
+To that end, you just need to import `diffson.jsonpatch.lcsdiff.remembering._` or `diffson.jsonpatch.simplediff.remembering._` instead.
+The generated diff will add an `old` field to `remove` and `replace` operations in the patch, containing the previous version of the field in original object.
+Taking the first example with the new import, we have similar code.
+
+```scala
+import diffson._
+import diffson.lcs._
+import diffson.circe._
+import diffson.jsonpatch._
+import diffson.jsonpatch.lcsdiff.remembering._
+
+import io.circe._
+import io.circe.parser._
+
+import cats._
+import cats.implicits._
+
+implicit val lcs = new Patience[Json]
+
+val json1 = parse("""{
+                    |  "a": 1,
+                    |  "b": true,
+                    |  "c": ["test", "plop"]
+                    |}""".stripMargin)
+
+val json2 = parse("""{
+                    |  "a": 6,
+                    |  "c": ["test2", "plop"],
+                    |  "d": false
+                    |}""".stripMargin)
+
+val patch =
+  for {
+    json1 <- json1
+    json2 <- json2
+  } yield diff(json1, json2)
+```
+
+which results in a result with the old value remembered in the patch:
+
+```json
+[
+  {
+    "op" : "replace",
+    "path" : "/a",
+    "value" : 6,
+    "old" : 1
+  },
+  {
+    "op" : "remove",
+    "path" : "/b",
+    "old" : true
+  },
+  {
+    "op" : "replace",
+    "path" : "/c/0",
+    "value" : "test2",
+    "old" : "test"
+  },
+  {
+    "op" : "add",
+    "path" : "/d",
+    "value" : false
+  }
+]
+```
+
+Patches produced with this methods are still valid according to the RFC, as the new field must simply be ignored by implementations that are not aware of this encoding, so interoperability is not broken.
 
 Json Merge Patches (RFC-7396)
 -----------------------------

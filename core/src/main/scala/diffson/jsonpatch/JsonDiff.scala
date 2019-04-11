@@ -23,7 +23,7 @@ import cats.implicits._
 
 import scala.annotation.tailrec
 
-class JsonDiff[Json](diffArray: Boolean)(implicit J: Jsony[Json], Lcs: Lcs[Json]) extends Diff[Json, JsonPatch[Json]] {
+class JsonDiff[Json](diffArray: Boolean, rememberOld: Boolean)(implicit J: Jsony[Json], Lcs: Lcs[Json]) extends Diff[Json, JsonPatch[Json]] {
   def diff(json1: Json, json2: Json): JsonPatch[Json] =
     JsonPatch(diff(json1, json2, Pointer.Root))
 
@@ -34,7 +34,7 @@ class JsonDiff[Json](diffArray: Boolean)(implicit J: Jsony[Json], Lcs: Lcs[Json]
     else (json1, json2) match {
       case (JsObject(fields1), JsObject(fields2))      => fieldsDiff(fields1.toList, fields2.toList, pointer)
       case (JsArray(arr1), JsArray(arr2)) if diffArray => arraysDiff(arr1.toList, arr2.toList, pointer)
-      case (_, _)                                      => List(Replace(pointer, json2))
+      case (_, _)                                      => List(Replace(pointer, json2, if (rememberOld) Some(json1) else None))
     }
 
   private def fieldsDiff(fields1: List[(String, Json)], fields2: List[(String, Json)], path: Pointer): List[Operation[Json]] = {
@@ -70,7 +70,7 @@ class JsonDiff[Json](diffArray: Boolean)(implicit J: Jsony[Json], Lcs: Lcs[Json]
         fields(tl, diff(f1._2, f2._2, path / f1._1) ::: acc)
       case (Some(f1), None) :: tl =>
         // the field was deleted
-        fields(tl, Remove[Json](path / f1._1) :: acc)
+        fields(tl, Remove[Json](path / f1._1, if (rememberOld) Some(f1._2) else None) :: acc)
       case (None, Some(f2)) :: tl =>
         // the field was added
         fields(tl, Add(path / f2._1, f2._2) :: acc)
@@ -106,7 +106,7 @@ class JsonDiff[Json](diffArray: Boolean)(implicit J: Jsony[Json], Lcs: Lcs[Json]
     // remove a bunch of array elements starting by the last one in the range
     def remove(from: Int, until: Int, shift: Int, arr: List[Json]): List[Operation[Json]] =
       (for (idx <- until to from by -1)
-        yield Remove[Json](path / idx)).toList
+        yield Remove[Json](path / idx, if (rememberOld) Some(arr(idx - shift)) else None)).toList
 
     // now iterate over the first array to computes what was added, what was removed and what was modified
     @tailrec
