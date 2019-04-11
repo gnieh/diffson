@@ -54,11 +54,22 @@ trait DiffsonProtocol extends DefaultJsonProtocol {
               "op" -> JsString("add"),
               "path" -> JsString(path.show),
               "value" -> value)
-          case Remove(path) =>
+          case Remove(path, Some(old)) =>
+            JsObject(
+              "op" -> JsString("remove"),
+              "path" -> JsString(path.show),
+              "old" -> old)
+          case Remove(path, None) =>
             JsObject(
               "op" -> JsString("remove"),
               "path" -> JsString(path.show))
-          case Replace(path, value) =>
+          case Replace(path, value, Some(old)) =>
+            JsObject(
+              "op" -> JsString("replace"),
+              "path" -> JsString(path.show),
+              "value" -> value,
+              "old" -> old)
+          case Replace(path, value, None) =>
             JsObject(
               "op" -> JsString("replace"),
               "path" -> JsString(path.show),
@@ -91,16 +102,20 @@ trait DiffsonProtocol extends DefaultJsonProtocol {
                   deserializationError("missing 'path' or 'value' field")
               }
             case JsString("remove") =>
-              obj.getFields("path") match {
+              obj.getFields("path", "old") match {
                 case Seq(JsString(path)) =>
                   Remove(Pointer.parse[Try](path).get)
+                case Seq(JsString(path), old) =>
+                  Remove(Pointer.parse[Try](path).get, Some(old))
                 case _ =>
                   deserializationError("missing 'path' field")
               }
             case JsString("replace") =>
-              obj.getFields("path", "value") match {
+              obj.getFields("path", "value", "old") match {
                 case Seq(JsString(path), value) =>
                   Replace(Pointer.parse[Try](path).get, value)
+                case Seq(JsString(path), value, old) =>
+                  Replace(Pointer.parse[Try](path).get, value, Some(old))
                 case _ =>
                   deserializationError("missing 'path' or 'value' field")
               }

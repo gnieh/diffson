@@ -141,4 +141,31 @@ abstract class TestJsonDiff[Json](implicit Json: Jsony[Json]) extends FlatSpec w
     json3 should be(json2)
   }
 
+  "a remembering diff" should "correctly add removed values in array diffs" in {
+    val json1 = parseJson("""{"lbl": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}""")
+    val json2 = parseJson("""{"lbl": [1, 4, 5, 11, 6, 7]}""")
+    import remembering._
+    diff(json1, json2) should be(JsonPatch(
+      Remove(Pointer("lbl", "2"), Some(3: Json)),
+      Remove(Pointer("lbl", "1"), Some(2: Json)),
+      Add(Pointer("lbl", "3"), 11: Json),
+      Remove(Pointer("lbl", "8"), Some(10: Json)),
+      Remove(Pointer("lbl", "7"), Some(9: Json)),
+      Remove(Pointer("lbl", "6"), Some(8: Json))))
+  }
+
+  it should "correctly add removed values in object diffs" in {
+    val json1 = parseJson("""{"a": 1, "b": true}""")
+    val json2 = parseJson("""{"a": 1}""")
+    import remembering._
+    diff(json1, json2) should be(JsonPatch(Remove(Pointer("b"), Some(true: Json))))
+  }
+
+  it should "correctly add replaced values in object diffs" in {
+    val json1 = parseJson("""{"a": 1, "b": false}""")
+    val json2 = parseJson("""{"a": 1, "b": "test"}""")
+    import remembering._
+    diff(json1, json2) should be(JsonPatch(Replace(Pointer("b"), "test": Json, Some(false: Json))))
+  }
+
 }

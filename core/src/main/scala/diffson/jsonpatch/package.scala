@@ -24,8 +24,12 @@ import scala.language.higherKinds
 package object jsonpatch {
 
   object lcsdiff {
+    object remembering {
+      implicit def JsonDiffDiff[Json: Jsony: Lcs]: Diff[Json, JsonPatch[Json]] =
+        new JsonDiff[Json](true, true)
+    }
     implicit def JsonDiffDiff[Json: Jsony: Lcs]: Diff[Json, JsonPatch[Json]] =
-      new JsonDiff[Json](true)
+      new JsonDiff[Json](true, false)
   }
 
   object simplediff {
@@ -33,8 +37,12 @@ package object jsonpatch {
       def savedHashes = this
       def lcs(seq1: List[Json], seq2: List[Json], low1: Int, high1: Int, low2: Int, high2: Int): List[(Int, Int)] = Nil
     }
+    object remembering {
+      implicit def JsonDiffDiff[Json: Jsony: Lcs]: Diff[Json, JsonPatch[Json]] =
+        new JsonDiff[Json](false, true)
+    }
     implicit def JsonDiffDiff[Json: Jsony]: Diff[Json, JsonPatch[Json]] =
-      new JsonDiff[Json](false)
+      new JsonDiff[Json](false, false)
   }
 
 }
