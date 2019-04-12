@@ -21,6 +21,8 @@ import cats.data.Chain
 
 import io.estatico.newtype.macros.newtype
 
+import scala.util.Try
+
 import scala.language.{ implicitConversions, higherKinds }
 
 package object jsonpointer {
@@ -57,11 +59,11 @@ package object jsonpointer {
 
     val Root: Pointer = Pointer(Chain.empty)
 
-    private val IsDigit = "(0|[1-9][0-9]*)".r
+    private val IsNumber = "(0|[1-9][0-9]*)".r
 
     def apply(elems: String*): Pointer = Pointer(Chain.fromSeq(elems.map {
-      case IsDigit(idx) => Right(idx.toInt)
-      case key          => Left(key)
+      case s @ IsNumber(idx) => Try(idx.toInt).liftTo[Either[Throwable, ?]].leftMap(_ => s)
+      case key               => Left(key)
     }))
 
     def parse[F[_]](input: String)(implicit F: MonadError[F, Throwable]): F[Pointer] =

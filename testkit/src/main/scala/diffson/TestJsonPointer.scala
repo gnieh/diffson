@@ -74,4 +74,10 @@ abstract class TestJsonPointer[Json](implicit Json: Jsony[Json]) extends FlatSpe
     a[PointerException] should be thrownBy { parsePointer("/-").evaluate[Try, Json](parseJson("[1]")).get }
   }
 
+  "a number pointer" should "be parsed as a string label if it overflows int capacity" in {
+    val max = Int.MaxValue
+    parsePointer(s"/$max") should be(Pointer.Root / max)
+    parsePointer("/123456789012") should be(Pointer.Root / "123456789012")
+  }
+
 }
