@@ -76,7 +76,7 @@ abstract class TestRfcConformance[Json: Jsony] extends AnyFunSuite with Matchers
           val p = parsePatch(patch)
           p[Try](doc).get
         }
-        exn.getMessage should be(error)
+        exn.getMessage should include(error)
       }
     case ErrorConformanceTest(doc, patch, error, comment, _) =>
       test(comment.getOrElse(f"$doc patched with $patch")) {
@@ -84,7 +84,7 @@ abstract class TestRfcConformance[Json: Jsony] extends AnyFunSuite with Matchers
           val p = parsePatch(patch)
           p[Try](doc).get
         }
-        exn.getMessage should be(error)
+        exn.getMessage should include(error)
       }
 
     case CommentConformanceTest(comment) =>
