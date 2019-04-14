@@ -37,7 +37,6 @@ lazy val commonSettings = Seq(
       .setPreference(DoubleIndentConstructorArguments, true)
       .setPreference(MultilineScaladocCommentsStartOnFirstLine, true)
   },
-  fork in test := true,
   coverageExcludedPackages := "<empty>;.*Test.*",
   scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits"),
   autoAPIMappings := true,
@@ -71,6 +70,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
       "org.scalatest"  %%% "scalatest"  % "3.1.0-SNAP7" % Test,
       "org.scalacheck" %%% "scalacheck" % "1.14.0"      % Test
     ))
+  .jsSettings(coverageEnabled := false)
 
 lazy val testkit = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Full).in(file("testkit"))
@@ -82,6 +82,7 @@ lazy val testkit = crossProject(JSPlatform, JVMPlatform)
     libraryDependencies ++= Seq(
       "org.scalatest" %%% "scalatest" % "3.1.0-SNAP7",
       "org.scalacheck" %%% "scalacheck" % "1.14.0"))
+  .jsSettings(coverageEnabled := false)
   .dependsOn(core)
 
 lazy val sprayJson = project.in(file("sprayJson"))
@@ -101,6 +102,7 @@ lazy val playJson = crossProject(JSPlatform, JVMPlatform)
     name := "diffson-play-json",
     libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.7.2",
     crossScalaVersions := Seq(scala211, scala212))
+  .jsSettings(coverageEnabled := false)
   .dependsOn(core, testkit % Test)
 
 val circeVersion = "0.11.1"
@@ -116,6 +118,7 @@ lazy val circe = crossProject(JSPlatform, JVMPlatform)
       "io.circe" %%% "circe-generic" % circeVersion % Test
     ),
     crossScalaVersions := Seq(scala211, scala212))
+  .jsSettings(coverageEnabled := false)
   .dependsOn(core, testkit % Test)
 
 lazy val publishSettings = Seq(
