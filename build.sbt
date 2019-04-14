@@ -1,4 +1,5 @@
 import scalariform.formatter.preferences._
+import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
 val scala211 = "2.11.12"
 val scala212 = "2.12.8"
@@ -36,7 +37,6 @@ lazy val commonSettings = Seq(
       .setPreference(DoubleIndentConstructorArguments, true)
       .setPreference(MultilineScaladocCommentsStartOnFirstLine, true)
   },
-  fork in test := true,
   coverageExcludedPackages := "<empty>;.*Test.*",
   scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits"),
   autoAPIMappings := true,
@@ -55,30 +55,34 @@ lazy val diffson = project.in(file("."))
   .settings(
     name := "diffson",
     packagedArtifacts := Map())
-  .aggregate(core, sprayJson, circe, playJson, testkit)
+  .aggregate(core.jvm, core.js, sprayJson, circe.jvm, circe.js, playJson.jvm, playJson.js, testkit.jvm, testkit.js)
 
-lazy val core = project.in(file("core"))
+lazy val core = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Pure).in(file("core"))
   .enablePlugins(ScoverageSbtPlugin, ScalaUnidocPlugin)
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-core",
     crossScalaVersions := Seq(scala211, scala212/*, scala213*/),
     libraryDependencies ++= Seq(
-      "org.typelevel"  %% "cats-core"  % "1.6.0",
-      "io.estatico"    %% "newtype"    % "0.4.2",
-      "org.scalatest"  %% "scalatest"  % "3.1.0-SNAP7" % Test,
-      "org.scalacheck" %% "scalacheck" % "1.14.0"      % Test
+      "org.typelevel"  %%% "cats-core"  % "1.6.0",
+      "io.estatico"    %%% "newtype"    % "0.4.2",
+      "org.scalatest"  %%% "scalatest"  % "3.1.0-SNAP7" % Test,
+      "org.scalacheck" %%% "scalacheck" % "1.14.0"      % Test
     ))
+  .jsSettings(coverageEnabled := false)
 
-lazy val testkit = project.in(file("testkit"))
+lazy val testkit = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Full).in(file("testkit"))
   .enablePlugins(ScoverageSbtPlugin)
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-testkit",
     crossScalaVersions := Seq(scala211, scala212/*, scala213*/),
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.1.0-SNAP7",
-      "org.scalacheck" %% "scalacheck" % "1.14.0"))
+      "org.scalatest" %%% "scalatest" % "3.1.0-SNAP7",
+      "org.scalacheck" %%% "scalacheck" % "1.14.0"))
+  .jsSettings(coverageEnabled := false)
   .dependsOn(core)
 
 lazy val sprayJson = project.in(file("sprayJson"))
@@ -88,29 +92,33 @@ lazy val sprayJson = project.in(file("sprayJson"))
     name := "diffson-spray-json",
     crossScalaVersions := Seq(scala211, scala212),
     libraryDependencies += "io.spray" %%  "spray-json" % "1.3.5")
-  .dependsOn(core, testkit % Test)
+  .dependsOn(core.jvm, testkit.jvm % Test)
 
-lazy val playJson = project.in(file("playJson"))
+lazy val playJson = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Full).in(file("playJson"))
   .enablePlugins(ScoverageSbtPlugin)
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-play-json",
-    libraryDependencies += "com.typesafe.play" %% "play-json" % "2.7.1",
+    libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.7.2",
     crossScalaVersions := Seq(scala211, scala212))
+  .jsSettings(coverageEnabled := false)
   .dependsOn(core, testkit % Test)
 
 val circeVersion = "0.11.1"
-lazy val circe = project.in(file("circe"))
+lazy val circe = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Full).in(file("circe"))
   .enablePlugins(ScoverageSbtPlugin)
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-circe",
     libraryDependencies ++= Seq(
-      "io.circe" %% "circe-core"    % circeVersion,
-      "io.circe" %% "circe-parser"  % circeVersion,
-      "io.circe" %% "circe-generic" % circeVersion % Test
+      "io.circe" %%% "circe-core"    % circeVersion,
+      "io.circe" %%% "circe-parser"  % circeVersion,
+      "io.circe" %%% "circe-generic" % circeVersion % Test
     ),
     crossScalaVersions := Seq(scala211, scala212))
+  .jsSettings(coverageEnabled := false)
   .dependsOn(core, testkit % Test)
 
 lazy val publishSettings = Seq(

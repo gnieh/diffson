@@ -109,27 +109,27 @@ package object circe {
       private val F = FlatMap[Result]
 
       override def apply(c: HCursor): Result[Operation[Json]] =
-        F.flatMap(c.get[String]("op").leftMap(_.copy(history = Nil, message = "missing 'op' field"))) {
+        F.flatMap(c.get[String]("op").leftMap(_.copy(message = "missing 'op' field"))) {
           case "add" =>
             A.map2(c.get[Pointer]("path"), c.get[Json]("value"))(Add[Json])
-              .leftMap(_.copy(history = Nil, message = "missing 'path' or 'value' field"))
+              .leftMap(_.copy(message = "missing 'path' or 'value' field"))
           case "remove" =>
             A.map2(c.get[Pointer]("path"), c.get[Option[Json]]("old"))(Remove[Json])
-              .leftMap(_.copy(history = Nil, message = "missing 'path' field"))
+              .leftMap(_.copy(message = "missing 'path' field"))
           case "replace" =>
             A.map3(c.get[Pointer]("path"), c.get[Json]("value"), c.get[Option[Json]]("old"))(Replace[Json] _)
-              .leftMap(_.copy(history = Nil, message = "missing 'path' or 'value' field"))
+              .leftMap(_.copy(message = "missing 'path' or 'value' field"))
           case "move" =>
             A.map2(c.get[Pointer]("from"), c.get[Pointer]("path"))(Move[Json])
-              .leftMap(_.copy(history = Nil, message = "missing 'from' or 'path' field"))
+              .leftMap(_.copy(message = "missing 'from' or 'path' field"))
           case "copy" =>
             A.map2(c.get[Pointer]("from"), c.get[Pointer]("path"))(Copy[Json])
-              .leftMap(_.copy(history = Nil, message = "missing 'from' or 'path' field"))
+              .leftMap(_.copy(message = "missing 'from' or 'path' field"))
           case "test" =>
             A.map2(c.get[Pointer]("path"), c.get[Json]("value"))(Test[Json])
-              .leftMap(_.copy(history = Nil, message = "missing 'path' or 'value' field"))
+              .leftMap(_.copy(message = "missing 'path' or 'value' field"))
           case other =>
-            Left(DecodingFailure(s"""Unknown operation "$other"""", Nil))
+            Left(DecodingFailure(s"""Unknown operation "$other"""", c.history))
         }
     }
 

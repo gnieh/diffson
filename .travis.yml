@@ -10,7 +10,8 @@ before_script:
   - sudo chmod +x /usr/local/bin/sbt
 
 script:
-  - if [[ $TRAVIS_SCALA_VERSION == 2.12* ]]; then sbt ++$TRAVIS_SCALA_VERSION clean coverage test coverageReport coverageAggregate codacyCoverage; else sbt ++$TRAVIS_SCALA_VERSION test; fi
+  - export SBT_OPS=-Xmx4G
+  - if [[ -n "$CODACY_PROJECT_TOKEN" && $TRAVIS_SCALA_VERSION == 2.12* ]]; then sbt ++$TRAVIS_SCALA_VERSION clean coverage test coverageReport coverageAggregate codacyCoverage; else sbt ++$TRAVIS_SCALA_VERSION test; fi
 
 scala:
    - 2.11.12
