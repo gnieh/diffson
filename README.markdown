@@ -51,7 +51,7 @@ Diffson was first developped for [spray-json][3], however, it is possible to use
 The only requirement is to have a `Jsony` for your json library.
 `Jsony` is a type class describing what operations are required to compute diffs and apply patches to Json-like types.
 
-At the moment, diffson provides two instances for [spray-json][3], [Play! Json][9], and [circe][10].
+At the moment, diffson provides instances for [spray-json][3], [Play! Json][9], and [circe][10].
 To use these implementations you need to link with the correct module and import the instance:
 
 ```scala
