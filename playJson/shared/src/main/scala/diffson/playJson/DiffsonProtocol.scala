@@ -165,10 +165,10 @@ object DiffsonProtocol {
 
   implicit val JsonPatchFormat: Format[JsonPatch[JsValue]] =
     Format[JsonPatch[JsValue]](
-      Reads[JsonPatch[JsValue]] {
-        case play.api.libs.json.JsArray(ops) =>
-          JsSuccess(JsonPatch[JsValue](ops.map(_.as[Operation[JsValue]]).toList))
-        case _ => JsError("JsonPatch[JsValue] expected")
+      Reads[JsonPatch[JsValue]] { js =>
+        js.validate[List[Operation[JsValue]]].map(JsonPatch(_)).recoverWith {
+          case JsError(errors) => JsError((JsPath -> Seq(JsonValidationError("JsonPatch[JsValue] expected"))) +: errors)
+        }
       },
       Writes(patch => play.api.libs.json.JsArray(patch.ops.map(Json.toJson(_)).toVector)))
 
