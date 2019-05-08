@@ -29,7 +29,7 @@ lazy val commonSettings = Seq(
         // if scala 2.13.0-M4 or later, macro annotations merged into scala-reflect
         Nil
     }),
-  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.9" cross CrossVersion.binary),
+  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.10" cross CrossVersion.binary),
   scalariformAutoformat := true,
   scalariformPreferences := {
     scalariformPreferences.value
