@@ -15,14 +15,14 @@ import scala.language.implicitConversions
 
 trait CirceTestProtocol extends TestProtocol[Json] {
   implicit def intSeqMarshaller(is: Seq[Int]) = is.asJson
-  implicit def intSeqUnmarshaller(json: Json) = json.as[Seq[Int]].right.get
+  implicit def intSeqUnmarshaller(json: Json) = json.as[Seq[Int]].fold(throw _, identity)
   implicit def boolMarshaller(b: Boolean) = Json.fromBoolean(b)
   implicit def intMarshaller(i: Int) = Json.fromInt(i)
   implicit def stringMarshaller(s: String) = Json.fromString(s)
   implicit def jsonEq = Json.eqJson
 
   def parseJson(s: String): Json =
-    parse(s).right.get
+    parse(s).fold(throw _, identity)
   def parsePatch(s: String): JsonPatch[Json] =
     parse(s).flatMap(_.as[JsonPatch[Json]]).toTry.get
   def parsePatch(json: Json): JsonPatch[Json] =
