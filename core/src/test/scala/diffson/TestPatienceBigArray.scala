@@ -3,8 +3,9 @@ package diffson.lcs
 import cats.implicits._
 
 import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 
-class TestPatienceBigArray extends FlatSpec with Matchers {
+class TestPatienceBigArray extends AnyFlatSpec with Matchers {
 
   val lcsImpl = new Patience[Int].savedHashes
 

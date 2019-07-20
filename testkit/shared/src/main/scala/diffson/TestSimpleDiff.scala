@@ -8,12 +8,13 @@ import cats._
 import cats.implicits._
 
 import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Try
 
 import scala.language.implicitConversions
 
-abstract class TestSimpleDiff[Json](implicit val Json: Jsony[Json]) extends FlatSpec with Matchers with TestProtocol[Json] {
+abstract class TestSimpleDiff[Json](implicit val Json: Jsony[Json]) extends AnyFlatSpec with Matchers with TestProtocol[Json] {
 
   "a diff" should "be empty if created between two equal values" in {
     val json = parseJson("true")

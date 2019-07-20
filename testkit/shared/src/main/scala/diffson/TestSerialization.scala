@@ -5,8 +5,9 @@ import jsonpointer._
 import jsonmergepatch._
 
 import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 
-abstract class TestSerialization[Json](implicit Json: Jsony[Json]) extends FlatSpec with TestProtocol[Json] with Matchers {
+abstract class TestSerialization[Json](implicit Json: Jsony[Json]) extends AnyFlatSpec with TestProtocol[Json] with Matchers {
 
   val patch = """[{
                 |  "op":"replace",

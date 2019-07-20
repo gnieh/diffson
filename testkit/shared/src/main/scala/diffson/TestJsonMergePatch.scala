@@ -4,10 +4,11 @@ package jsonmergepatch
 import cats.implicits._
 
 import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Try
 
-abstract class TestJsonMergePatch[Json](implicit Json: Jsony[Json]) extends FlatSpec with Matchers with TestProtocol[Json] {
+abstract class TestJsonMergePatch[Json](implicit Json: Jsony[Json]) extends AnyFlatSpec with Matchers with TestProtocol[Json] {
 
   val samples = List(
     ("""{"a":"b"}""", """{"a":"c"}""", """{"a":"c"}"""),

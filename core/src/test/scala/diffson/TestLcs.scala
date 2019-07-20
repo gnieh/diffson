@@ -1,8 +1,9 @@
 package diffson.lcs
 
 import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 
-abstract class TestLcs extends FlatSpec with Matchers {
+abstract class TestLcs extends AnyFlatSpec with Matchers {
 
   val lcsImpl: Lcs[Char]
 

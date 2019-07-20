@@ -21,6 +21,7 @@ import cats.implicits._
 import scala.annotation.tailrec
 import scala.collection.SortedMap
 import scala.collection.immutable.TreeMap
+import scala.collection.compat._
 
 /** Implementation of the patience algorithm [1] to compute the longest common subsequence
  *
@@ -99,7 +100,7 @@ class Patience[T: Eq](withFallback: Boolean = true) extends Lcs[T] {
             val chainCont = {
               // we have to find a previous stack
               // don't know how efficient `until` is...
-              stacks.until(idx).lastOption.flatMap(_._2.headOption)
+              stacks.rangeUntil(idx).lastOption.flatMap(_._2.headOption)
             }
             (stacks - idx).updated(idx1, Stacked(idx1, idx2, chainCont) :: oldStack)
         }
@@ -163,7 +164,7 @@ class Patience[T: Eq](withFallback: Boolean = true) extends Lcs[T] {
           var lastPos1 = low1 - 1
           var lastPos2 = low2 - 1
           var answer = acc
-          for ((p1, p2) <- longest(uniqueCommons(seq1.view(low1, high1).toList, seq2.view(low2, high2).toList))) {
+          for ((p1, p2) <- longest(uniqueCommons(seq1.view.slice(low1, high1).toList, seq2.view.slice(low2, high2).toList))) {
             // recurse between lines which are unique in each sequence
             val pos1 = p1 + low1
             val pos2 = p2 + low2

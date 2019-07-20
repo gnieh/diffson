@@ -4,12 +4,13 @@ package jsonpointer
 import cats.implicits._
 
 import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Try
 
 import scala.language.implicitConversions
 
-abstract class TestJsonPointer[Json](implicit Json: Jsony[Json]) extends FlatSpec with Matchers with TestProtocol[Json] {
+abstract class TestJsonPointer[Json](implicit Json: Jsony[Json]) extends AnyFlatSpec with Matchers with TestProtocol[Json] {
 
   "an empty string" should "be parsed as an empty pointer" in {
     parsePointer("") should be(Pointer.Root)

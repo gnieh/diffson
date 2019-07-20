@@ -24,6 +24,8 @@ import io.estatico.newtype.macros.newtype
 import scala.util.Try
 
 import scala.language.{ implicitConversions, higherKinds }
+import scala.collection.compat._
+import scala.collection.compat.immutable.ArraySeq
 
 package object jsonpointer {
 
@@ -92,7 +94,7 @@ package object jsonpointer {
               // transform the occurrences of '~1' into occurrences of '/'
               // transform the occurrences of '~0' into occurrences of '~'
               .map(_.replace("~1", "/").replace("~0", "~"))
-            F.pure(Pointer(elems: _*))
+            F.pure(Pointer(ArraySeq.unsafeWrapArray(elems): _*))
           }
         }
       }
