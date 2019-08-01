@@ -45,10 +45,10 @@ package object playJson {
         None
     }
 
-    def show(json: JsValue) =
+    def show(json: JsValue): String =
       Json.stringify(json)
 
-    def eqv(json1: JsValue, json2: JsValue) =
+    def eqv(json1: JsValue, json2: JsValue): Boolean =
       json1 == json2
 
   }
