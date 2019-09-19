@@ -1,13 +1,13 @@
 import scalariform.formatter.preferences._
 import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
-val scala212 = "2.12.8"
-val scala213 = "2.13.0"
+val scala212 = "2.12.10"
+val scala213 = "2.13.1"
 
 lazy val commonSettings = Seq(
   organization := "org.gnieh",
   scalaVersion := scala213,
-  version := "4.0.0-M5",
+  version := "4.0.0",
   description := "Json diff/patch library",
   licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://github.com/gnieh/diffson")),
@@ -100,7 +100,7 @@ lazy val playJson = crossProject(JSPlatform, JVMPlatform)
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-play-json",
-    libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.8.0-M5",
+    libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.7.4",
     crossScalaVersions := Seq(scala212, scala213))
   .jsSettings(coverageEnabled := false)
   .dependsOn(core, testkit % Test)
