@@ -1,4 +1,4 @@
-Gnieh Diffson [![Build Status](https://travis-ci.org/gnieh/diffson.png)](https://travis-ci.org/gnieh/diffson) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/9892e2c968974ecb951d21969adbadaa)](https://www.codacy.com/app/satabin/diffson?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=gnieh/diffson&amp;utm_campaign=Badge_Grade) [![Code Coverage](https://codecov.io/github/gnieh/diffson/coverage.svg?branch=master)](https://codecov.io/github/gnieh/diffson?branch=master) [![Maven Central](https://img.shields.io/maven-central/v/org.gnieh/diffson-core_2.12.svg)](https://maven-badges.herokuapp.com/maven-central/org.gnieh/diffson-core_2.12) [![Scaladoc](https://javadoc.io/badge/org.gnieh/diffson-core_2.12.svg)](https://javadoc.io/doc/org.gnieh/diffson-core_2.12)
+Gnieh Diffson [![Build Status](https://travis-ci.org/gnieh/diffson.png)](https://travis-ci.org/gnieh/diffson) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/9892e2c968974ecb951d21969adbadaa)](https://www.codacy.com/app/satabin/diffson?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=gnieh/diffson&amp;utm_campaign=Badge_Grade) [![Code Coverage](https://codecov.io/github/gnieh/diffson/coverage.svg?branch=master)](https://codecov.io/github/gnieh/diffson?branch=master) [![Maven Central](https://img.shields.io/maven-central/v/org.gnieh/diffson-core_2.13.svg)](https://maven-badges.herokuapp.com/maven-central/org.gnieh/diffson-core_2.13) [![Scaladoc](https://javadoc.io/badge/org.gnieh/diffson-core_2.13.svg)](https://javadoc.io/doc/org.gnieh/diffson-core_2.13)
 =============
 
 [![Join the chat at https://gitter.im/gnieh/diffson](https://badges.gitter.im/gnieh/diffson.svg)](https://gitter.im/gnieh/diffson?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
@@ -28,7 +28,7 @@ Getting Started
 This library is published in the [Maven][7] [Central Repository][8].
 You can add it to your sbt project by putting this line into your build description:
 ```scala
-libraryDependencies += "org.gnieh" %% f"diffson-$jsonLib" % "4.0.0"
+libraryDependencies += "org.gnieh" %% f"diffson-$jsonLib" % "4.0.1"
 ```
 
 where `jsonLib` is either:
@@ -41,7 +41,7 @@ These versions are built for Scala 2.12 and 2.13.
 
 Scala.JS is also supported for both Scala 2.12 and 2.13. To use it, add this dependency to your build file:
 ```scala
-libraryDependencies += "org.gnieh" %%% f"diffson-$jsonLib" % "4.0.0"
+libraryDependencies += "org.gnieh" %%% f"diffson-$jsonLib" % "4.0.1"
 ```
 
 Json Library
