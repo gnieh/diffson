@@ -105,7 +105,7 @@ lazy val playJson = crossProject(JSPlatform, JVMPlatform)
   .jsSettings(coverageEnabled := false)
   .dependsOn(core, testkit % Test)
 
-val circeVersion = "0.12.1"
+val circeVersion = "0.12.3"
 lazy val circe = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Full).in(file("circe"))
   .enablePlugins(ScoverageSbtPlugin)
