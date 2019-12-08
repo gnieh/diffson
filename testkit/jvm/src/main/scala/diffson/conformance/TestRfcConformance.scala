@@ -23,6 +23,7 @@ import org.scalatest._
 import org.scalatest.funsuite.AnyFunSuite
 
 import scala.util.Try
+import org.scalatest.matchers.should.Matchers
 
 abstract class TestRfcConformance[Json: Jsony] extends AnyFunSuite with Matchers {
 

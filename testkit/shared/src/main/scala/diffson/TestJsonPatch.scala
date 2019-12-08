@@ -11,6 +11,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import scala.util.Try
 
 import scala.language.implicitConversions
+import org.scalatest.matchers.should.Matchers
 
 abstract class TestJsonPatch[Json](implicit Json: Jsony[Json]) extends AnyFlatSpec
   with Matchers with TestProtocol[Json] {

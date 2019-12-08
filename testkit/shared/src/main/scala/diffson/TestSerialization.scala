@@ -6,6 +6,7 @@ import jsonmergepatch._
 
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 abstract class TestSerialization[Json](implicit Json: Jsony[Json]) extends AnyFlatSpec with TestProtocol[Json] with Matchers {
 
