@@ -7,6 +7,7 @@ import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Try
+import org.scalatest.matchers.should.Matchers
 
 abstract class TestJsonMergePatch[Json](implicit Json: Jsony[Json]) extends AnyFlatSpec with Matchers with TestProtocol[Json] {
 
