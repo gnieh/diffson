@@ -14,6 +14,7 @@ It also provides methods to compute _diffs_ between two Json values that produce
 
 - [Getting Started](#getting-started)
 - [Json Library](#json-library)
+  - [Note on (de)serialization](#note-on-deserialization)
 - [Json Patch (RFC-6902)](#json-patch-rfc-6902)
   - [Basic Usage](#basic-usage)
   - [Simple diffs](#simple-diffs)
@@ -63,7 +64,11 @@ import diffson.playJson._
 import diffson.circe._
 ```
 
-If you want to add support for your favorite Json library, you may only depend on diffson core module `diffson-core` and all you need to do then is to implement the `diffson.DiffsonInstance` class, which provides the `JsonProvider` for the specific library. Contribution of new Json libraries in this repository are more than welcome.
+If you want to add support for your favorite Json library, you may only depend on diffson core module `diffson-core` and all you need to do then is to implement the `Jsony` class, which provides all the operations for diffson to be able to compute diffs and apply patches. Contribution of new Json libraries in this repository are more than welcome.
+
+### Note on (de)serialization
+
+The purpose of diffson is to create and manipulate diffs and patch for Json like structures. However the supported patch formats can also be represented as Json objects. The core library doesn't mention any of this as it's sole purpose if the diff/patch computations. Given the variety of Json libraries out there and there various ways of implementing the way of (de)serializing Json values, there is no good abstraction that fits this general purpose library, and this is up to the library user to do it in the most appropriate approach given the Json library of their choosing. The various supported Json libraries in diffson provide an idiomatic way of (de)serializing the different element for each of them (e.g. the `circe` module provide `Decoder`s and `Encoder`s for all the patch types).
 
 Json Patch (RFC-6902)
 ---------------------
