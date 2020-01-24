@@ -65,7 +65,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
     crossScalaVersions := Seq(scala212, scala213),
     libraryDependencies ++= Seq(
       "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.3",
-      "org.typelevel"  %%% "cats-core"  % "2.0.0",
+      "org.typelevel"  %%% "cats-core"  % "2.1.0",
       "io.estatico"    %%% "newtype"    % "0.4.3",
       "org.scalatest"  %%% "scalatest"  % "3.1.0" % Test,
       "org.scalacheck" %%% "scalacheck" % "1.14.0"      % Test
