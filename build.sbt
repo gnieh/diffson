@@ -68,7 +68,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
       "org.typelevel"  %%% "cats-core"  % "2.1.0",
       "io.estatico"    %%% "newtype"    % "0.4.3",
       "org.scalatest"  %%% "scalatest"  % "3.1.0" % Test,
-      "org.scalacheck" %%% "scalacheck" % "1.14.0"      % Test
+      "org.scalacheck" %%% "scalacheck" % "1.14.3"      % Test
     ))
   .jsSettings(coverageEnabled := false)
 
@@ -81,7 +81,7 @@ lazy val testkit = crossProject(JSPlatform, JVMPlatform)
     crossScalaVersions := Seq(scala212, scala213),
     libraryDependencies ++= Seq(
       "org.scalatest" %%% "scalatest" % "3.1.0",
-      "org.scalacheck" %%% "scalacheck" % "1.14.0"))
+      "org.scalacheck" %%% "scalacheck" % "1.14.3"))
   .jsSettings(coverageEnabled := false)
   .dependsOn(core)
 
