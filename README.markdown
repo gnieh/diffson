@@ -29,7 +29,7 @@ Getting Started
 This library is published in the [Maven][7] [Central Repository][8].
 You can add it to your sbt project by putting this line into your build description:
 ```scala
-libraryDependencies += "org.gnieh" %% f"diffson-$jsonLib" % "4.0.1"
+libraryDependencies += "org.gnieh" %% f"diffson-$jsonLib" % "4.0.2"
 ```
 
 where `jsonLib` is either:
@@ -42,7 +42,7 @@ These versions are built for Scala 2.12 and 2.13.
 
 Scala.JS is also supported for both Scala 2.12 and 2.13. To use it, add this dependency to your build file:
 ```scala
-libraryDependencies += "org.gnieh" %%% f"diffson-$jsonLib" % "4.0.1"
+libraryDependencies += "org.gnieh" %%% f"diffson-$jsonLib" % "4.0.2"
 ```
 
 Json Library
