@@ -70,6 +70,36 @@ If you want to add support for your favorite Json library, you may only depend o
 
 The purpose of diffson is to create and manipulate diffs and patch for Json like structures. However the supported patch formats can also be represented as Json objects. The core library doesn't mention any of this as it's sole purpose if the diff/patch computations. Given the variety of Json libraries out there and there various ways of implementing the way of (de)serializing Json values, there is no good abstraction that fits this general purpose library, and this is up to the library user to do it in the most appropriate approach given the Json library of their choosing. The various supported Json libraries in diffson provide an idiomatic way of (de)serializing the different element for each of them (e.g. the `circe` module provide `Decoder`s and `Encoder`s for all the patch types).
 
+For instance to get circe encoder and decoder instances, you need to
+```scala
+import io.circe._
+import diffson.circe._
+import diffson.jsonpatch._
+
+val decoder = Decoder[JsonPatch[Json]]
+val encoder = Encoder[JsonPatch[Json]]
+```
+
+For Play! Json, you need to
+```scala
+import play.api.libs.json._
+import diffson.playJson._
+import diffson.playJson.DiffsonProtocol._
+import diffson.jsonpatch._
+
+val format = Json.format[JsonPatch[JsValue]]
+```
+
+For Spray Json, you need to
+```scala
+import spray.json._
+import diffson.sprayJson._
+import diffson.sprayJson.DiffsonProtocol._
+import diffson.jsonpatch._
+
+val format = implicitly[JsonFormat[JsonPatch[JsValue]]]
+```
+
 Json Patch (RFC-6902)
 ---------------------
 
