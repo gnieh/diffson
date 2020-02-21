@@ -67,7 +67,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
       "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.4",
       "org.typelevel"  %%% "cats-core"  % "2.1.0",
       "io.estatico"    %%% "newtype"    % "0.4.3",
-      "org.scalatest"  %%% "scalatest"  % "3.1.0" % Test,
+      "org.scalatest"  %%% "scalatest"  % "3.1.1" % Test,
       "org.scalacheck" %%% "scalacheck" % "1.14.3"      % Test
     ))
   .jsSettings(coverageEnabled := false)
@@ -80,7 +80,7 @@ lazy val testkit = crossProject(JSPlatform, JVMPlatform)
     name := "diffson-testkit",
     crossScalaVersions := Seq(scala212, scala213),
     libraryDependencies ++= Seq(
-      "org.scalatest" %%% "scalatest" % "3.1.0",
+      "org.scalatest" %%% "scalatest" % "3.1.1",
       "org.scalacheck" %%% "scalacheck" % "1.14.3"))
   .jsSettings(coverageEnabled := false)
   .dependsOn(core)
