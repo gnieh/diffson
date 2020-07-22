@@ -1,8 +1,8 @@
 import scalariform.formatter.preferences._
 import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
-val scala212 = "2.12.10"
-val scala213 = "2.13.1"
+val scala212 = "2.12.12"
+val scala213 = "2.13.3"
 
 lazy val commonSettings = Seq(
   organization := "org.gnieh",
@@ -66,8 +66,8 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
     libraryDependencies ++= Seq(
       "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.6",
       "org.typelevel"  %%% "cats-core"  % "2.1.1",
-      "io.estatico"    %%% "newtype"    % "0.4.3",
-      "org.scalatest"  %%% "scalatest"  % "3.1.1" % Test,
+      "io.estatico"    %%% "newtype"    % "0.4.4",
+      "org.scalatest"  %%% "scalatest"  % "3.2.0" % Test,
       "org.scalacheck" %%% "scalacheck" % "1.14.3"      % Test
     ))
   .jsSettings(coverageEnabled := false)
@@ -80,7 +80,7 @@ lazy val testkit = crossProject(JSPlatform, JVMPlatform)
     name := "diffson-testkit",
     crossScalaVersions := Seq(scala212, scala213),
     libraryDependencies ++= Seq(
-      "org.scalatest" %%% "scalatest" % "3.1.1",
+      "org.scalatest" %%% "scalatest" % "3.2.0",
       "org.scalacheck" %%% "scalacheck" % "1.14.3"))
   .jsSettings(coverageEnabled := false)
   .dependsOn(core)
@@ -100,7 +100,7 @@ lazy val playJson = crossProject(JSPlatform, JVMPlatform)
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-play-json",
-    libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.8.1",
+    libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.9.0",
     crossScalaVersions := Seq(scala212, scala213))
   .jsSettings(coverageEnabled := false)
   .dependsOn(core, testkit % Test)
@@ -119,8 +119,7 @@ lazy val circe = crossProject(JSPlatform, JVMPlatform)
     ),
     crossScalaVersions := Seq(scala212, scala213))
   .jsSettings(
-    coverageEnabled := false,
-    libraryDependencies += "io.circe" %%% "not-java-time" % "0.2.0"
+    coverageEnabled := false
   )
   .dependsOn(core, testkit % Test)
 
