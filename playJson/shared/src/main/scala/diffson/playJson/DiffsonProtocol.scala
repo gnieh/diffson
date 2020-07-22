@@ -1,19 +1,19 @@
 /*
-* This file is part of the diffson project.
-* Copyright (c) 2019 Lucas Satabin
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * This file is part of the diffson project.
+ * Copyright (c) 2019 Lucas Satabin
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package diffson
 package playJson
 
@@ -60,12 +60,10 @@ object DiffsonProtocol {
   }
 
   implicit val PointerFormat: Format[Pointer] =
-    Format[Pointer](
-      Reads {
-        case JsString(s) => Pointer.parse[JsResult](s)
-        case value       => JsError(f"Pointer expected: $value")
-      },
-      Writes(p => JsString(p.show)))
+    Format[Pointer](Reads {
+      case JsString(s) => Pointer.parse[JsResult](s)
+      case value       => JsError(f"Pointer expected: $value")
+    }, Writes(p => JsString(p.show)))
 
   implicit val OperationFormat: Format[Operation[JsValue]] =
     Format[Operation[JsValue]](
@@ -75,42 +73,42 @@ object DiffsonProtocol {
             case JsString("add") =>
               (fields.get("path"), fields.get("value")) match {
                 case (Some(JsString(path)), Some(value)) =>
-                  JsSuccess(Add(Pointer.parse[JsResult](path).get, value))
+                  Pointer.parse[JsResult](path).map(Add(_, value))
                 case _ =>
                   JsError("missing 'path' or 'value' field")
               }
             case JsString("remove") =>
               (fields.get("path"), fields.get("old")) match {
                 case (Some(JsString(path)), old) =>
-                  JsSuccess(Remove(Pointer.parse[JsResult](path).get, old))
+                  Pointer.parse[JsResult](path).map(Remove(_, old))
                 case _ =>
                   JsError("missing 'path' field")
               }
             case JsString("replace") =>
               (fields.get("path"), fields.get("value"), fields.get("old")) match {
                 case (Some(JsString(path)), Some(value), old) =>
-                  JsSuccess(Replace(Pointer.parse[JsResult](path).get, value, old))
+                  Pointer.parse[JsResult](path).map(Replace(_, value, old))
                 case _ =>
                   JsError("missing 'path' or 'value' field")
               }
             case JsString("move") =>
               (fields.get("from"), fields.get("path")) match {
                 case (Some(JsString(from)), Some(JsString(path))) =>
-                  JsSuccess(Move(Pointer.parse[JsResult](from).get, Pointer.parse[JsResult](path).get))
+                  (Pointer.parse[JsResult](from), Pointer.parse[JsResult](path)).mapN(Move(_, _))
                 case _ =>
                   JsError("missing 'from' or 'path' field")
               }
             case JsString("copy") =>
               (fields.get("from"), fields.get("path")) match {
                 case (Some(JsString(from)), Some(JsString(path))) =>
-                  JsSuccess(Copy(Pointer.parse[JsResult](from).get, Pointer.parse[JsResult](path).get))
+                  (Pointer.parse[JsResult](from), Pointer.parse[JsResult](path)).mapN(Copy(_, _))
                 case _ =>
                   JsError("missing 'from' or 'path' field")
               }
             case JsString("test") =>
               (fields.get("path"), fields.get("value")) match {
                 case (Some(JsString(path)), Some(value)) =>
-                  JsSuccess(Test(Pointer.parse[JsResult](path).get, value))
+                  Pointer.parse[JsResult](path).map(Test(_, value))
                 case _ =>
                   JsError("missing 'path' or 'value' field")
               }
@@ -122,45 +120,21 @@ object DiffsonProtocol {
       },
       Writes {
         case Add(path, value) =>
-          Json.obj(
-            "op" -> JsString("add"),
-            "path" -> JsString(path.show),
-            "value" -> value)
+          Json.obj("op" -> JsString("add"), "path" -> JsString(path.show), "value" -> value)
         case Remove(path, Some(old)) =>
-          Json.obj(
-            "op" -> JsString("remove"),
-            "path" -> JsString(path.show),
-            "old" -> old)
+          Json.obj("op" -> JsString("remove"), "path" -> JsString(path.show), "old" -> old)
         case Remove(path, None) =>
-          Json.obj(
-            "op" -> JsString("remove"),
-            "path" -> JsString(path.show))
+          Json.obj("op" -> JsString("remove"), "path" -> JsString(path.show))
         case Replace(path, value, Some(old)) =>
-          Json.obj(
-            "op" -> JsString("replace"),
-            "path" -> JsString(path.show),
-            "value" -> value,
-            "old" -> old)
+          Json.obj("op" -> JsString("replace"), "path" -> JsString(path.show), "value" -> value, "old" -> old)
         case Replace(path, value, None) =>
-          Json.obj(
-            "op" -> JsString("replace"),
-            "path" -> JsString(path.show),
-            "value" -> value)
+          Json.obj("op" -> JsString("replace"), "path" -> JsString(path.show), "value" -> value)
         case Move(from, path) =>
-          Json.obj(
-            "op" -> JsString("move"),
-            "from" -> JsString(from.show),
-            "path" -> JsString(path.show))
+          Json.obj("op" -> JsString("move"), "from" -> JsString(from.show), "path" -> JsString(path.show))
         case Copy(from, path) =>
-          Json.obj(
-            "op" -> JsString("copy"),
-            "from" -> JsString(from.show),
-            "path" -> JsString(path.show))
+          Json.obj("op" -> JsString("copy"), "from" -> JsString(from.show), "path" -> JsString(path.show))
         case Test(path, value) =>
-          Json.obj(
-            "op" -> JsString("test"),
-            "path" -> JsString(path.show),
-            "value" -> value)
+          Json.obj("op" -> JsString("test"), "path" -> JsString(path.show), "value" -> value)
       })
 
   implicit val JsonPatchFormat: Format[JsonPatch[JsValue]] =
