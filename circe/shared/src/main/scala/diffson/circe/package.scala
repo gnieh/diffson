@@ -21,7 +21,7 @@ import jsonpointer._
 import jsonmergepatch._
 
 import cats.{ Apply, FlatMap }
-import cats.implicits._
+import cats.syntax.all._
 import io.circe._
 import io.circe.Decoder.Result
 import io.circe.syntax._
