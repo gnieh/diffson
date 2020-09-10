@@ -100,7 +100,7 @@ lazy val playJson = crossProject(JSPlatform, JVMPlatform)
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-play-json",
-    libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.9.0",
+    libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.9.1",
     crossScalaVersions := Seq(scala212, scala213))
   .jsSettings(coverageEnabled := false)
   .dependsOn(core, testkit % Test)
