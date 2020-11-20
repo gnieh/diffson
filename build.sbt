@@ -91,7 +91,7 @@ lazy val sprayJson = project.in(file("sprayJson"))
   .settings(
     name := "diffson-spray-json",
     crossScalaVersions := Seq(scala212, scala213),
-    libraryDependencies += "io.spray" %%  "spray-json" % "1.3.5")
+    libraryDependencies += "io.spray" %%  "spray-json" % "1.3.6")
   .dependsOn(core.jvm, testkit.jvm % Test)
 
 lazy val playJson = crossProject(JSPlatform, JVMPlatform)
