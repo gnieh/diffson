@@ -64,11 +64,11 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
     name := "diffson-core",
     crossScalaVersions := Seq(scala212, scala213),
     libraryDependencies ++= Seq(
-      "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.6",
+      "org.scala-lang.modules" %%% "scala-collection-compat" % "2.2.0",
       "org.typelevel"  %%% "cats-core"  % "2.2.0",
       "io.estatico"    %%% "newtype"    % "0.4.4",
-      "org.scalatest"  %%% "scalatest"  % "3.2.2" % Test,
-      "org.scalacheck" %%% "scalacheck" % "1.14.3"      % Test
+      "org.scalatest"  %%% "scalatest"  % "3.2.3" % Test,
+      "org.scalacheck" %%% "scalacheck" % "1.15.1"      % Test
     ))
   .jsSettings(coverageEnabled := false)
 
@@ -80,8 +80,8 @@ lazy val testkit = crossProject(JSPlatform, JVMPlatform)
     name := "diffson-testkit",
     crossScalaVersions := Seq(scala212, scala213),
     libraryDependencies ++= Seq(
-      "org.scalatest" %%% "scalatest" % "3.2.2",
-      "org.scalacheck" %%% "scalacheck" % "1.14.3"))
+      "org.scalatest" %%% "scalatest" % "3.2.3",
+      "org.scalacheck" %%% "scalacheck" % "1.15.1"))
   .jsSettings(coverageEnabled := false)
   .dependsOn(core)
 
@@ -91,7 +91,7 @@ lazy val sprayJson = project.in(file("sprayJson"))
   .settings(
     name := "diffson-spray-json",
     crossScalaVersions := Seq(scala212, scala213),
-    libraryDependencies += "io.spray" %%  "spray-json" % "1.3.5")
+    libraryDependencies += "io.spray" %%  "spray-json" % "1.3.6")
   .dependsOn(core.jvm, testkit.jvm % Test)
 
 lazy val playJson = crossProject(JSPlatform, JVMPlatform)
@@ -100,7 +100,7 @@ lazy val playJson = crossProject(JSPlatform, JVMPlatform)
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-play-json",
-    libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.9.0",
+    libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.9.1",
     crossScalaVersions := Seq(scala212, scala213))
   .jsSettings(coverageEnabled := false)
   .dependsOn(core, testkit % Test)
