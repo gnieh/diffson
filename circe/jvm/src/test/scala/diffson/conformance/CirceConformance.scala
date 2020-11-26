@@ -21,7 +21,6 @@ import jsonpatch.conformance._
 import io.circe._
 import io.circe.syntax._
 import io.circe.generic.semiauto._
-import cats.implicits._
 
 import scala.io.Source
 

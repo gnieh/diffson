@@ -5,7 +5,6 @@ import simplediff._
 import jsonpointer._
 
 import cats._
-import cats.implicits._
 
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
