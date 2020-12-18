@@ -1,7 +1,5 @@
 package diffson.lcs
 
-import cats.implicits._
-
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
