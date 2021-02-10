@@ -17,7 +17,7 @@ package diffson
 package jsonmergepatch
 
 import cats._
-import cats.implicits._
+import cats.syntax.all._
 
 import scala.language.higherKinds
 

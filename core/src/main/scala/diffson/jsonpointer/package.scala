@@ -16,7 +16,6 @@
 package diffson
 
 import cats._
-import cats.implicits._
 import cats.data.Chain
 
 import io.estatico.newtype.macros.newtype
