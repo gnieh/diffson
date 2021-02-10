@@ -22,7 +22,7 @@ import jsonpointer._
 import jsonmergepatch._
 
 import cats._
-import cats.implicits._
+import cats.syntax.all._
 
 import play.api.libs.json._
 

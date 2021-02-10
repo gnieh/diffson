@@ -3,8 +3,6 @@ package jsonpatch
 
 import lcsdiff._
 
-import cats.implicits._
-
 import org.scalacheck.Properties
 import org.scalacheck.Prop.forAll
 
