@@ -109,12 +109,12 @@ Although the library is quite small and easy to use, here comes a summary of its
 Diffson uses a type-class approach based on the [cats][cats] library.
 All operations that may fail are wrapped in type with a `MonadError` instance.
 
-There are two different entities living in the `diffson.jsonpatch` and one on `diffson.jsonpointer` package usefull to work with Json patches:
+There are two different entities living in the `diffson.jsonpatch` and one on `diffson.jsonpointer` package useful to work with Json patches:
  - `Pointer` which allows to parse and manipulate Json pointers as defined in [RFC-6901][1],
  - `JsonPatch` which allows to parse, create and apply Json patches as defined in [RFC-6902][2],
  - `JsonDiff` which allows to compute the diff between two Json values and create Json patches.
 
-Basically if one wants to compute the diff between two Json objects, on can execute the following:
+Basically if someone wants to compute the diff between two Json objects, they can execute the following:
 ```scala
 import diffson._
 import diffson.lcs._
@@ -314,7 +314,7 @@ There are two different entities living in the `diffson.jsonmergepatch` package 
  - `JsonMergePatch` which allows to parse, create and apply Json merge patches as defined in [RFC-7396][11],
  - `JsonMergeDiff` which allows to compute the diff between two Json values and create Json merge patches.
 
-Basically if one wants to compute the diff between two Json objects, on can execute the following:
+Basically if someone wants to compute the diff between two Json objects, they can execute the following:
 ```scala
 import diffson._
 import diffson.circe._
