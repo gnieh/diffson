@@ -3,8 +3,6 @@ package jsonpatch
 
 import jsonpointer._
 
-import cats.implicits._
-
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 
