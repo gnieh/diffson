@@ -1,7 +1,7 @@
 import scalariform.formatter.preferences._
 import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
-val scala212 = "2.12.12"
+val scala212 = "2.12.13"
 val scala213 = "2.13.3"
 
 lazy val commonSettings = Seq(
