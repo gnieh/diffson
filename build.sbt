@@ -3,6 +3,10 @@ import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
 val scala212 = "2.12.13"
 val scala213 = "2.13.6"
+val scala3 = "3.0.0"
+
+val scalatestVersion = "3.2.9"
+val scalacheckVersion = "1.15.3"
 
 lazy val commonSettings = Seq(
   organization := "org.gnieh",
@@ -17,18 +21,25 @@ lazy val commonSettings = Seq(
       Seq(
         "-Ymacro-annotations"
       )
+    case Some((3, _)) =>
+      Seq(
+        "-Ykind-projector"
+      )
   }.toList.flatten,
   libraryDependencies ++=
     (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, v)) if v <= 12 =>
         Seq(
-          compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full)
+          compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
+          compilerPlugin("org.typelevel" % "kind-projector" % "0.10.3" cross CrossVersion.binary)
+        )
+      case Some((2, 13))=>
+        Seq(
+          compilerPlugin("org.typelevel" % "kind-projector" % "0.10.3" cross CrossVersion.binary)
         )
       case _ =>
-        // if scala 2.13.0 or later, macro annotations merged into scala-reflect
         Nil
     }),
-  addCompilerPlugin("org.typelevel" % "kind-projector" % "0.10.3" cross CrossVersion.binary),
   scalariformAutoformat := true,
   scalariformPreferences := {
     scalariformPreferences.value
@@ -62,13 +73,12 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-core",
-    crossScalaVersions := Seq(scala212, scala213),
+    crossScalaVersions := Seq(scala212, scala213, scala3),
     libraryDependencies ++= Seq(
       "org.scala-lang.modules" %%% "scala-collection-compat" % "2.4.4",
       "org.typelevel"  %%% "cats-core"  % "2.6.1",
-      "io.estatico"    %%% "newtype"    % "0.4.4",
-      "org.scalatest"  %%% "scalatest"  % "3.2.9" % Test,
-      "org.scalacheck" %%% "scalacheck" % "1.15.4"      % Test
+      "org.scalatest"  %%% "scalatest"  % scalatestVersion % Test,
+      "org.scalacheck" %%% "scalacheck" % scalacheckVersion % Test
     ))
   .jsSettings(coverageEnabled := false)
 
@@ -78,10 +88,10 @@ lazy val testkit = crossProject(JSPlatform, JVMPlatform)
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-testkit",
-    crossScalaVersions := Seq(scala212, scala213),
+    crossScalaVersions := Seq(scala212, scala213, scala3),
     libraryDependencies ++= Seq(
-      "org.scalatest" %%% "scalatest" % "3.2.9",
-      "org.scalacheck" %%% "scalacheck" % "1.15.4"))
+      "org.scalatest" %%% "scalatest" % scalatestVersion,
+      "org.scalacheck" %%% "scalacheck" % scalacheckVersion))
   .jsSettings(coverageEnabled := false)
   .dependsOn(core)
 
@@ -105,7 +115,7 @@ lazy val playJson = crossProject(JSPlatform, JVMPlatform)
   .jsSettings(coverageEnabled := false)
   .dependsOn(core, testkit % Test)
 
-val circeVersion = "0.13.0"
+val circeVersion = "0.14.0-M5"
 lazy val circe = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Full).in(file("circe"))
   .enablePlugins(ScoverageSbtPlugin)
@@ -114,10 +124,9 @@ lazy val circe = crossProject(JSPlatform, JVMPlatform)
     name := "diffson-circe",
     libraryDependencies ++= Seq(
       "io.circe" %%% "circe-core"    % circeVersion,
-      "io.circe" %%% "circe-parser"  % circeVersion,
-      "io.circe" %%% "circe-generic" % circeVersion % Test
+      "io.circe" %%% "circe-parser"  % circeVersion
     ),
-    crossScalaVersions := Seq(scala212, scala213))
+    crossScalaVersions := Seq(scala212, scala213, scala3))
   .jsSettings(
     coverageEnabled := false
   )

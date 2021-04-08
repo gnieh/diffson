@@ -1,25 +1,23 @@
 package diffson
 package circe
 
+import cats.Eq
 import jsonpatch._
 import jsonmergepatch._
-
 import cats.implicits._
-
 import io.circe._
 import io.circe.parser._
 import io.circe.syntax._
-import io.circe.generic.semiauto._
 
 import scala.language.implicitConversions
 
 trait CirceTestProtocol extends TestProtocol[Json] {
-  implicit def intSeqMarshaller(is: Seq[Int]) = is.asJson
-  implicit def intSeqUnmarshaller(json: Json) = json.as[Seq[Int]].fold(throw _, identity)
-  implicit def boolMarshaller(b: Boolean) = Json.fromBoolean(b)
-  implicit def intMarshaller(i: Int) = Json.fromInt(i)
-  implicit def stringMarshaller(s: String) = Json.fromString(s)
-  implicit def jsonEq = Json.eqJson
+  implicit def intSeqMarshaller(is: Seq[Int]): Json = is.asJson
+  implicit def intSeqUnmarshaller(json: Json): Seq[Int] = json.as[Seq[Int]].fold(throw _, identity)
+  implicit def boolMarshaller(b: Boolean): Json = Json.fromBoolean(b)
+  implicit def intMarshaller(i: Int): Json = Json.fromInt(i)
+  implicit def stringMarshaller(s: String): Json = Json.fromString(s)
+  implicit def jsonEq: Eq[Json] = Json.eqJson
 
   def parseJson(s: String): Json =
     parse(s).fold(throw _, identity)
