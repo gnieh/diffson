@@ -1,7 +1,7 @@
 package diffson.lcs
 
 import cats._
-import cats.implicits._
+import cats.syntax.all._
 
 /** Speeds up LCS computations by pre-computing hashes for all objects.
  *  Very useful for objects that recompute hashCodes on each invocation.

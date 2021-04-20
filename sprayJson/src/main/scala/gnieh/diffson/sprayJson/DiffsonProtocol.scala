@@ -21,7 +21,7 @@ import jsonpatch._
 import jsonpointer._
 import jsonmergepatch._
 
-import cats.implicits._
+import cats.syntax.all._
 
 import spray.json._
 

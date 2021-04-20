@@ -19,7 +19,7 @@ package jsonpatch
 import jsonpointer._
 
 import cats._
-import cats.implicits._
+import cats.syntax.all._
 
 import scala.annotation.tailrec
 import scala.language.higherKinds
