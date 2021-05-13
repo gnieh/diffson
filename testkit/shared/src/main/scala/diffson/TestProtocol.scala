@@ -5,7 +5,6 @@ import jsonpointer._
 import jsonmergepatch._
 
 import cats._
-import cats.implicits._
 
 import scala.util.Try
 

@@ -1,8 +1,6 @@
 package diffson
 package jsonmergepatch
 
-import cats.implicits._
-
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 
