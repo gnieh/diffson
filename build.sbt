@@ -6,7 +6,7 @@ val scala213 = "2.13.6"
 val scala3 = "3.0.0"
 
 val scalatestVersion = "3.2.9"
-val scalacheckVersion = "1.15.3"
+val scalacheckVersion = "1.15.4"
 
 lazy val commonSettings = Seq(
   organization := "org.gnieh",
@@ -19,7 +19,8 @@ lazy val commonSettings = Seq(
   scalacOptions ++= PartialFunction.condOpt(CrossVersion.partialVersion(scalaVersion.value)) {
     case Some((2, n)) if n >= 13 =>
       Seq(
-        "-Ymacro-annotations"
+        "-Ymacro-annotations",
+        "-Ytasty-reader"
       )
     case Some((3, _)) =>
       Seq(
@@ -31,11 +32,11 @@ lazy val commonSettings = Seq(
       case Some((2, v)) if v <= 12 =>
         Seq(
           compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
-          compilerPlugin("org.typelevel" % "kind-projector" % "0.10.3" cross CrossVersion.binary)
+          compilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full)
         )
       case Some((2, 13))=>
         Seq(
-          compilerPlugin("org.typelevel" % "kind-projector" % "0.10.3" cross CrossVersion.binary)
+          compilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full)
         )
       case _ =>
         Nil
@@ -48,7 +49,7 @@ lazy val commonSettings = Seq(
       .setPreference(MultilineScaladocCommentsStartOnFirstLine, true)
   },
   coverageExcludedPackages := "<empty>;.*Test.*",
-  scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits"),
+  Compile / doc / scalacOptions ++= Seq("-groups", "-implicits"),
   autoAPIMappings := true,
   scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked")) ++ Seq(
     scalariformPreferences := {
@@ -115,7 +116,7 @@ lazy val playJson = crossProject(JSPlatform, JVMPlatform)
   .jsSettings(coverageEnabled := false)
   .dependsOn(core, testkit % Test)
 
-val circeVersion = "0.14.0-M5"
+val circeVersion = "0.14.0-M7"
 lazy val circe = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Full).in(file("circe"))
   .enablePlugins(ScoverageSbtPlugin)
@@ -134,7 +135,7 @@ lazy val circe = crossProject(JSPlatform, JVMPlatform)
 
 lazy val publishSettings = Seq(
   publishMavenStyle := true,
-  publishArtifact in Test := false,
+  Test / publishArtifact := false,
   // The Nexus repo we're publishing to.
   publishTo := Some(
   if (isSnapshot.value)
