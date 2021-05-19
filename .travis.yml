@@ -16,6 +16,7 @@ script:
 scala:
    - 2.12.13
    - 2.13.6
+   - 3.0.0
 
 before_install:
     - pip install --user codecov
