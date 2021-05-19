@@ -14,7 +14,7 @@ script:
   - if [[ -n "$CODACY_PROJECT_TOKEN" && $TRAVIS_SCALA_VERSION == 2.12* ]]; then sbt ++$TRAVIS_SCALA_VERSION clean coverage test coverageReport coverageAggregate codacyCoverage; else sbt ++$TRAVIS_SCALA_VERSION test; fi
 
 scala:
-   - 2.12.12
+   - 2.12.13
    - 2.13.6
 
 before_install:
