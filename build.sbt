@@ -2,7 +2,7 @@ import scalariform.formatter.preferences._
 import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
 val scala212 = "2.12.12"
-val scala213 = "2.13.3"
+val scala213 = "2.13.6"
 
 lazy val commonSettings = Seq(
   organization := "org.gnieh",
@@ -64,11 +64,11 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
     name := "diffson-core",
     crossScalaVersions := Seq(scala212, scala213),
     libraryDependencies ++= Seq(
-      "org.scala-lang.modules" %%% "scala-collection-compat" % "2.2.0",
-      "org.typelevel"  %%% "cats-core"  % "2.1.1",
+      "org.scala-lang.modules" %%% "scala-collection-compat" % "2.4.4",
+      "org.typelevel"  %%% "cats-core"  % "2.6.1",
       "io.estatico"    %%% "newtype"    % "0.4.4",
-      "org.scalatest"  %%% "scalatest"  % "3.2.3" % Test,
-      "org.scalacheck" %%% "scalacheck" % "1.15.1"      % Test
+      "org.scalatest"  %%% "scalatest"  % "3.2.9" % Test,
+      "org.scalacheck" %%% "scalacheck" % "1.15.4"      % Test
     ))
   .jsSettings(coverageEnabled := false)
 
@@ -80,8 +80,8 @@ lazy val testkit = crossProject(JSPlatform, JVMPlatform)
     name := "diffson-testkit",
     crossScalaVersions := Seq(scala212, scala213),
     libraryDependencies ++= Seq(
-      "org.scalatest" %%% "scalatest" % "3.2.3",
-      "org.scalacheck" %%% "scalacheck" % "1.15.1"))
+      "org.scalatest" %%% "scalatest" % "3.2.9",
+      "org.scalacheck" %%% "scalacheck" % "1.15.4"))
   .jsSettings(coverageEnabled := false)
   .dependsOn(core)
 
