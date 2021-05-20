@@ -8,9 +8,11 @@ val scala3 = "3.0.0"
 val scalatestVersion = "3.2.9"
 val scalacheckVersion = "1.15.4"
 
+ThisBuild / scalaVersion := scala213
+ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
+
 lazy val commonSettings = Seq(
   organization := "org.gnieh",
-  scalaVersion := scala213,
   version := "4.0.3",
   description := "Json diff/patch library",
   licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
@@ -63,9 +65,11 @@ lazy val commonSettings = Seq(
 lazy val diffson = project.in(file("."))
   .enablePlugins(ScoverageSbtPlugin)
   .settings(commonSettings: _*)
+  .settings(crossScalaVersions := Nil)
   .settings(
     name := "diffson",
-    packagedArtifacts := Map())
+    packagedArtifacts := Map()
+  )
   .aggregate(core.jvm, core.js, sprayJson, circe.jvm, circe.js, playJson.jvm, playJson.js, testkit.jvm, testkit.js)
 
 lazy val core = crossProject(JSPlatform, JVMPlatform)
@@ -74,7 +78,6 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-core",
-    crossScalaVersions := Seq(scala212, scala213, scala3),
     libraryDependencies ++= Seq(
       "org.scala-lang.modules" %%% "scala-collection-compat" % "2.4.4",
       "org.typelevel"  %%% "cats-core"  % "2.6.1",
@@ -89,7 +92,6 @@ lazy val testkit = crossProject(JSPlatform, JVMPlatform)
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-testkit",
-    crossScalaVersions := Seq(scala212, scala213, scala3),
     libraryDependencies ++= Seq(
       "org.scalatest" %%% "scalatest" % scalatestVersion,
       "org.scalacheck" %%% "scalacheck" % scalacheckVersion))
@@ -126,8 +128,8 @@ lazy val circe = crossProject(JSPlatform, JVMPlatform)
     libraryDependencies ++= Seq(
       "io.circe" %%% "circe-core"    % circeVersion,
       "io.circe" %%% "circe-parser"  % circeVersion
-    ),
-    crossScalaVersions := Seq(scala212, scala213, scala3))
+    )
+  )
   .jsSettings(
     coverageEnabled := false
   )

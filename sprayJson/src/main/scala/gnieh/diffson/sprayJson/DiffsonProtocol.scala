@@ -104,7 +104,7 @@ trait DiffsonProtocol extends DefaultJsonProtocol {
             case JsString("remove") =>
               obj.getFields("path", "old") match {
                 case Seq(JsString(path)) =>
-                  Remove(Pointer.parse[Try](path).get)
+                  Remove(Pointer.parse[Try](path).get, None)
                 case Seq(JsString(path), old) =>
                   Remove(Pointer.parse[Try](path).get, Some(old))
                 case _ =>
@@ -113,7 +113,7 @@ trait DiffsonProtocol extends DefaultJsonProtocol {
             case JsString("replace") =>
               obj.getFields("path", "value", "old") match {
                 case Seq(JsString(path), value) =>
-                  Replace(Pointer.parse[Try](path).get, value)
+                  Replace(Pointer.parse[Try](path).get, value, None)
                 case Seq(JsString(path), value, old) =>
                   Replace(Pointer.parse[Try](path).get, value, Some(old))
                 case _ =>

@@ -11,7 +11,7 @@ before_script:
 
 script:
   - export SBT_OPS=-Xmx4G
-  - if [[ -n "$CODACY_PROJECT_TOKEN" && $TRAVIS_SCALA_VERSION == 2.12* ]]; then sbt ++$TRAVIS_SCALA_VERSION clean coverage test coverageReport coverageAggregate codacyCoverage; else sbt ++$TRAVIS_SCALA_VERSION test; fi
+  - if [[ -n "$CODACY_PROJECT_TOKEN" && $TRAVIS_SCALA_VERSION == 2.12* ]]; then sbt ++$TRAVIS_SCALA_VERSION clean coverage test coverageReport coverageAggregate codacyCoverage; else if [[ $TRAVIS_SCALA_VERSION == 3.0* ]]; then sbt ++$TRAVIS_SCALA_VERSION coreJVM/test coreJS/test circeJVM/test circeJS/test testkitJVM testkitJS; else sbt ++$TRAVIS_SCALA_VERSION test; fi
 
 scala:
    - 2.12.13

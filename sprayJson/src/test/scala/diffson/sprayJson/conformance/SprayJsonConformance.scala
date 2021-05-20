@@ -25,9 +25,9 @@ import scala.io.Source
 class SprayJsonConformance extends TestRfcConformance[JsValue] with SprayJsonTestProtocol {
   import DiffsonProtocol._
 
-  implicit lazy val successConformanceTestUnmarshaller = jsonFormat5(SuccessConformanceTest)
-  implicit lazy val errorConformanceTestUnmarshaller = jsonFormat5(ErrorConformanceTest)
-  implicit lazy val commentConformanceTestUnMarshaller = jsonFormat1(CommentConformanceTest)
+  implicit lazy val successConformanceTestUnmarshaller: RootJsonFormat[SuccessConformanceTest] = jsonFormat5(SuccessConformanceTest(_, _, _, _, _))
+  implicit lazy val errorConformanceTestUnmarshaller: RootJsonFormat[ErrorConformanceTest] = jsonFormat5(ErrorConformanceTest(_, _, _, _, _))
+  implicit lazy val commentConformanceTestUnMarshaller: RootJsonFormat[CommentConformanceTest] = jsonFormat1(CommentConformanceTest(_))
 
   implicit object conformanceTestUnmarshaller extends JsonFormat[ConformanceTest] {
 
