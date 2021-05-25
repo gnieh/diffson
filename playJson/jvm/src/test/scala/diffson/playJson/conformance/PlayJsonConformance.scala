@@ -43,7 +43,7 @@ class PlayJsonConformance extends TestRfcConformance[JsValue] with PlayJsonTestP
     (JsPath \ "disabled").readNullable[Boolean])(ErrorConformanceTest.apply _)
 
   implicit lazy val commentConformanceTestUnMarshaller: Reads[CommentConformanceTest] =
-    (JsPath \ "comment").read[String].map(CommentConformanceTest)
+    (JsPath \ "comment").read[String].map(CommentConformanceTest(_))
 
   implicit lazy val conformanceTestUnmarshaller: Reads[ConformanceTest] = Reads {
     case obj @ JsObject(fields) if fields.contains("error") =>

@@ -56,7 +56,7 @@ package object circe {
     Encoder[String].contramap(_.show)
 
   implicit val pointerDecoder: Decoder[Pointer] =
-    Decoder[String].emap(Pointer.parse[Either[Throwable, ?]](_).leftMap(_.getMessage))
+    Decoder[String].emap(Pointer.parse[Either[Throwable, *]](_).leftMap(_.getMessage))
 
   implicit val operationEncoder: Encoder[Operation[Json]] =
     Encoder.instance[Operation[Json]] {

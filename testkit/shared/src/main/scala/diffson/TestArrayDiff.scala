@@ -2,19 +2,17 @@ package diffson
 package jsonpatch
 
 import lcsdiff._
-
 import cats.implicits._
-
+import diffson.lcs.Patience
 import org.scalacheck.Properties
 import org.scalacheck.Prop.forAll
 
 import scala.util.Try
-
 import scala.language.implicitConversions
 
 abstract class TestArrayDiff[Json](implicit Json: Jsony[Json]) extends Properties("TestArrayDiff") with TestProtocol[Json] {
 
-  implicit val lcsalg = new lcs.Patience[Json]
+  implicit val lcsalg: Patience[Json] = new lcs.Patience[Json]
 
   property("arrayDiff") = forAll {
     (a: Seq[Int], b: Seq[Int]) =>

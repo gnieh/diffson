@@ -3,21 +3,19 @@ package jsonpatch
 
 import lcsdiff._
 import jsonpointer._
-
 import cats._
 import cats.implicits._
-
+import diffson.lcs.Patience
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Try
-
 import scala.language.implicitConversions
 import org.scalatest.matchers.should.Matchers
 
 abstract class TestJsonDiff[Json](implicit Json: Jsony[Json]) extends AnyFlatSpec with Matchers with TestProtocol[Json] {
 
-  implicit val lcsalg = new lcs.Patience[Json]
+  implicit val lcsalg: Patience[Json] = new lcs.Patience[Json]
 
   "a diff" should "be empty if created between two equal values" in {
     val json = parseJson("true")

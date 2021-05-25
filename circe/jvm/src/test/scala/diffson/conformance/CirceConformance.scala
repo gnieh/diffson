@@ -20,7 +20,6 @@ import jsonpatch.conformance._
 
 import io.circe._
 import io.circe.syntax._
-import io.circe.generic.semiauto._
 import cats.implicits._
 
 import scala.io.Source
@@ -28,15 +27,15 @@ import scala.io.Source
 class CirceConformance extends TestRfcConformance[Json] with CirceTestProtocol {
 
   implicit lazy val successConformanceTestUnmarshaller: Decoder[SuccessConformanceTest] =
-    deriveDecoder[SuccessConformanceTest]
+    Decoder.forProduct5("doc", "patch", "expected", "comment", "disabled")(SuccessConformanceTest.apply)
 
   implicit lazy val errorConformanceTestUnmarshaller: Decoder[ErrorConformanceTest] =
-    deriveDecoder[ErrorConformanceTest]
+    Decoder.forProduct5("doc", "patch", "error", "comment", "disabled")(ErrorConformanceTest.apply)
 
   implicit lazy val commentConformanceTestUnMarshaller: Decoder[CommentConformanceTest] =
-    deriveDecoder[CommentConformanceTest]
+    Decoder[String].map(CommentConformanceTest.apply)
 
-  implicit lazy val conformanceTestUnmarshaller: Decoder[ConformanceTest] = Decoder.instance[ConformanceTest] { c: HCursor =>
+  implicit lazy val conformanceTestUnmarshaller: Decoder[ConformanceTest] = Decoder.instance[ConformanceTest] { (c: HCursor) =>
     val fields = c.keys.fold(Set.empty[String])(_.toSet)
     if (fields contains "error")
       c.as[ErrorConformanceTest]
