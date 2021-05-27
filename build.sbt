@@ -13,7 +13,7 @@ ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
 
 lazy val commonSettings = Seq(
   organization := "org.gnieh",
-  version := "4.1.0",
+  version := "4.1.1",
   description := "Json diff/patch library",
   licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://github.com/gnieh/diffson")),
