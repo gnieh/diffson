@@ -16,12 +16,14 @@ import org.scalatest.matchers.should.Matchers
 abstract class TestJsonPatch[Json](implicit Json: Jsony[Json]) extends AnyFlatSpec
   with Matchers with TestProtocol[Json] {
 
+  // add
+
   "applying an 'add' operation" should "add the field to the object if it does not exist" in {
     val op = Add[Json](parsePointer("/lbl"), 17)
     op[Try](parseJson("{}")).get should be(parseJson("{ \"lbl\": 17 } "))
   }
 
-  "applying an 'add' operation to /foo/" should "add a value with an empty string as the key" in {
+  it should "add a value with an empty string as the key" in {
     val op = Add[Json](parsePointer("/foo/"), 17)
     op[Try](parseJson("{ \"foo\": {} }")).get should be(parseJson("{ \"foo\": {\"\": 17 } }"))
   }
@@ -67,12 +69,14 @@ abstract class TestJsonPatch[Json](implicit Json: Jsony[Json]) extends AnyFlatSp
     }
   }
 
-  "removing a label of an object" should "result in the object being amputed from this label" in {
+  // remove
+
+  "removing a label of an object" should "result in the object being amputated from this label" in {
     val op = Remove[Json](parsePointer("/lbl"))
     op[Try](parseJson("{ \"lbl\": 17, \"toto\": true }")).get should be(parseJson("{ \"toto\": true }"))
   }
 
-  "removing an element of an array" should "result in the array being amputed from this element" in {
+  "removing an element of an array" should "result in the array being amputated from this element" in {
     val op = Remove[Json](parsePointer("/2"))
     op[Try](parseJson("[1, 2, 3, 4, 5]")).get should be(parseJson("[1, 2, 4, 5]"))
   }
@@ -105,6 +109,8 @@ abstract class TestJsonPatch[Json](implicit Json: Jsony[Json]) extends AnyFlatSp
     }
   }
 
+  // replace
+
   "replacing an element in an object" should "result in this element being replaced" in {
     val op = Replace[Json](parsePointer("/lbl/lbl"), 17)
     op[Try](parseJson("""{"lbl": {"lbl": true, "gruik": 1}, "toto": 3}""")).get should be(parseJson("""{"lbl": {"lbl": 17, "gruik": 1}, "toto": 3}"""))
@@ -120,7 +126,7 @@ abstract class TestJsonPatch[Json](implicit Json: Jsony[Json]) extends AnyFlatSp
     op[Try](parseJson("[1, 2, 3]")).get should be(17: Json)
   }
 
-  "replacing a non existing element in an object" should "result in an error being thrown" in {
+  "replacing a non-existing element in an object" should "result in an error being thrown" in {
     a[PatchException] should be thrownBy {
       val op = Replace[Json](parsePointer("/1/lbl"), 17)
       op[Try](parseJson("[1, {}, true]")).get
@@ -146,6 +152,8 @@ abstract class TestJsonPatch[Json](implicit Json: Jsony[Json]) extends AnyFlatSp
     }
   }
 
+  // move
+
   "moving a value from an object to an array" should "result in the value being added to the array and removed from the object" in {
     val op = Move(parsePointer("/0/lbl"), parsePointer("/1/1"))
     op[Try](parseJson("[{ \"lbl\": 17, \"toto\": true }, [1, 2], \"plop\"]")).get should be(
@@ -165,4 +173,34 @@ abstract class TestJsonPatch[Json](implicit Json: Jsony[Json]) extends AnyFlatSp
       op[Try](parseJson("0")).get
     }
   }
+
+  // copy
+
+  "copying an element in an object" should "result in this element being copied in the expected path" in {
+    val op = Copy[Json](parsePointer("/root/a"), parsePointer("/root/c"))
+    op.apply[Try](parseJson("""{"root": {"a": 1, "b": "B"}}""")).get shouldBe parseJson("""{"root": {"a": 1, "b": "B", "c": 1}}""")
+  }
+
+  // test
+
+  "testing an existing element of an object" should "succeed and not modify the original object" in {
+    val op = Test[Json](parsePointer("/a/b/3"), 6)
+    val initial = """{"a": {"b": [0,2,4,6] } }"""
+    op.apply[Try](parseJson(initial)).get shouldBe parseJson(initial)
+  }
+
+  "testing an existing element with a non-expected value" should "result in an error being thrown" in {
+    a[PatchException] should be thrownBy {
+      val op = Test[Json](parsePointer("/a"), 2)
+      op.apply[Try](parseJson("""{ "a": 1 }""")).get
+    }
+  }
+
+  "testing a non-existing element in an object" should "result in an error being thrown" in {
+    a[PatchException] should be thrownBy {
+      val op = Test[Json](parsePointer("/b"), 1)
+      op.apply[Try](parseJson("""{ "a": 1 }""")).get
+    }
+  }
+
 }
