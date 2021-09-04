@@ -34,7 +34,7 @@ object Hashed {
 class Hashed[T: Eq](val value: T) {
   override val hashCode: Int = value.hashCode()
   override def equals(other: Any): Boolean = other match {
-    case that: Hashed[T] => this === that
-    case _               => false
+    case that: Hashed[T] @unchecked => this === that
+    case _                          => false
   }
 }

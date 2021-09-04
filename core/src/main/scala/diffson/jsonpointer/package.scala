@@ -19,8 +19,6 @@ import cats._
 import cats.implicits._
 import cats.data.Chain
 
-import io.estatico.newtype.macros.newtype
-
 import scala.util.Try
 
 import scala.language.{ implicitConversions, higherKinds }
@@ -30,7 +28,7 @@ import scala.collection.compat.immutable.ArraySeq
 package object jsonpointer {
 
   type Part = Either[String, Int]
-  @newtype case class Pointer(parts: Chain[Part]) {
+  case class Pointer private[jsonpointer] (parts: Chain[Part]) extends AnyVal {
 
     def /(s: String): Pointer =
       Pointer(parts.append(Left(s)))
@@ -64,7 +62,7 @@ package object jsonpointer {
     private val IsNumber = "(0|[1-9][0-9]*)".r
 
     def apply(elems: String*): Pointer = Pointer(Chain.fromSeq(elems.map {
-      case s @ IsNumber(idx) => Try(idx.toInt).liftTo[Either[Throwable, ?]].leftMap(_ => s)
+      case s @ IsNumber(idx) => Try(idx.toInt).liftTo[Either[Throwable, *]].leftMap(_ => s)
       case key               => Left(key)
     }))
 
@@ -113,7 +111,7 @@ package object jsonpointer {
   object Inner {
 
     def unapply(parts: Pointer): Option[(Part, Pointer)] =
-      parts.parts.uncons.map { case (h, t) => (h, Pointer(t)) }
+      parts.parts.uncons.map { case (h, t) => (h, new Pointer(t)) }
 
   }
 
