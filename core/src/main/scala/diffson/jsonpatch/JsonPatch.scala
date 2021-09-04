@@ -41,7 +41,7 @@ sealed abstract class Operation[Json: Jsony] {
         .map(JsObject(_))
     case (JsArray(elems), Inner(ArrayIndex(idx), tl)) =>
       if (idx >= elems.size) {
-        F.raiseError(new PatchException(show"element $idx does not exist at path $parent"))
+        F.raiseError(PatchException(show"element $idx does not exist at path $parent"))
       } else {
         action[F](elems(idx), tl, parent / idx)
           .map { updated =>
@@ -50,7 +50,7 @@ sealed abstract class Operation[Json: Jsony] {
           }
       }
     case (_, Inner(elem, _)) =>
-      F.raiseError(new PatchException(show"element ${elem.fold(identity[String], _.toString)} does not exist at path $parent"))
+      F.raiseError(PatchException(show"element ${elem.fold(identity[String], _.toString)} does not exist at path $parent"))
   }
 
 }
@@ -91,7 +91,7 @@ case class Remove[Json: Jsony](path: Pointer, old: Option[Json] = None) extends 
       case (JsArray(arr), Leaf(ArrayIndex(idx))) =>
         if (idx >= arr.size) {
           // we know thanks to the extractor that the index cannot be negative
-          F.raiseError(new PatchException(show"element $idx does not exist at path $parent"))
+          F.raiseError(PatchException(show"element $idx does not exist at path $parent"))
         } else {
           // remove the element at the given index
           val (before, after) = arr.splitAt(idx)
@@ -99,12 +99,12 @@ case class Remove[Json: Jsony](path: Pointer, old: Option[Json] = None) extends 
         }
       case (JsArray(_), Leaf(Left("-"))) =>
         // how could we possibly remove an element that appears after the last one?
-        F.raiseError(new PatchException(show"element - does not exist at path $parent"))
+        F.raiseError(PatchException(show"element - does not exist at path $parent"))
       case (JsObject(obj), Leaf(ObjectField(lbl))) if obj.contains(lbl) =>
         // remove the field from the object if present, otherwise, ignore it
         F.pure(JsObject(obj - lbl))
       case (_, Pointer.Root) =>
-        F.raiseError(new PatchException("Cannot delete an empty path"))
+        F.raiseError(PatchException("Cannot delete an empty path"))
       case _ =>
         super.action[F](value, pointer, parent)
     }
@@ -121,16 +121,16 @@ case class Replace[Json: Jsony](path: Pointer, value: Json, old: Option[Json] = 
         F.pure(value)
       case (JsArray(arr), Leaf(Right(idx))) =>
         if (idx >= arr.size)
-          F.raiseError(new PatchException(show"element $idx does not exist at path $parent"))
+          F.raiseError(PatchException(show"element $idx does not exist at path $parent"))
         else
           F.pure(JsArray(arr.updated(idx, value)))
       case (JsArray(_), Leaf(Left("-"))) =>
-        F.raiseError(new PatchException(show"element - does not exist at path $parent"))
+        F.raiseError(PatchException(show"element - does not exist at path $parent"))
       case (JsObject(obj), Leaf(ObjectField(lbl))) =>
         if (obj.contains(lbl))
           F.pure(JsObject(obj.updated(lbl, value)))
         else
-          F.raiseError(new PatchException(show"element $lbl does not exist at path $parent"))
+          F.raiseError(PatchException(show"element $lbl does not exist at path $parent"))
       case _ =>
         super.action[F](original, pointer, parent)
     }
@@ -148,7 +148,7 @@ case class Move[Json: Jsony](from: Pointer, path: Pointer) extends Operation[Jso
       case (_, _)                                       => false
     }
     if (prefix(from, path))
-      F.raiseError(new PatchException("The destination path cannot be a descendant of the source path"))
+      F.raiseError(PatchException("The destination path cannot be a descendant of the source path"))
     else
       for {
         value <- from.evaluate[F, Json](original)
@@ -175,7 +175,7 @@ case class Test[Json: Jsony](path: Pointer, value: Json) extends Operation[Json]
   override def apply[F[_]](original: Json)(implicit F: MonadError[F, Throwable]): F[Json] =
     path.evaluate[F, Json](original).flatMap { orig =>
       if (value != orig)
-        F.raiseError(new PatchException(show"test failed at path $path"))
+        F.raiseError(PatchException(show"test failed at path $path"))
       else
         F.pure(original)
     }
@@ -183,17 +183,14 @@ case class Test[Json: Jsony](path: Pointer, value: Json) extends Operation[Json]
 }
 
 case class JsonPatch[Json: Jsony](ops: List[Operation[Json]]) {
-  def apply[F[_]](json: Json)(implicit F: MonadError[F, Throwable]) =
+  def apply[F[_]](json: Json)(implicit F: MonadError[F, Throwable]): F[Json] =
     ops.foldM(json)((json, op) => op[F](json))
 }
 
 object JsonPatch {
 
   implicit def JsonPatchPatch[F[_], Json](implicit F: MonadError[F, Throwable], Json: Jsony[Json]): Patch[F, Json, JsonPatch[Json]] =
-    new Patch[F, Json, JsonPatch[Json]] {
-      def apply(json: Json, patch: JsonPatch[Json]): F[Json] =
-        patch[F](json)
-    }
+    (json: Json, patch: JsonPatch[Json]) => patch.apply[F](json)
 
   def apply[Json: Jsony](ops: Operation[Json]*): JsonPatch[Json] =
     JsonPatch(ops.toList)
