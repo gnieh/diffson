@@ -20,6 +20,9 @@ syntax: glob
 .idea
 *.iml
 
+#bsp
+.bsp
+
 # building
 target
 build
