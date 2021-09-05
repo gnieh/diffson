@@ -48,7 +48,7 @@ package object jsonpointer {
             F.pure(Left(arr(idx), tl, parent / idx))
         case (value, Pointer.Root, _) =>
           F.pure(Right(value))
-        case (_, Inner(elem, tl), parent) =>
+        case (_, Inner(elem, _), parent) =>
           val elems = elem.fold(identity, _.toString)
           F.raiseError(new PointerException(show"element $elems does not exist at path $parent"))
       }

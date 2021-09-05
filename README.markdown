@@ -1,9 +1,15 @@
-Gnieh Diffson [![Build Status](https://travis-ci.org/gnieh/diffson.png)](https://travis-ci.org/gnieh/diffson) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/9892e2c968974ecb951d21969adbadaa)](https://www.codacy.com/app/satabin/diffson?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=gnieh/diffson&amp;utm_campaign=Badge_Grade) [![Code Coverage](https://codecov.io/github/gnieh/diffson/coverage.svg?branch=master)](https://codecov.io/github/gnieh/diffson?branch=master) [![Maven Central](https://img.shields.io/maven-central/v/org.gnieh/diffson-core_2.13.svg)](https://maven-badges.herokuapp.com/maven-central/org.gnieh/diffson-core_2.13) [![Scaladoc](https://javadoc.io/badge/org.gnieh/diffson-core_2.13.svg)](https://javadoc.io/doc/org.gnieh/diffson-core_2.13)
-=============
+Gnieh Diffson
+[![Build Status](https://travis-ci.org/gnieh/diffson.png)](https://travis-ci.org/gnieh/diffson) 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/9892e2c968974ecb951d21969adbadaa)](https://www.codacy.com/app/satabin/diffson?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=gnieh/diffson&amp;utm_campaign=Badge_Grade) 
+[![Code Coverage](https://codecov.io/github/gnieh/diffson/coverage.svg?branch=master)](https://codecov.io/github/gnieh/diffson?branch=master) 
+[![Maven Central](https://img.shields.io/maven-central/v/org.gnieh/diffson-core_2.13.svg)](https://maven-badges.herokuapp.com/maven-central/org.gnieh/diffson-core_2.13) 
+[![Scaladoc](https://javadoc.io/badge/org.gnieh/diffson-core_2.13.svg)](https://javadoc.io/doc/org.gnieh/diffson-core_2.13)
+
+----
 
 [![Join the chat at https://gitter.im/gnieh/diffson](https://badges.gitter.im/gnieh/diffson.svg)](https://gitter.im/gnieh/diffson?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-A [scala][6] implementation of the [RFC-6901][1], [RFC-6902][2], and [RFC-7396][11].
+A [Scala][6] implementation of the [RFC-6901][1], [RFC-6902][2], and [RFC-7396][11].
 It also provides methods to compute _diffs_ between two Json values that produce valid Json patches or merge patches.
 
 **Note:** if you still want to use the `3.x.y` series (without cats), please see [this documentation][diffson3]
@@ -40,7 +46,8 @@ where `jsonLib` is either:
 
 These versions are built for Scala 2.12, 2.13, and 3.
 
-Scala.JS is also supported for Scala 2.12, 2.13, and 3. To use it, add this dependency to your build file:
+Scala.JS is also supported for Scala 2.12, 2.13, and 3. 
+To use it, add this dependency to your build file:
 ```scala
 libraryDependencies += "org.gnieh" %%% f"diffson-$jsonLib" % "4.1.1"
 ```
@@ -48,7 +55,7 @@ libraryDependencies += "org.gnieh" %%% f"diffson-$jsonLib" % "4.1.1"
 Json Library
 ------------
 
-Diffson was first developped for [spray-json][3], however, it is possible to use it with any json library of your liking.
+Diffson was first developed for [spray-json][3], however, it is possible to use it with any json library of your liking.
 The only requirement is to have a `Jsony` for your json library.
 `Jsony` is a type class describing what operations are required to compute diffs and apply patches to Json-like types.
 
@@ -64,11 +71,16 @@ import diffson.playJson._
 import diffson.circe._
 ```
 
-If you want to add support for your favorite Json library, you may only depend on diffson core module `diffson-core` and all you need to do then is to implement the `Jsony` class, which provides all the operations for diffson to be able to compute diffs and apply patches. Contribution of new Json libraries in this repository are more than welcome.
+If you want to add support for your favorite Json library, you may only depend on diffson core module `diffson-core` and all you need to do then is to implement the `Jsony` class, which provides all the operations for diffson to be able to compute diffs and apply patches. 
+Contribution of new Json libraries in this repository are more than welcome.
 
 ### Note on (de)serialization
 
-The purpose of diffson is to create and manipulate diffs and patch for Json like structures. However the supported patch formats can also be represented as Json objects. The core library doesn't mention any of this as it's sole purpose if the diff/patch computations. Given the variety of Json libraries out there and there various ways of implementing the way of (de)serializing Json values, there is no good abstraction that fits this general purpose library, and this is up to the library user to do it in the most appropriate approach given the Json library of their choosing. The various supported Json libraries in diffson provide an idiomatic way of (de)serializing the different element for each of them (e.g. the `circe` module provide `Decoder`s and `Encoder`s for all the patch types).
+The purpose of diffson is to create and manipulate diffs and patch for Json like structures. 
+However the supported patch formats can also be represented as Json objects. 
+The core library doesn't mention any of this as it's sole purpose if the diff/patch computations. 
+Given the variety of Json libraries out there and there various ways of implementing the way of (de)serializing Json values, there is no good abstraction that fits this general purpose library, and this is up to the library user to do it in the most appropriate approach given the Json library of their choosing. 
+The various supported Json libraries in diffson provide an idiomatic way of (de)serializing the different element for each of them (e.g. the `circe` module provide `Decoder`s and `Encoder`s for all the patch types).
 
 For instance to get circe encoder and decoder instances, you need to
 ```scala
@@ -365,8 +377,8 @@ which will create the following Json:
 ```
 which we can easily verify is the same as `json2` modulo reordering of fields.
 
-[1]: http://tools.ietf.org/html/rfc6901
-[2]: http://tools.ietf.org/html/rfc6902
+[1]: https://datatracker.ietf.org/doc/html/rfc6901
+[2]: https://datatracker.ietf.org/doc/html/rfc6902
 [3]: https://github.com/spray/spray-json
 [4]: http://alfedenzo.livejournal.com/170301.html
 [5]: https://en.wikipedia.org/wiki/Longest_common_subsequence_problem
@@ -375,7 +387,7 @@ which we can easily verify is the same as `json2` modulo reordering of fields.
 [8]: http://search.maven.org/
 [9]: https://www.playframework.com/documentation/latest/ScalaJson
 [10]: https://circe.github.io/circe/
-[11]: http://tools.ietf.org/html/rfc7396
+[11]: https://datatracker.ietf.org/doc/html/rfc7396
 [cats]: https://typelevel.org/cats/
 [Foldable]: https://typelevel.org/cats/typeclasses/foldable.html
 [diffson3]: https://github.com/gnieh/diffson/tree/v3.1.x

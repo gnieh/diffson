@@ -52,7 +52,7 @@ class JsonDiff[Json](diffArray: Boolean, rememberOld: Boolean)(implicit J: Jsony
       case (f1 :: t1, f2 :: _) if f1._1 < f2._1 =>
         // the first field is not present in the second object
         associate(t1, fields2, (Some(f1), None) :: acc)
-      case (f1 :: _, f2 :: t2) =>
+      case (_ :: _, f2 :: t2) =>
         // the second field is not present in the first object
         associate(fields1, t2, (None, Some(f2)) :: acc)
       case (_, Nil) =>
@@ -63,7 +63,7 @@ class JsonDiff[Json](diffArray: Boolean, rememberOld: Boolean)(implicit J: Jsony
     @tailrec
     def fields(fs: List[(Option[(String, Json)], Option[(String, Json)])], acc: List[Operation[Json]]): List[Operation[Json]] = fs match {
       case (Some(f1), Some(f2)) :: tl if f1 == f2 =>
-        // allright, nothing changed
+        // all right, nothing changed
         fields(tl, acc)
       case (Some(f1), Some(f2)) :: tl =>
         // same field name, different values
