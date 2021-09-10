@@ -32,8 +32,8 @@ object DiffsonProtocol {
 
   private def errorToException(error: JsError): Exception =
     JsError.toFlatForm(error) match {
-      case Seq((_, Seq(e, _*)), _*) => new PatchException(e.message)
-      case _                        => new PatchException("Empty json error")
+      case Seq((_, Seq(e, _*)), _*) => PatchException(e.message)
+      case _                        => PatchException("Empty json error")
     }
 
   implicit object JsResultInstances extends MonadError[JsResult, Throwable] {
