@@ -1,6 +1,6 @@
 /*
  * This file is part of the diffson project.
- * Copyright (c) 2019 Lucas Satabin
+ * Copyright (c) 2020 Lucas Satabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ object DiffsonProtocol {
 
   private def errorToException(error: JsError): Exception =
     JsError.toFlatForm(error) match {
-      case Seq((_, Seq(e, _*)), _*) => new PatchException(e.message)
-      case _                        => new PatchException("Empty json error")
+      case Seq((_, Seq(e, _*)), _*) => PatchException(e.message)
+      case _                        => PatchException("Empty json error")
     }
 
   implicit object JsResultInstances extends MonadError[JsResult, Throwable] {
@@ -41,7 +41,7 @@ object DiffsonProtocol {
       JsSuccess(a)
 
     def handleErrorWith[A](fa: JsResult[A])(f: Throwable => JsResult[A]): JsResult[A] =
-      fa.recoverWith(f.compose(errorToException(_)))
+      fa.recoverWith(f.compose(errorToException))
 
     def raiseError[A](e: Throwable): JsResult[A] =
       JsError(e.getMessage)
@@ -68,7 +68,7 @@ object DiffsonProtocol {
   implicit val OperationFormat: Format[Operation[JsValue]] =
     Format[Operation[JsValue]](
       Reads {
-        case obj @ play.api.libs.json.JsObject(fields) if fields.contains("op") =>
+        case JsObject(fields) if fields.contains("op") =>
           fields("op") match {
             case JsString("add") =>
               (fields.get("path"), fields.get("value")) match {
