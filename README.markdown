@@ -78,7 +78,7 @@ Contribution of new Json libraries in this repository are more than welcome.
 
 The purpose of diffson is to create and manipulate diffs and patch for Json like structures. 
 However the supported patch formats can also be represented as Json objects. 
-The core library doesn't mention any of this as it's sole purpose if the diff/patch computations. 
+The core library doesn't mention any of this, as its sole purpose is the diff/patch computations. 
 Given the variety of Json libraries out there and there various ways of implementing the way of (de)serializing Json values, there is no good abstraction that fits this general purpose library, and this is up to the library user to do it in the most appropriate approach given the Json library of their choosing. 
 The various supported Json libraries in diffson provide an idiomatic way of (de)serializing the different element for each of them (e.g. the `circe` module provide `Decoder`s and `Encoder`s for all the patch types).
 
