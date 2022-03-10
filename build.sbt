@@ -79,7 +79,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
   .settings(
     name := "diffson-core",
     libraryDependencies ++= Seq(
-      "org.scala-lang.modules" %%% "scala-collection-compat" % "2.4.4",
+      "org.scala-lang.modules" %%% "scala-collection-compat" % "2.6.0",
       "org.typelevel"  %%% "cats-core"  % "2.7.0",
       "org.scalatest"  %%% "scalatest"  % scalatestVersion % Test,
       "org.scalacheck" %%% "scalacheck" % scalacheckVersion % Test
