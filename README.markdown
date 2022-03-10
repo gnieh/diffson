@@ -12,7 +12,7 @@ Gnieh Diffson
 A [Scala][6] implementation of the [RFC-6901][1], [RFC-6902][2], and [RFC-7396][11].
 It also provides methods to compute _diffs_ between two Json values that produce valid Json patches or merge patches.
 
-**Note:** if you still want to use the `3.x.y` series (without cats), please see [this documentation][diffson3]
+**Note:** if you still want to use the `3.x.y` series (without [cats][cats]), please see [this documentation][diffson3]
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
