@@ -12,7 +12,7 @@ Gnieh Diffson
 A [Scala][6] implementation of the [RFC-6901][1], [RFC-6902][2], and [RFC-7396][11].
 It also provides methods to compute _diffs_ between two Json values that produce valid Json patches or merge patches.
 
-**Note:** if you still want to use the `3.x.y` series (without cats), please see [this documentation][diffson3]
+**Note:** if you still want to use the `3.x.y` series (without [cats][cats]), please see [this documentation][diffson3]
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -78,7 +78,7 @@ Contribution of new Json libraries in this repository are more than welcome.
 
 The purpose of diffson is to create and manipulate diffs and patch for Json like structures. 
 However the supported patch formats can also be represented as Json objects. 
-The core library doesn't mention any of this as it's sole purpose if the diff/patch computations. 
+The core library doesn't mention any of this, as its sole purpose is the diff/patch computations. 
 Given the variety of Json libraries out there and there various ways of implementing the way of (de)serializing Json values, there is no good abstraction that fits this general purpose library, and this is up to the library user to do it in the most appropriate approach given the Json library of their choosing. 
 The various supported Json libraries in diffson provide an idiomatic way of (de)serializing the different element for each of them (e.g. the `circe` module provide `Decoder`s and `Encoder`s for all the patch types).
 
