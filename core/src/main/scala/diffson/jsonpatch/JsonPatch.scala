@@ -68,7 +68,7 @@ case class Add[Json: Jsony](path: Pointer, value: Json) extends Operation[Json] 
         F.pure(JsArray(arr :+ value))
       case (JsArray(arr), Leaf(ArrayIndex(idx))) =>
         if (idx > arr.size) {
-          F.raiseError(new PatchException(show"element $idx does not exist at path $parent"))
+          F.raiseError(PatchException(show"element $idx does not exist at path $parent"))
         } else {
           // insert the value at the specified index
           val (before, after) = arr.splitAt(idx)

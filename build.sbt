@@ -2,7 +2,7 @@ import scalariform.formatter.preferences._
 import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
 val scala212 = "2.12.13"
-val scala213 = "2.13.6"
+val scala213 = "2.13.8"
 val scala3 = "3.0.0"
 
 val scalatestVersion = "3.2.9"
@@ -80,7 +80,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
     name := "diffson-core",
     libraryDependencies ++= Seq(
       "org.scala-lang.modules" %%% "scala-collection-compat" % "2.4.4",
-      "org.typelevel"  %%% "cats-core"  % "2.6.1",
+      "org.typelevel"  %%% "cats-core"  % "2.7.0",
       "org.scalatest"  %%% "scalatest"  % scalatestVersion % Test,
       "org.scalacheck" %%% "scalacheck" % scalacheckVersion % Test
     ))
