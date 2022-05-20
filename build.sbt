@@ -3,17 +3,17 @@ import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
 val scala212 = "2.12.13"
 val scala213 = "2.13.8"
-val scala3 = "3.0.0"
+val scala3 = "3.1.2"
 
 val scalatestVersion = "3.2.9"
 val scalacheckVersion = "1.15.4"
 
-ThisBuild / scalaVersion := scala213
+ThisBuild / scalaVersion := scala3
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
 
 lazy val commonSettings = Seq(
   organization := "org.gnieh",
-  version := "4.1.1",
+  version := "4.2.0-SNAPSHOT",
   description := "Json diff/patch library",
   licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://github.com/gnieh/diffson")),
@@ -34,11 +34,11 @@ lazy val commonSettings = Seq(
       case Some((2, v)) if v <= 12 =>
         Seq(
           compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
-          compilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full)
+          compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full)
         )
       case Some((2, 13))=>
         Seq(
-          compilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full)
+          compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full)
         )
       case _ =>
         Nil
@@ -113,8 +113,8 @@ lazy val playJson = crossProject(JSPlatform, JVMPlatform)
   .settings(commonSettings: _*)
   .settings(
     name := "diffson-play-json",
-    libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.9.2",
-    crossScalaVersions := Seq(scala212, scala213))
+    libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.10.0-RC6",
+    crossScalaVersions := Seq(scala212, scala213, scala3))
   .jsSettings(coverageEnabled := false)
   .dependsOn(core, testkit % Test)
 
