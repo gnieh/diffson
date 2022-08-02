@@ -5,7 +5,7 @@ val scala212 = "2.12.16"
 val scala213 = "2.13.8"
 val scala3 = "3.0.0"
 
-val scalatestVersion = "3.2.9"
+val scalatestVersion = "3.2.13"
 val scalacheckVersion = "1.15.4"
 
 ThisBuild / scalaVersion := scala213
