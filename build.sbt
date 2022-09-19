@@ -9,6 +9,8 @@ ThisBuild / scalaVersion := scala213
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
 ThisBuild / tlSkipIrrelevantScalas := true
 
+ThisBuild / tlSonatypeUseLegacyHost := true
+
 ThisBuild / tlFatalWarnings := false
 
 ThisBuild / tlBaseVersion := "4.1"
