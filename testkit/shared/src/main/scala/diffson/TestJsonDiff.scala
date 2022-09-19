@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Typelevel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package diffson
 package jsonpatch
 
@@ -13,7 +29,10 @@ import scala.util.Try
 import scala.language.implicitConversions
 import org.scalatest.matchers.should.Matchers
 
-abstract class TestJsonDiff[Json](implicit Json: Jsony[Json]) extends AnyFlatSpec with Matchers with TestProtocol[Json] {
+abstract class TestJsonDiff[Json](implicit Json: Jsony[Json])
+    extends AnyFlatSpec
+    with Matchers
+    with TestProtocol[Json] {
 
   implicit val lcsalg: Patience[Json] = new lcs.Patience[Json]
 
@@ -51,7 +70,15 @@ abstract class TestJsonDiff[Json](implicit Json: Jsony[Json]) extends AnyFlatSpe
   it should "correctly handle array diffs in objects" in {
     val json1 = parseJson("""{"lbl": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}""")
     val json2 = parseJson("""{"lbl": [1, 4, 5, 11, 6, 7]}""")
-    diff(json1, json2) should be(JsonPatch[Json](Remove(Pointer("lbl", "2")), Remove(Pointer("lbl", "1")), Add(Pointer("lbl", "3"), 11: Json), Remove(Pointer("lbl", "8")), Remove(Pointer("lbl", "7")), Remove(Pointer("lbl", "6"))))
+    diff(json1, json2) should be(
+      JsonPatch[Json](
+        Remove(Pointer("lbl", "2")),
+        Remove(Pointer("lbl", "1")),
+        Add(Pointer("lbl", "3"), 11: Json),
+        Remove(Pointer("lbl", "8")),
+        Remove(Pointer("lbl", "7")),
+        Remove(Pointer("lbl", "6"))
+      ))
   }
 
   it should "contain a replace operation for each changed field value" in {
@@ -68,14 +95,12 @@ abstract class TestJsonDiff[Json](implicit Json: Jsony[Json]) extends AnyFlatSpe
     val json1 = parseJson("[]")
     val json2 = parseJson("[1, 2, 3]")
     val json3 = parseJson("[1, 2, 4, 5, 6, 3]")
-    diff(json1, json2) should be(
-      parsePatch("""[
+    diff(json1, json2) should be(parsePatch("""[
                    |   {"op": "add", "path": "/-", "value": 1},
                    |   {"op": "add", "path": "/-", "value": 2},
                    |   {"op": "add", "path": "/-", "value": 3}
                    | ]""".stripMargin))
-    diff(json2, json3) should be(
-      parsePatch("""[
+    diff(json2, json3) should be(parsePatch("""[
                    |   {"op": "add", "path": "/2", "value": 4},
                    |   {"op": "add", "path": "/3", "value": 5},
                    |   {"op": "add", "path": "/4", "value": 6}
@@ -86,14 +111,12 @@ abstract class TestJsonDiff[Json](implicit Json: Jsony[Json]) extends AnyFlatSpe
     val json1 = parseJson("[]")
     val json2 = parseJson("[1, 2, 3]")
     val json3 = parseJson("[1, 2, 4, 5, 6, 3]")
-    diff(json2, json1) should be(
-      parsePatch("""[
+    diff(json2, json1) should be(parsePatch("""[
                    |   {"op": "remove", "path": "/2"},
                    |   {"op": "remove", "path": "/1"},
                    |   {"op": "remove", "path": "/0"}
                    | ]""".stripMargin))
-    diff(json3, json2) should be(
-      parsePatch("""[
+    diff(json3, json2) should be(parsePatch("""[
                    |   {"op": "remove", "path": "/4"},
                    |   {"op": "remove", "path": "/3"},
                    |   {"op": "remove", "path": "/2"}
@@ -106,20 +129,16 @@ abstract class TestJsonDiff[Json](implicit Json: Jsony[Json]) extends AnyFlatSpe
     val json3 = parseJson("[1, 6, 3]")
     val json4 = parseJson("""[1, {"a": 2}, 3]""")
     val json5 = parseJson("""[1, {"a": 7}, 3]""")
-    diff(json1, json2) should be(
-      parsePatch("""[
+    diff(json1, json2) should be(parsePatch("""[
                    |   {"op": "replace", "path": "/2", "value": 4}
                    | ]""".stripMargin))
-    diff(json1, json3) should be(
-      parsePatch("""[
+    diff(json1, json3) should be(parsePatch("""[
                    |   {"op": "replace", "path": "/1", "value": 6}
                    | ]""".stripMargin))
-    diff(json4, json5) should be(
-      parsePatch("""[
+    diff(json4, json5) should be(parsePatch("""[
                    |   {"op": "replace", "path": "/1/a", "value": 7}
                    | ]""".stripMargin))
-    diff(json4, json3) should be(
-      parsePatch("""[
+    diff(json4, json3) should be(parsePatch("""[
                    |   {"op": "replace", "path": "/1", "value": 6}
                    | ]""".stripMargin))
   }
@@ -145,13 +164,15 @@ abstract class TestJsonDiff[Json](implicit Json: Jsony[Json]) extends AnyFlatSpe
     val json1 = parseJson("""{"lbl": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}""")
     val json2 = parseJson("""{"lbl": [1, 4, 5, 11, 6, 7]}""")
     import remembering._
-    diff(json1, json2) should be(JsonPatch(
-      Remove(Pointer("lbl", "2"), Some(3: Json)),
-      Remove(Pointer("lbl", "1"), Some(2: Json)),
-      Add(Pointer("lbl", "3"), 11: Json),
-      Remove(Pointer("lbl", "8"), Some(10: Json)),
-      Remove(Pointer("lbl", "7"), Some(9: Json)),
-      Remove(Pointer("lbl", "6"), Some(8: Json))))
+    diff(json1, json2) should be(
+      JsonPatch(
+        Remove(Pointer("lbl", "2"), Some(3: Json)),
+        Remove(Pointer("lbl", "1"), Some(2: Json)),
+        Add(Pointer("lbl", "3"), 11: Json),
+        Remove(Pointer("lbl", "8"), Some(10: Json)),
+        Remove(Pointer("lbl", "7"), Some(9: Json)),
+        Remove(Pointer("lbl", "6"), Some(8: Json))
+      ))
   }
 
   it should "correctly add removed values in object diffs" in {

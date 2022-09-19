@@ -1,26 +1,26 @@
 /*
-* This file is part of the diffson project.
-* Copyright (c) 2016 Lucas Satabin
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2022 Typelevel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package diffson
 
 import jsonpatch._
 import jsonpointer._
 import jsonmergepatch._
 
-import cats.{ Apply, FlatMap }
+import cats.{Apply, FlatMap}
 import cats.implicits._
 import io.circe._
 import io.circe.Decoder.Result
@@ -61,45 +61,28 @@ package object circe {
   implicit val operationEncoder: Encoder[Operation[Json]] =
     Encoder.instance[Operation[Json]] {
       case Add(path, value) =>
-        Json.obj(
-          "op" -> Json.fromString("add"),
-          "path" -> Json.fromString(path.show),
-          "value" -> value)
+        Json.obj("op" -> Json.fromString("add"), "path" -> Json.fromString(path.show), "value" -> value)
       case Remove(path, Some(old)) =>
-        Json.obj(
-          "op" -> Json.fromString("remove"),
-          "path" -> Json.fromString(path.show),
-          "old" -> old)
+        Json.obj("op" -> Json.fromString("remove"), "path" -> Json.fromString(path.show), "old" -> old)
       case Remove(path, None) =>
-        Json.obj(
-          "op" -> Json.fromString("remove"),
-          "path" -> Json.fromString(path.show))
+        Json.obj("op" -> Json.fromString("remove"), "path" -> Json.fromString(path.show))
       case Replace(path, value, Some(old)) =>
-        Json.obj(
-          "op" -> Json.fromString("replace"),
-          "path" -> Json.fromString(path.show),
-          "value" -> value,
-          "old" -> old)
+        Json.obj("op" -> Json.fromString("replace"),
+                 "path" -> Json.fromString(path.show),
+                 "value" -> value,
+                 "old" -> old)
       case Replace(path, value, None) =>
-        Json.obj(
-          "op" -> Json.fromString("replace"),
-          "path" -> Json.fromString(path.show),
-          "value" -> value)
+        Json.obj("op" -> Json.fromString("replace"), "path" -> Json.fromString(path.show), "value" -> value)
       case Move(from, path) =>
-        Json.obj(
-          "op" -> Json.fromString("move"),
-          "from" -> Json.fromString(from.show),
-          "path" -> Json.fromString(path.show))
+        Json.obj("op" -> Json.fromString("move"),
+                 "from" -> Json.fromString(from.show),
+                 "path" -> Json.fromString(path.show))
       case Copy(from, path) =>
-        Json.obj(
-          "op" -> Json.fromString("copy"),
-          "from" -> Json.fromString(from.show),
-          "path" -> Json.fromString(path.show))
+        Json.obj("op" -> Json.fromString("copy"),
+                 "from" -> Json.fromString(from.show),
+                 "path" -> Json.fromString(path.show))
       case Test(path, value) =>
-        Json.obj(
-          "op" -> Json.fromString("test"),
-          "path" -> Json.fromString(path.show),
-          "value" -> value)
+        Json.obj("op" -> Json.fromString("test"), "path" -> Json.fromString(path.show), "value" -> value)
     }
 
   implicit val operationDecoder: Decoder[Operation[Json]] =

@@ -1,27 +1,27 @@
 /*
-* This file is part of the diffson project.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2022 Typelevel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package diffson
 
 import cats._
-import cats.implicits._
+import cats.syntax.all._
 import cats.data.Chain
 
 import scala.util.Try
 
-import scala.language.{ implicitConversions, higherKinds }
 import scala.collection.compat._
 import scala.collection.compat.immutable.ArraySeq
 
@@ -45,7 +45,7 @@ package object jsonpointer {
             // we know (by construction) that the index is greater or equal to zero
             F.raiseError(new PointerException(show"element $idx does not exist at path $parent"))
           else
-            F.pure(Left(arr(idx), tl, parent / idx))
+            F.pure(Left((arr(idx), tl, parent / idx)))
         case (value, Pointer.Root, _) =>
           F.pure(Right(value))
         case (_, Inner(elem, _), parent) =>
@@ -57,14 +57,17 @@ package object jsonpointer {
 
   object Pointer {
 
-    val Root: Pointer = Pointer(Chain.empty)
+    val Root: Pointer = new Pointer(Chain.empty)
 
     private val IsNumber = "(0|[1-9][0-9]*)".r
 
-    def apply(elems: String*): Pointer = Pointer(Chain.fromSeq(elems.map {
+    def apply(elems: String*): Pointer = new Pointer(Chain.fromSeq(elems.map {
       case s @ IsNumber(idx) => Try(idx.toInt).liftTo[Either[Throwable, *]].leftMap(_ => s)
       case key               => Left(key)
     }))
+
+    def unapply(p: Pointer): Some[Chain[Part]] =
+      Some(p.parts)
 
     def parse[F[_]](input: String)(implicit F: MonadError[F, Throwable]): F[Pointer] =
       if (input == null || input.isEmpty) {
@@ -75,7 +78,8 @@ package object jsonpointer {
         F.raiseError(new PointerException("A JSON pointer must start with '/'"))
       } else {
         // first gets the different parts of the pointer
-        val parts = input.split("/")
+        val parts = input
+          .split("/")
           // the first element is always empty as the path starts with a '/'
           .drop(1)
         if (parts.length == 0) {
@@ -83,7 +87,7 @@ package object jsonpointer {
           F.pure(Pointer(""))
         } else {
           // check that an occurrence of '~' is followed by '0' or '1'
-          if (parts.exists(_.matches(".*~(?![01]).*"))) {
+          if (parts.exists(_.matches(".*~(?:[^01]|$).*"))) {
             F.raiseError(new PointerException("Occurrences of '~' must be followed by '0' or '1'"))
           } else {
             val allParts = if (input.endsWith("/")) parts :+ "" else parts
@@ -101,10 +105,13 @@ package object jsonpointer {
       if (pointer.parts.isEmpty)
         ""
       else
-        "/" + pointer.parts.map {
-          case Left(l)  => l.replace("~", "~0").replace("/", "~1")
-          case Right(r) => r.toString
-        }.toList.mkString("/"))
+        "/" + pointer.parts
+          .map {
+            case Left(l)  => l.replace("~", "~0").replace("/", "~1")
+            case Right(r) => r.toString
+          }
+          .toList
+          .mkString("/"))
 
   }
 

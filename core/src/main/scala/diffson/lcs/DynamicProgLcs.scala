@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Typelevel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package diffson.lcs
 
 import cats.Eq
@@ -81,17 +97,31 @@ class DynamicProgLcs[T: Eq] extends Lcs[T] {
   }
 
   /* Extract common prefix and suffix from both sequences */
-  private def splitPrefixSuffix(seq1: List[T], seq2: List[T], low1: Int, low2: Int): (List[(Int, Int)], List[T], List[T], List[(Int, Int)]) = {
+  private def splitPrefixSuffix(seq1: List[T],
+                                seq2: List[T],
+                                low1: Int,
+                                low2: Int): (List[(Int, Int)], List[T], List[T], List[(Int, Int)]) = {
     val size1 = seq1.size
     val size2 = seq2.size
     val prefix =
-      seq1.zip(seq2).takeWhile {
-        case (e1, e2) => e1 == e2
-      }.indices.map(i => (i + low1, i + low2)).toList
+      seq1
+        .zip(seq2)
+        .takeWhile { case (e1, e2) =>
+          e1 == e2
+        }
+        .indices
+        .map(i => (i + low1, i + low2))
+        .toList
     val suffix =
-      seq1.reverse.zip(seq2.reverse).takeWhile {
-        case (e1, e2) => e1 == e2
-      }.indices.map(i => (size1 - i - 1 + low1, size2 - i - 1 + low2)).toList.reverse
+      seq1.reverse
+        .zip(seq2.reverse)
+        .takeWhile { case (e1, e2) =>
+          e1 == e2
+        }
+        .indices
+        .map(i => (size1 - i - 1 + low1, size2 - i - 1 + low2))
+        .toList
+        .reverse
     (prefix, seq1.drop(prefix.size).dropRight(suffix.size), seq2.drop(prefix.size).dropRight(suffix.size), suffix)
   }
 

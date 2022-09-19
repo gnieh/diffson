@@ -1,18 +1,19 @@
 /*
-* This file is part of the diffson project.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2022 Typelevel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package diffson
 package jsonpatch
 
@@ -22,7 +23,6 @@ import cats._
 import cats.implicits._
 
 import scala.annotation.tailrec
-import scala.language.higherKinds
 
 /** A patch operation to apply to a Json value */
 sealed abstract class Operation[Json: Jsony] {
@@ -32,7 +32,8 @@ sealed abstract class Operation[Json: Jsony] {
     action[F](value, path, Pointer.Root)
 
   // the action to perform in this operation. By default returns an object that is equal
-  protected[this] def action[F[_]](value: Json, pointer: Pointer, parent: Pointer)(implicit F: MonadError[F, Throwable]): F[Json] = (value, pointer) match {
+  protected[this] def action[F[_]](value: Json, pointer: Pointer, parent: Pointer)(implicit
+      F: MonadError[F, Throwable]): F[Json] = (value, pointer) match {
     case (_, Pointer.Root) =>
       F.pure(value)
     case (JsObject(fields), Inner(ObjectField(elem), tl)) if fields.contains(elem) =>
@@ -50,7 +51,8 @@ sealed abstract class Operation[Json: Jsony] {
           }
       }
     case (_, Inner(elem, _)) =>
-      F.raiseError(PatchException(show"element ${elem.fold(identity[String], _.toString)} does not exist at path $parent"))
+      F.raiseError(
+        PatchException(show"element ${elem.fold(identity[String], _.toString)} does not exist at path $parent"))
   }
 
 }
@@ -58,7 +60,8 @@ sealed abstract class Operation[Json: Jsony] {
 /** Add (or replace if existing) the pointed element */
 case class Add[Json: Jsony](path: Pointer, value: Json) extends Operation[Json] {
 
-  override protected[this] def action[F[_]](original: Json, pointer: Pointer, parent: Pointer)(implicit F: MonadError[F, Throwable]): F[Json] =
+  override protected[this] def action[F[_]](original: Json, pointer: Pointer, parent: Pointer)(implicit
+      F: MonadError[F, Throwable]): F[Json] =
     (original, pointer) match {
       case (_, Pointer.Root) =>
         // we are at the root value, simply return the replacement value
@@ -86,7 +89,8 @@ case class Add[Json: Jsony](path: Pointer, value: Json) extends Operation[Json] 
 /** Remove the pointed element */
 case class Remove[Json: Jsony](path: Pointer, old: Option[Json] = None) extends Operation[Json] {
 
-  override protected[this] def action[F[_]](value: Json, pointer: Pointer, parent: Pointer)(implicit F: MonadError[F, Throwable]): F[Json] =
+  override protected[this] def action[F[_]](value: Json, pointer: Pointer, parent: Pointer)(implicit
+      F: MonadError[F, Throwable]): F[Json] =
     (value, pointer) match {
       case (JsArray(arr), Leaf(ArrayIndex(idx))) =>
         if (idx >= arr.size) {
@@ -114,7 +118,8 @@ case class Remove[Json: Jsony](path: Pointer, old: Option[Json] = None) extends 
 /** Replace the pointed element by the given value */
 case class Replace[Json: Jsony](path: Pointer, value: Json, old: Option[Json] = None) extends Operation[Json] {
 
-  override protected[this] def action[F[_]](original: Json, pointer: Pointer, parent: Pointer)(implicit F: MonadError[F, Throwable]): F[Json] =
+  override protected[this] def action[F[_]](original: Json, pointer: Pointer, parent: Pointer)(implicit
+      F: MonadError[F, Throwable]): F[Json] =
     (original, pointer) match {
       case (_, Pointer.Root) =>
         // simply replace the root value by the replacement value
@@ -189,7 +194,9 @@ case class JsonPatch[Json: Jsony](ops: List[Operation[Json]]) {
 
 object JsonPatch {
 
-  implicit def JsonPatchPatch[F[_], Json](implicit F: MonadError[F, Throwable], Json: Jsony[Json]): Patch[F, Json, JsonPatch[Json]] =
+  implicit def JsonPatchPatch[F[_], Json](implicit
+      F: MonadError[F, Throwable],
+      Json: Jsony[Json]): Patch[F, Json, JsonPatch[Json]] =
     (json: Json, patch: JsonPatch[Json]) => patch.apply[F](json)
 
   def apply[Json: Jsony](ops: Operation[Json]*): JsonPatch[Json] =

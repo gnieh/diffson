@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Typelevel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package diffson
 package jsonpatch
 
@@ -13,8 +29,10 @@ import scala.util.Try
 import scala.language.implicitConversions
 import org.scalatest.matchers.should.Matchers
 
-abstract class TestJsonPatch[Json](implicit Json: Jsony[Json]) extends AnyFlatSpec
-  with Matchers with TestProtocol[Json] {
+abstract class TestJsonPatch[Json](implicit Json: Jsony[Json])
+    extends AnyFlatSpec
+    with Matchers
+    with TestProtocol[Json] {
 
   // add
 
@@ -113,7 +131,8 @@ abstract class TestJsonPatch[Json](implicit Json: Jsony[Json]) extends AnyFlatSp
 
   "replacing an element in an object" should "result in this element being replaced" in {
     val op = Replace[Json](parsePointer("/lbl/lbl"), 17)
-    op[Try](parseJson("""{"lbl": {"lbl": true, "gruik": 1}, "toto": 3}""")).get should be(parseJson("""{"lbl": {"lbl": 17, "gruik": 1}, "toto": 3}"""))
+    op[Try](parseJson("""{"lbl": {"lbl": true, "gruik": 1}, "toto": 3}""")).get should be(
+      parseJson("""{"lbl": {"lbl": 17, "gruik": 1}, "toto": 3}"""))
   }
 
   "replacing an element in an array" should "result in this element being replaced" in {
@@ -178,7 +197,8 @@ abstract class TestJsonPatch[Json](implicit Json: Jsony[Json]) extends AnyFlatSp
 
   "copying an element in an object" should "result in this element being copied in the expected path" in {
     val op = Copy[Json](parsePointer("/root/a"), parsePointer("/root/c"))
-    op.apply[Try](parseJson("""{"root": {"a": 1, "b": "B"}}""")).get shouldBe parseJson("""{"root": {"a": 1, "b": "B", "c": 1}}""")
+    op.apply[Try](parseJson("""{"root": {"a": 1, "b": "B"}}""")).get shouldBe parseJson(
+      """{"root": {"a": 1, "b": "B", "c": 1}}""")
   }
 
   // test

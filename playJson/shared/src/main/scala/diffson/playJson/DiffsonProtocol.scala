@@ -1,12 +1,11 @@
 /*
- * This file is part of the diffson project.
- * Copyright (c) 2020 Lucas Satabin
+ * Copyright 2022 Typelevel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package diffson
 package playJson
 
@@ -61,9 +61,10 @@ object DiffsonProtocol {
 
   implicit val PointerFormat: Format[Pointer] =
     Format[Pointer](Reads {
-      case JsString(s) => Pointer.parse[JsResult](s)
-      case value       => JsError(f"Pointer expected: $value")
-    }, Writes(p => JsString(p.show)))
+                      case JsString(s) => Pointer.parse[JsResult](s)
+                      case value       => JsError(f"Pointer expected: $value")
+                    },
+                    Writes(p => JsString(p.show)))
 
   implicit val OperationFormat: Format[Operation[JsValue]] =
     Format[Operation[JsValue]](
@@ -135,16 +136,18 @@ object DiffsonProtocol {
           Json.obj("op" -> JsString("copy"), "from" -> JsString(from.show), "path" -> JsString(path.show))
         case Test(path, value) =>
           Json.obj("op" -> JsString("test"), "path" -> JsString(path.show), "value" -> value)
-      })
+      }
+    )
 
   implicit val JsonPatchFormat: Format[JsonPatch[JsValue]] =
     Format[JsonPatch[JsValue]](
       Reads[JsonPatch[JsValue]] { js =>
-        js.validate[List[Operation[JsValue]]].map(JsonPatch(_)).recoverWith {
-          case JsError(errors) => JsError((JsPath -> Seq(JsonValidationError("JsonPatch[JsValue] expected"))) +: errors)
+        js.validate[List[Operation[JsValue]]].map(JsonPatch(_)).recoverWith { case JsError(errors) =>
+          JsError((JsPath -> Seq(JsonValidationError("JsonPatch[JsValue] expected"))) +: errors)
         }
       },
-      Writes(patch => play.api.libs.json.JsArray(patch.ops.map(Json.toJson(_)).toVector)))
+      Writes(patch => play.api.libs.json.JsArray(patch.ops.map(Json.toJson(_)).toVector))
+    )
 
   implicit val JsonMergePatchFormat: Format[JsonMergePatch[JsValue]] =
     Format[JsonMergePatch[JsValue]](
@@ -155,6 +158,7 @@ object DiffsonProtocol {
       Writes {
         case JsonMergePatch.Object(flds) => play.api.libs.json.JsObject(flds)
         case JsonMergePatch.Value(v)     => v
-      })
+      }
+    )
 
 }
