@@ -83,7 +83,7 @@ package object jsonpointer {
           F.pure(Pointer(""))
         } else {
           // check that an occurrence of '~' is followed by '0' or '1'
-          if (parts.exists(_.matches(".*~(?![01]).*"))) {
+          if (parts.exists(_.matches(".*~(?:[^01]|$).*"))) {
             F.raiseError(new PointerException("Occurrences of '~' must be followed by '0' or '1'"))
           } else {
             val allParts = if (input.endsWith("/")) parts :+ "" else parts
