@@ -7,6 +7,7 @@ val scalacheckVersion = "1.17.0"
 
 ThisBuild / scalaVersion := scala213
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
+ThisBuild / tlSkipIrrelevantScalas := true
 
 ThisBuild / tlFatalWarnings := false
 
