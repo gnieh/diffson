@@ -23,7 +23,6 @@ import cats._
 import cats.implicits._
 
 import scala.annotation.tailrec
-import scala.language.higherKinds
 
 /** A patch operation to apply to a Json value */
 sealed abstract class Operation[Json: Jsony] {

@@ -8,6 +8,8 @@ val scalacheckVersion = "1.17.0"
 ThisBuild / scalaVersion := scala213
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
 
+ThisBuild / tlFatalWarnings := false
+
 ThisBuild / tlBaseVersion := "4.1"
 
 ThisBuild / organization := "org.gnieh"

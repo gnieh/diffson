@@ -17,12 +17,11 @@
 package diffson
 
 import cats._
-import cats.implicits._
+import cats.syntax.all._
 import cats.data.Chain
 
 import scala.util.Try
 
-import scala.language.{implicitConversions, higherKinds}
 import scala.collection.compat._
 import scala.collection.compat.immutable.ArraySeq
 
@@ -46,7 +45,7 @@ package object jsonpointer {
             // we know (by construction) that the index is greater or equal to zero
             F.raiseError(new PointerException(show"element $idx does not exist at path $parent"))
           else
-            F.pure(Left(arr(idx), tl, parent / idx))
+            F.pure(Left((arr(idx), tl, parent / idx)))
         case (value, Pointer.Root, _) =>
           F.pure(Right(value))
         case (_, Inner(elem, _), parent) =>
@@ -58,14 +57,17 @@ package object jsonpointer {
 
   object Pointer {
 
-    val Root: Pointer = Pointer(Chain.empty)
+    val Root: Pointer = new Pointer(Chain.empty)
 
     private val IsNumber = "(0|[1-9][0-9]*)".r
 
-    def apply(elems: String*): Pointer = Pointer(Chain.fromSeq(elems.map {
+    def apply(elems: String*): Pointer = new Pointer(Chain.fromSeq(elems.map {
       case s @ IsNumber(idx) => Try(idx.toInt).liftTo[Either[Throwable, *]].leftMap(_ => s)
       case key               => Left(key)
     }))
+
+    def unapply(p: Pointer): Some[Chain[Part]] =
+      Some(p.parts)
 
     def parse[F[_]](input: String)(implicit F: MonadError[F, Throwable]): F[Pointer] =
       if (input == null || input.isEmpty) {

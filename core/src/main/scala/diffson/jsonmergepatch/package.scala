@@ -16,11 +16,7 @@
 
 package diffson
 
-import lcs.Lcs
-
 import cats._
-
-import scala.language.higherKinds
 
 package object jsonmergepatch {
 
