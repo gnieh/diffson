@@ -31,7 +31,10 @@ import scala.util.Try
 import scala.language.implicitConversions
 import org.scalatest.matchers.should.Matchers
 
-abstract class TestSimpleDiff[Json](implicit val Json: Jsony[Json]) extends AnyFlatSpec with Matchers with TestProtocol[Json] {
+abstract class TestSimpleDiff[Json](implicit val Json: Jsony[Json])
+    extends AnyFlatSpec
+    with Matchers
+    with TestProtocol[Json] {
 
   "a diff" should "be empty if created between two equal values" in {
     val json = parseJson("true")
@@ -84,12 +87,10 @@ abstract class TestSimpleDiff[Json](implicit val Json: Jsony[Json]) extends AnyF
     val json1 = parseJson("[]")
     val json2 = parseJson("[1, 2, 3]")
     val json3 = parseJson("[1, 2, 4, 5, 6, 3]")
-    diff(json1, json2) should be(
-      parsePatch("""[
+    diff(json1, json2) should be(parsePatch("""[
                    |   {"op": "replace", "path": "", "value": [1, 2, 3]}
                    | ]""".stripMargin))
-    diff(json2, json3) should be(
-      parsePatch("""[
+    diff(json2, json3) should be(parsePatch("""[
                    |   {"op": "replace", "path": "", "value": [1, 2, 4, 5, 6, 3]}
                    | ]""".stripMargin))
   }
@@ -98,12 +99,10 @@ abstract class TestSimpleDiff[Json](implicit val Json: Jsony[Json]) extends AnyF
     val json1 = parseJson("[]")
     val json2 = parseJson("[1, 2, 3]")
     val json3 = parseJson("[1, 2, 4, 5, 6, 3]")
-    diff(json2, json1) should be(
-      parsePatch("""[
+    diff(json2, json1) should be(parsePatch("""[
                    |   {"op": "replace", "path": "", "value": []}
                    | ]""".stripMargin))
-    diff(json3, json2) should be(
-      parsePatch("""[
+    diff(json3, json2) should be(parsePatch("""[
                    |   {"op": "replace", "path": "", "value": [1, 2, 3]}
                    | ]""".stripMargin))
   }
@@ -114,20 +113,16 @@ abstract class TestSimpleDiff[Json](implicit val Json: Jsony[Json]) extends AnyF
     val json3 = parseJson("[1, 6, 3]")
     val json4 = parseJson("""[1, {"a": 2}, 3]""")
     val json5 = parseJson("""[1, {"a": 7}, 3]""")
-    diff(json1, json2) should be(
-      parsePatch("""[
+    diff(json1, json2) should be(parsePatch("""[
                    |   {"op": "replace", "path": "", "value": [1, 2, 4]}
                    | ]""".stripMargin))
-    diff(json1, json3) should be(
-      parsePatch("""[
+    diff(json1, json3) should be(parsePatch("""[
                    |   {"op": "replace", "path": "", "value": [1, 6, 3]}
                    | ]""".stripMargin))
-    diff(json4, json5) should be(
-      parsePatch("""[
+    diff(json4, json5) should be(parsePatch("""[
                    |   {"op": "replace", "path": "", "value": [1, {"a": 7}, 3]}
                    | ]""".stripMargin))
-    diff(json4, json3) should be(
-      parsePatch("""[
+    diff(json4, json3) should be(parsePatch("""[
                    |   {"op": "replace", "path": "", "value": [1, 6, 3]}
                    | ]""".stripMargin))
   }

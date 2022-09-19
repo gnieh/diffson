@@ -97,17 +97,31 @@ class DynamicProgLcs[T: Eq] extends Lcs[T] {
   }
 
   /* Extract common prefix and suffix from both sequences */
-  private def splitPrefixSuffix(seq1: List[T], seq2: List[T], low1: Int, low2: Int): (List[(Int, Int)], List[T], List[T], List[(Int, Int)]) = {
+  private def splitPrefixSuffix(seq1: List[T],
+                                seq2: List[T],
+                                low1: Int,
+                                low2: Int): (List[(Int, Int)], List[T], List[T], List[(Int, Int)]) = {
     val size1 = seq1.size
     val size2 = seq2.size
     val prefix =
-      seq1.zip(seq2).takeWhile {
-        case (e1, e2) => e1 == e2
-      }.indices.map(i => (i + low1, i + low2)).toList
+      seq1
+        .zip(seq2)
+        .takeWhile { case (e1, e2) =>
+          e1 == e2
+        }
+        .indices
+        .map(i => (i + low1, i + low2))
+        .toList
     val suffix =
-      seq1.reverse.zip(seq2.reverse).takeWhile {
-        case (e1, e2) => e1 == e2
-      }.indices.map(i => (size1 - i - 1 + low1, size2 - i - 1 + low2)).toList.reverse
+      seq1.reverse
+        .zip(seq2.reverse)
+        .takeWhile { case (e1, e2) =>
+          e1 == e2
+        }
+        .indices
+        .map(i => (size1 - i - 1 + low1, size2 - i - 1 + low2))
+        .toList
+        .reverse
     (prefix, seq1.drop(prefix.size).dropRight(suffix.size), seq2.drop(prefix.size).dropRight(suffix.size), suffix)
   }
 

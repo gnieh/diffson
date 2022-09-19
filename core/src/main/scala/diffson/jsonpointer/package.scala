@@ -22,7 +22,7 @@ import cats.data.Chain
 
 import scala.util.Try
 
-import scala.language.{ implicitConversions, higherKinds }
+import scala.language.{implicitConversions, higherKinds}
 import scala.collection.compat._
 import scala.collection.compat.immutable.ArraySeq
 
@@ -76,7 +76,8 @@ package object jsonpointer {
         F.raiseError(new PointerException("A JSON pointer must start with '/'"))
       } else {
         // first gets the different parts of the pointer
-        val parts = input.split("/")
+        val parts = input
+          .split("/")
           // the first element is always empty as the path starts with a '/'
           .drop(1)
         if (parts.length == 0) {
@@ -102,10 +103,13 @@ package object jsonpointer {
       if (pointer.parts.isEmpty)
         ""
       else
-        "/" + pointer.parts.map {
-          case Left(l)  => l.replace("~", "~0").replace("/", "~1")
-          case Right(r) => r.toString
-        }.toList.mkString("/"))
+        "/" + pointer.parts
+          .map {
+            case Left(l)  => l.replace("~", "~0").replace("/", "~1")
+            case Right(r) => r.toString
+          }
+          .toList
+          .mkString("/"))
 
   }
 

@@ -32,4 +32,3 @@ class TestPatienceBigArray extends AnyFlatSpec with Matchers {
     lcsImpl.lcs(a, -1 +: a :+ -1) should be(expected)
   }
 }
-

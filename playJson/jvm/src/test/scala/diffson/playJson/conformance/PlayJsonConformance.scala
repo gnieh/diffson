@@ -29,15 +29,14 @@ class PlayJsonConformance extends TestRfcConformance[JsValue] with PlayJsonTestP
 
   type JsArray = play.api.libs.json.JsArray
 
-  implicit lazy val successConformanceTestUnmarshaller: Reads[SuccessConformanceTest] = (
-    (JsPath \ "doc").read[JsValue] and
-    (JsPath \ "patch").read[JsArray] and
-    (JsPath \ "expected").readNullable[JsValue] and
-    (JsPath \ "comment").readNullable[String] and
-    (JsPath \ "disabled").readNullable[Boolean])(SuccessConformanceTest.apply _)
+  implicit lazy val successConformanceTestUnmarshaller: Reads[SuccessConformanceTest] =
+    ((JsPath \ "doc").read[JsValue] and
+      (JsPath \ "patch").read[JsArray] and
+      (JsPath \ "expected").readNullable[JsValue] and
+      (JsPath \ "comment").readNullable[String] and
+      (JsPath \ "disabled").readNullable[Boolean])(SuccessConformanceTest.apply _)
 
-  implicit lazy val errorConformanceTestUnmarshaller: Reads[ErrorConformanceTest] = (
-    (JsPath \ "doc").read[JsValue] and
+  implicit lazy val errorConformanceTestUnmarshaller: Reads[ErrorConformanceTest] = ((JsPath \ "doc").read[JsValue] and
     (JsPath \ "patch").read[JsArray] and
     (JsPath \ "error").read[String] and
     (JsPath \ "comment").readNullable[String] and

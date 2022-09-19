@@ -50,45 +50,21 @@ trait DiffsonProtocol extends DefaultJsonProtocol {
       def write(op: Operation[JsValue]): JsObject =
         op match {
           case Add(path, value) =>
-            JsObject(
-              "op" -> JsString("add"),
-              "path" -> JsString(path.show),
-              "value" -> value)
+            JsObject("op" -> JsString("add"), "path" -> JsString(path.show), "value" -> value)
           case Remove(path, Some(old)) =>
-            JsObject(
-              "op" -> JsString("remove"),
-              "path" -> JsString(path.show),
-              "old" -> old)
+            JsObject("op" -> JsString("remove"), "path" -> JsString(path.show), "old" -> old)
           case Remove(path, None) =>
-            JsObject(
-              "op" -> JsString("remove"),
-              "path" -> JsString(path.show))
+            JsObject("op" -> JsString("remove"), "path" -> JsString(path.show))
           case Replace(path, value, Some(old)) =>
-            JsObject(
-              "op" -> JsString("replace"),
-              "path" -> JsString(path.show),
-              "value" -> value,
-              "old" -> old)
+            JsObject("op" -> JsString("replace"), "path" -> JsString(path.show), "value" -> value, "old" -> old)
           case Replace(path, value, None) =>
-            JsObject(
-              "op" -> JsString("replace"),
-              "path" -> JsString(path.show),
-              "value" -> value)
+            JsObject("op" -> JsString("replace"), "path" -> JsString(path.show), "value" -> value)
           case Move(from, path) =>
-            JsObject(
-              "op" -> JsString("move"),
-              "from" -> JsString(from.show),
-              "path" -> JsString(path.show))
+            JsObject("op" -> JsString("move"), "from" -> JsString(from.show), "path" -> JsString(path.show))
           case Copy(from, path) =>
-            JsObject(
-              "op" -> JsString("copy"),
-              "from" -> JsString(from.show),
-              "path" -> JsString(path.show))
+            JsObject("op" -> JsString("copy"), "from" -> JsString(from.show), "path" -> JsString(path.show))
           case Test(path, value) =>
-            JsObject(
-              "op" -> JsString("test"),
-              "path" -> JsString(path.show),
-              "value" -> value)
+            JsObject("op" -> JsString("test"), "path" -> JsString(path.show), "value" -> value)
         }
 
       def read(value: JsValue): Operation[JsValue] = value match {

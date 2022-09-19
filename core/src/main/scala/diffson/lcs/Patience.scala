@@ -114,9 +114,8 @@ class Patience[T: Eq](withFallback: Boolean = true) extends Lcs[T] {
         // stacks are kept in a treeMap (minValue -> stack)
         // it makes it efficient to find the correct stack to update
 
-        l.foldLeft(TreeMap.empty[Int, Stack]) {
-          case (acc, ((_, idx1), idx2)) =>
-            push(idx1, idx2, acc)
+        l.foldLeft(TreeMap.empty[Int, Stack]) { case (acc, ((_, idx1), idx2)) =>
+          push(idx1, idx2, acc)
         }
       }
       val sorted = sort(l)
@@ -165,7 +164,8 @@ class Patience[T: Eq](withFallback: Boolean = true) extends Lcs[T] {
           var lastPos1 = low1 - 1
           var lastPos2 = low2 - 1
           var answer = acc
-          for ((p1, p2) <- longest(uniqueCommons(seq1.view.slice(low1, high1).toList, seq2.view.slice(low2, high2).toList))) {
+          for ((p1, p2) <- longest(
+              uniqueCommons(seq1.view.slice(low1, high1).toList, seq2.view.slice(low2, high2).toList))) {
             // recurse between lines which are unique in each sequence
             val pos1 = p1 + low1
             val pos2 = p2 + low2
@@ -239,4 +239,3 @@ private case class Stacked(idx1: Int, idx2: Int, next: Option[Stacked]) {
     loop(this, Nil)
   }
 }
-

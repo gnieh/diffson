@@ -30,19 +30,19 @@ abstract class TestRfcConformance[Json: Jsony] extends AnyFunSuite with Matchers
 
   trait ConformanceTest
 
-  case class SuccessConformanceTest(
-      doc: Json,
-      patch: Json,
-      expected: Option[Json],
-      comment: Option[String],
-      disabled: Option[Boolean]) extends ConformanceTest
+  case class SuccessConformanceTest(doc: Json,
+                                    patch: Json,
+                                    expected: Option[Json],
+                                    comment: Option[String],
+                                    disabled: Option[Boolean])
+      extends ConformanceTest
 
-  case class ErrorConformanceTest(
-      doc: Json,
-      patch: Json,
-      error: String,
-      comment: Option[String],
-      disabled: Option[Boolean]) extends ConformanceTest
+  case class ErrorConformanceTest(doc: Json,
+                                  patch: Json,
+                                  error: String,
+                                  comment: Option[String],
+                                  disabled: Option[Boolean])
+      extends ConformanceTest
 
   case class CommentConformanceTest(comment: String) extends ConformanceTest
 

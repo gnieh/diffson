@@ -24,7 +24,10 @@ import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-abstract class TestSerialization[Json](implicit Json: Jsony[Json]) extends AnyFlatSpec with TestProtocol[Json] with Matchers {
+abstract class TestSerialization[Json](implicit Json: Jsony[Json])
+    extends AnyFlatSpec
+    with TestProtocol[Json]
+    with Matchers {
 
   val patch = """[{
                 |  "op":"replace",
@@ -73,7 +76,8 @@ abstract class TestSerialization[Json](implicit Json: Jsony[Json]) extends AnyFl
     Add(Pointer("c"), "test2": Json),
     Test(Pointer("d"), false: Json),
     Copy(Pointer("c"), Pointer("e")),
-    Move(Pointer("d"), Pointer("f", "g")))
+    Move(Pointer("d"), Pointer("f", "g"))
+  )
 
   val mergeJson: JsonMergePatch[Json] = JsonMergePatch.Object(Map("a" -> (1: Json), "b" -> (true: Json)))
 

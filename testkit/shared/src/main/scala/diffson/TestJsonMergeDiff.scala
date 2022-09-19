@@ -25,7 +25,10 @@ import org.scalatest.flatspec.AnyFlatSpec
 import scala.language.implicitConversions
 import org.scalatest.matchers.should.Matchers
 
-abstract class TestJsonMergeDiff[Json](implicit Json: Jsony[Json]) extends AnyFlatSpec with Matchers with TestProtocol[Json] {
+abstract class TestJsonMergeDiff[Json](implicit Json: Jsony[Json])
+    extends AnyFlatSpec
+    with Matchers
+    with TestProtocol[Json] {
 
   "a diff" should "be empty if created between two equal objects" in {
     val json = parseJson("""{"a": true}""")

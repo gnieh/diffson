@@ -24,7 +24,9 @@ import scala.language.higherKinds
 
 package object jsonmergepatch {
 
-  implicit def JsonMergePatchPatch[F[_], Json](implicit F: MonadError[F, Throwable], Json: Jsony[Json]): Patch[F, Json, JsonMergePatch[Json]] =
+  implicit def JsonMergePatchPatch[F[_], Json](implicit
+      F: MonadError[F, Throwable],
+      Json: Jsony[Json]): Patch[F, Json, JsonMergePatch[Json]] =
     new Patch[F, Json, JsonMergePatch[Json]] {
       def apply(json: Json, patch: JsonMergePatch[Json]): F[Json] =
         patch[F](json)

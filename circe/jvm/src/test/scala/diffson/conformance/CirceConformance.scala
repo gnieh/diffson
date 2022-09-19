@@ -36,16 +36,18 @@ class CirceConformance extends TestRfcConformance[Json] with CirceTestProtocol {
   implicit lazy val commentConformanceTestUnMarshaller: Decoder[CommentConformanceTest] =
     Decoder[String].map(CommentConformanceTest.apply)
 
-  implicit lazy val conformanceTestUnmarshaller: Decoder[ConformanceTest] = Decoder.instance[ConformanceTest] { (c: HCursor) =>
-    val fields = c.keys.fold(Set.empty[String])(_.toSet)
-    if (fields contains "error")
-      c.as[ErrorConformanceTest]
-    else if (fields contains "doc")
-      c.as[SuccessConformanceTest]
-    else if (fields == Set("comment"))
-      c.as[CommentConformanceTest]
-    else
-      Left[DecodingFailure, ConformanceTest](DecodingFailure(f"Test record expected but got ${c.top.get.spaces2}", Nil))
+  implicit lazy val conformanceTestUnmarshaller: Decoder[ConformanceTest] = Decoder.instance[ConformanceTest] {
+    (c: HCursor) =>
+      val fields = c.keys.fold(Set.empty[String])(_.toSet)
+      if (fields contains "error")
+        c.as[ErrorConformanceTest]
+      else if (fields contains "doc")
+        c.as[SuccessConformanceTest]
+      else if (fields == Set("comment"))
+        c.as[CommentConformanceTest]
+      else
+        Left[DecodingFailure, ConformanceTest](
+          DecodingFailure(f"Test record expected but got ${c.top.get.spaces2}", Nil))
   }
 
   def load(path: String): List[ConformanceTest] =
