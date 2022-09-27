@@ -35,7 +35,7 @@ package object jsonpatch {
       def lcs(seq1: List[Json], seq2: List[Json], low1: Int, high1: Int, low2: Int, high2: Int): List[(Int, Int)] = Nil
     }
     object remembering {
-      implicit def JsonDiffDiff[Json: Jsony: Lcs]: Diff[Json, JsonPatch[Json]] =
+      implicit def JsonDiffDiff[Json: Jsony]: Diff[Json, JsonPatch[Json]] =
         new JsonDiff[Json](false, true)
     }
     implicit def JsonDiffDiff[Json: Jsony]: Diff[Json, JsonPatch[Json]] =

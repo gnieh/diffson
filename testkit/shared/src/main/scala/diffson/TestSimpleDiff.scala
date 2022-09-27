@@ -20,15 +20,10 @@ package jsonpatch
 import simplediff._
 import jsonpointer._
 
-import cats._
-import cats.implicits._
-
-import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Try
 
-import scala.language.implicitConversions
 import org.scalatest.matchers.should.Matchers
 
 abstract class TestSimpleDiff[Json](implicit val Json: Jsony[Json])
@@ -154,6 +149,14 @@ abstract class TestSimpleDiff[Json](implicit val Json: Jsony[Json])
     val json1 = parseJson("""{"a": 1, "b": false}""")
     val json2 = parseJson("""{"a": 1, "b": "test"}""")
     diff(json1, json2) should be(JsonPatch[Json](Replace(Pointer("b"), "test": Json)))
+  }
+
+  "a remembering diff" should "remember old values" in {
+    import diffson.jsonpatch.simplediff.remembering._
+    val json1 = parseJson("""{"a": 1, "b": false}""")
+    val json2 = parseJson("""{"a": 1, "b": "test"}""")
+
+    diff(json1, json2) should be(JsonPatch[Json](Replace(Pointer("b"), "test": Json, Some(false: Json))))
   }
 
 }

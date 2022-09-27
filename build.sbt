@@ -1,3 +1,5 @@
+import com.typesafe.tools.mima.core._
+
 val scala212 = "2.12.17"
 val scala213 = "2.13.9"
 val scala3 = "3.2.0"
@@ -13,7 +15,7 @@ ThisBuild / tlSonatypeUseLegacyHost := true
 
 ThisBuild / tlFatalWarnings := false
 
-ThisBuild / tlBaseVersion := "4.1"
+ThisBuild / tlBaseVersion := "4.2"
 
 ThisBuild / organization := "org.gnieh"
 ThisBuild / startYear := Some(2022)
@@ -41,6 +43,10 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
       "org.typelevel" %%% "cats-core" % "2.8.0",
       "org.scalatest" %%% "scalatest" % scalatestVersion % Test,
       "org.scalacheck" %%% "scalacheck" % scalacheckVersion % Test
+    ),
+    mimaBinaryIssueFilters ++= List(
+      ProblemFilters.exclude[DirectMissingMethodProblem](
+        "diffson.jsonpatch.package#simplediff#remembering.JsonDiffDiff")
     )
   )
 
