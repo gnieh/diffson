@@ -18,6 +18,7 @@ ThisBuild / tlFatalWarnings := false
 ThisBuild / tlBaseVersion := "4.2"
 
 ThisBuild / organization := "org.gnieh"
+ThisBuild / organizationName := "Lucas Satabin"
 ThisBuild / startYear := Some(2022)
 ThisBuild / licenses := Seq(License.Apache2)
 ThisBuild / developers := List(
