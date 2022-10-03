@@ -73,8 +73,8 @@ lazy val playJson = crossProject(JSPlatform, JVMPlatform)
   .in(file("playJson"))
   .settings(commonSettings: _*)
   .settings(name := "diffson-play-json",
-            libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.9.3",
-            crossScalaVersions := Seq(scala212, scala213))
+            libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.10.0-RC6",
+            tlVersionIntroduced := Map("3" -> "4.3.0"))
   .dependsOn(core, testkit % Test)
 
 val circeVersion = "0.14.3"
