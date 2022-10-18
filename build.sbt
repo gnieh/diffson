@@ -15,7 +15,7 @@ ThisBuild / tlSonatypeUseLegacyHost := true
 
 ThisBuild / tlFatalWarnings := false
 
-ThisBuild / tlBaseVersion := "4.2"
+ThisBuild / tlBaseVersion := "4.3"
 
 ThisBuild / organization := "org.gnieh"
 ThisBuild / organizationName := "Lucas Satabin"
