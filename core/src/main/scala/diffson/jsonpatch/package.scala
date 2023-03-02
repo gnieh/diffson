@@ -23,10 +23,10 @@ package object jsonpatch {
   object lcsdiff {
     object remembering {
       implicit def JsonDiffDiff[Json: Jsony: Lcs]: Diff[Json, JsonPatch[Json]] =
-        new JsonDiff[Json](true, true)
+        new JsonDiff[Json](true, true)(implicitly, implicitly[Lcs[Json]].savedHashes)
     }
     implicit def JsonDiffDiff[Json: Jsony: Lcs]: Diff[Json, JsonPatch[Json]] =
-      new JsonDiff[Json](true, false)
+      new JsonDiff[Json](true, false)(implicitly, implicitly[Lcs[Json]].savedHashes)
   }
 
   object simplediff {
