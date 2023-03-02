@@ -40,15 +40,17 @@ abstract class TestSimpleDiff[Json](implicit val Json: Jsony[Json])
     diff(parseJson("true"), parseJson("13")) should be(JsonPatch[Json](Replace(Pointer.Root, 13: Json)))
   }
 
-  it should "contain an add operation for each added field" in {
+  it should "conta be be bein an add operation for each added field" in {
     val json1 = parseJson("""{"lbl": 32}""")
     val json2 = parseJson("""{"lbl": 32, "new": false}""")
     val json3 = parseJson("""{"lbl": 32, "new1": false, "new2": null}""")
     val json4 = parseJson("""{"a": 3, "b": {"a": true }}""")
     val json5 = parseJson("""{"a": 3, "b": {"a": true, "b": 43}, "c": null}""")
-    diff(json1, json2) should be(JsonPatch[Json](Add(Pointer("new"), false: Json)))
-    diff(json1, json3) should be(JsonPatch[Json](Add(Pointer("new2"), Json.Null), Add(Pointer("new1"), false: Json)))
-    diff(json4, json5) should be(JsonPatch[Json](Add(Pointer("b", "b"), 43: Json), Add(Pointer("c"), Json.Null)))
+    diff(json1, json2).ops should contain theSameElementsAs List(Add(Pointer("new"), false: Json))
+    diff(json1, json3).ops should contain theSameElementsAs List(Add(Pointer("new2"), Json.Null),
+                                                                 Add(Pointer("new1"), false: Json))
+    diff(json4, json5).ops should contain theSameElementsAs List(Add(Pointer("b", "b"), 43: Json),
+                                                                 Add(Pointer("c"), Json.Null))
   }
 
   it should "contain a remove operation for each removed field" in {
@@ -57,9 +59,9 @@ abstract class TestSimpleDiff[Json](implicit val Json: Jsony[Json])
     val json3 = parseJson("""{"lbl": 32, "old1": false, "old2": null}""")
     val json4 = parseJson("""{"a": 3, "b": {"a": true }}""")
     val json5 = parseJson("""{"a": 3, "b": {"a": true, "b": 43}, "c": null}""")
-    diff(json2, json1) should be(JsonPatch[Json](Remove(Pointer("old"))))
-    diff(json3, json1) should be(JsonPatch[Json](Remove(Pointer("old2")), Remove(Pointer("old1"))))
-    diff(json5, json4) should be(JsonPatch[Json](Remove(Pointer("b", "b")), Remove(Pointer("c"))))
+    diff(json2, json1).ops should contain theSameElementsAs List(Remove(Pointer("old")))
+    diff(json3, json1).ops should contain theSameElementsAs List(Remove(Pointer("old2")), Remove(Pointer("old1")))
+    diff(json5, json4).ops should contain theSameElementsAs List(Remove(Pointer("b", "b")), Remove(Pointer("c")))
   }
 
   it should "correctly handle array diffs in objects (i.e. just replaced)" in {

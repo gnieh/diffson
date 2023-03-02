@@ -20,11 +20,9 @@ syntax: glob
 .idea
 *.iml
 
-#bsp
-.bsp
-
 # building
 target
+out
 build
 null
 tmp*
@@ -51,3 +49,15 @@ build.log
 #ensime
 .ensime*
 ensime.sbt
+
+# website
+site/content/api
+site/content/documentation/
+site/output
+
+.metals/
+.bloop/
+.bsp/
+metals.sbt
+
+.vscode/settings.json

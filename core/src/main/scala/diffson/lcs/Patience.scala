@@ -20,7 +20,6 @@ import cats.Eq
 import cats.implicits._
 
 import scala.annotation.tailrec
-import scala.collection.SortedMap
 import scala.collection.immutable.TreeMap
 import scala.collection.compat._
 
@@ -43,17 +42,17 @@ class Patience[T: Eq](withFallback: Boolean = true) extends Lcs[T] {
   /** Returns occurrences that appear only once in the list, associated with their index */
   private def uniques(l: List[T]): Map[T, Int] = {
     @tailrec
-    def loop(l: List[Occurrence], acc: Map[T, Int]): Map[T, Int] = l match {
-      case (value, idx) :: tl =>
+    def loop(l: List[T], idx: Int, acc: Map[T, Int]): Map[T, Int] = l match {
+      case value :: tl =>
         if (acc.contains(value))
           // not unique, remove it from the accumulator and go further
-          loop(tl, acc - value)
+          loop(tl, idx + 1, acc - value)
         else
-          loop(tl, acc + (value -> idx))
+          loop(tl, idx + 1, acc.updated(value, idx))
       case Nil =>
         acc
     }
-    loop(l.zipWithIndex, Map.empty)
+    loop(l, 0, Map.empty)
   }
 
   /** Takes all occurences from the first sequence and order them as in the second sequence if it is present */
