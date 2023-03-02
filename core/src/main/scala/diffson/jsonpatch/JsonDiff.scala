@@ -48,7 +48,7 @@ class JsonDiff[Json](diffArray: Boolean, rememberOld: Boolean)(implicit J: Jsony
       case (fld, value1) :: fields1 =>
         fields2.get(fld) match {
           case Some(value2) =>
-            fieldsDiff(fields1, fields2.removed(fld), path).flatMap(d => diff(value1, value2, path / fld).map(_ ++ d))
+            fieldsDiff(fields1, fields2 - fld, path).flatMap(d => diff(value1, value2, path / fld).map(_ ++ d))
           case None =>
             // field is not in the second object, delete it
             fieldsDiff(fields1, fields2, path).map(
