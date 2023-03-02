@@ -90,3 +90,16 @@ lazy val circe = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     )
   )
   .dependsOn(core, testkit % Test)
+
+lazy val benchmarks = crossProject(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("benchmarks"))
+  .enablePlugins(NoPublishPlugin, JmhPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    name := "diffson-benchmarks",
+    libraryDependencies ++= Seq(
+      "io.circe" %% "circe-literal" % circeVersion
+    )
+  )
+  .dependsOn(circe)
