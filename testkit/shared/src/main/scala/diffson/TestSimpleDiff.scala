@@ -47,8 +47,10 @@ abstract class TestSimpleDiff[Json](implicit val Json: Jsony[Json])
     val json4 = parseJson("""{"a": 3, "b": {"a": true }}""")
     val json5 = parseJson("""{"a": 3, "b": {"a": true, "b": 43}, "c": null}""")
     diff(json1, json2).ops should contain theSameElementsAs List(Add(Pointer("new"), false: Json))
-    diff(json1, json3).ops should contain theSameElementsAs List(Add(Pointer("new2"), Json.Null), Add(Pointer("new1"), false: Json))
-    diff(json4, json5).ops should contain theSameElementsAs List(Add(Pointer("b", "b"), 43: Json), Add(Pointer("c"), Json.Null))
+    diff(json1, json3).ops should contain theSameElementsAs List(Add(Pointer("new2"), Json.Null),
+                                                                 Add(Pointer("new1"), false: Json))
+    diff(json4, json5).ops should contain theSameElementsAs List(Add(Pointer("b", "b"), 43: Json),
+                                                                 Add(Pointer("c"), Json.Null))
   }
 
   it should "contain a remove operation for each removed field" in {
