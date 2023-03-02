@@ -1,10 +1,10 @@
 import com.typesafe.tools.mima.core._
 
 val scala212 = "2.12.17"
-val scala213 = "2.13.9"
-val scala3 = "3.2.0"
+val scala213 = "2.13.10"
+val scala3 = "3.2.2"
 
-val scalatestVersion = "3.2.13"
+val scalatestVersion = "3.2.15"
 val scalacheckVersion = "1.17.0"
 
 ThisBuild / scalaVersion := scala213
@@ -41,7 +41,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     name := "diffson-core",
     libraryDependencies ++= Seq(
       "org.scala-lang.modules" %%% "scala-collection-compat" % "2.9.0",
-      "org.typelevel" %%% "cats-core" % "2.8.0",
+      "org.typelevel" %%% "cats-core" % "2.9.0",
       "org.scalatest" %%% "scalatest" % scalatestVersion % Test,
       "org.scalacheck" %%% "scalacheck" % scalacheckVersion % Test
     ),
