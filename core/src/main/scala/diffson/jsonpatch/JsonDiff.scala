@@ -33,7 +33,7 @@ class JsonDiff[Json](diffArray: Boolean, rememberOld: Boolean)(implicit J: Jsony
 
   private def diff(json1: Json, json2: Json, pointer: Pointer): Eval[Chain[Operation[Json]]] =
     (json1, json2) match {
-      case (JsObject(fields1), JsObject(fields2))      => fieldsDiff(fields1.toList, fields2.toList, pointer)
+      case (JsObject(fields1), JsObject(fields2))      => fieldsDiff(fields1.toList, fields2, pointer)
       case (JsArray(arr1), JsArray(arr2)) if diffArray => arraysDiff(arr1.toList, arr2.toList, pointer)
       case _ if json1 === json2                        =>
         // if they are equal, this one is easy...
@@ -42,50 +42,21 @@ class JsonDiff[Json](diffArray: Boolean, rememberOld: Boolean)(implicit J: Jsony
     }
 
   private def fieldsDiff(fields1: List[(String, Json)],
-                         fields2: List[(String, Json)],
-                         path: Pointer): Eval[Chain[Operation[Json]]] = {
-    // sort fields by name in both objects
-    val sorted1 = fields1.sortBy(_._1)
-    val sorted2 = fields2.sortBy(_._1)
-    @tailrec
-    def associate(fields1: List[(String, Json)],
-                  fields2: List[(String, Json)],
-                  acc: Chain[(Option[(String, Json)], Option[(String, Json)])])
-        : Chain[(Option[(String, Json)], Option[(String, Json)])] = (fields1, fields2) match {
-      case (f1 :: t1, f2 :: t2) if f1._1 == f2._1 =>
-        // same name, associate both
-        associate(t1, t2, acc.prepend((Some(f1), Some(f2))))
-      case (f1 :: t1, f2 :: _) if f1._1 < f2._1 =>
-        // the first field is not present in the second object
-        associate(t1, fields2, acc.prepend((Some(f1), None)))
-      case (_ :: _, f2 :: t2) =>
-        // the second field is not present in the first object
-        associate(fields1, t2, acc.prepend((None, Some(f2))))
-      case (_, Nil) =>
-        Chain.fromSeq(fields1.map(Some(_) -> None)) ++ acc
-      case (Nil, _) =>
-        Chain.fromSeq(fields2.map(None -> Some(_))) ++ acc
+                         fields2: Map[String, Json],
+                         path: Pointer): Eval[Chain[Operation[Json]]] =
+    fields1 match {
+      case (fld, value1) :: fields1 =>
+        fields2.get(fld) match {
+          case Some(value2) =>
+            fieldsDiff(fields1, fields2.removed(fld), path).flatMap(d => diff(value1, value2, path / fld).map(_ ++ d))
+          case None =>
+            // field is not in the second object, delete it
+            fieldsDiff(fields1, fields2, path).map(
+              _.prepend(Remove(path / fld, if (rememberOld) Some(value1) else None)))
+        }
+      case Nil =>
+        Eval.now(Chain.fromSeq(fields2.toList).map { case (fld, value) => Add(path / fld, value) })
     }
-
-    def fields(fs: List[(Option[(String, Json)], Option[(String, Json)])],
-               acc: Chain[Operation[Json]]): Eval[Chain[Operation[Json]]] = fs match {
-      case (Some(f1), Some(f2)) :: tl if f1._2 === f2._2 =>
-        // all right, nothing changed
-        fields(tl, acc)
-      case (Some(f1), Some(f2)) :: tl =>
-        // same field name, different values
-        diff(f1._2, f2._2, path / f1._1).flatMap(d => fields(tl, d ++ acc))
-      case (Some(f1), None) :: tl =>
-        // the field was deleted
-        fields(tl, acc.prepend(Remove[Json](path / f1._1, if (rememberOld) Some(f1._2) else None)))
-      case (None, Some(f2)) :: tl =>
-        // the field was added
-        fields(tl, acc.prepend(Add(path / f2._1, f2._2)))
-      case _ =>
-        Eval.now(acc)
-    }
-    fields(associate(sorted1, sorted2, Chain.empty).toList, Chain.empty)
-  }
 
   private def arraysDiff(arr1: List[Json], arr2: List[Json], path: Pointer): Eval[Chain[Operation[Json]]] = {
     // get the longest common subsequence in the array
