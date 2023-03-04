@@ -42,7 +42,7 @@ package object circe {
       Json.fromValues(values)
 
     def makeObject(fields: Map[String, Json]): Json =
-      Json.fromFields(fields)
+      Json.fromJsonObject(JsonObject.fromMap(fields))
 
     def show(json: Json): String =
       json.noSpaces
