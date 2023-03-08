@@ -15,7 +15,7 @@ ThisBuild / tlSonatypeUseLegacyHost := true
 
 ThisBuild / tlFatalWarnings := false
 
-ThisBuild / tlBaseVersion := "4.3"
+ThisBuild / tlBaseVersion := "4.4"
 
 ThisBuild / organization := "org.gnieh"
 ThisBuild / organizationName := "Lucas Satabin"
@@ -30,7 +30,7 @@ lazy val commonSettings = Seq(
   homepage := Some(url("https://github.com/gnieh/diffson"))
 )
 
-lazy val diffson = tlCrossRootProject.aggregate(core, sprayJson, circe, playJson, testkit)
+lazy val diffson = tlCrossRootProject.aggregate(core, sprayJson, circe, playJson, mongo, testkit)
 
 lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -89,6 +89,16 @@ lazy val circe = crossProject(JSPlatform, JVMPlatform, NativePlatform)
       "io.circe" %%% "circe-parser" % circeVersion
     )
   )
+  .dependsOn(core, testkit % Test)
+
+lazy val mongo = crossProject(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("mongo"))
+  .settings(commonSettings)
+  .settings(name := "diffson-mongo",
+            libraryDependencies ++= List(
+              "org.mongodb" % "mongodb-driver-core" % "4.9.0"
+            ))
   .dependsOn(core, testkit % Test)
 
 lazy val benchmarks = crossProject(JVMPlatform)
