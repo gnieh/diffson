@@ -98,4 +98,37 @@ abstract class MongoDiffSpec[Update: Eq, Bson](implicit Updates: Updates[Update,
     expect.eql(Updates.set(Updates.empty, "value", Jsony.makeArray(Vector(string("a"), string("b"), string("f")))), d)
   }
 
+  pureTest("adding fields") {
+    val source = doc(Jsony.makeObject(Map("a" -> int(1), "c" -> int(3))))
+    val target = doc(Jsony.makeObject(Map("a" -> int(1), "b" -> int(2), "c" -> int(3), "z" -> int(26))))
+
+    val d = source.diff(target)
+
+    expect.eql(Updates.set(Updates.set(Updates.empty, "value.b", int(2)), "value.z", int(26)), d)
+  }
+
+  pureTest("deleting fields") {
+    val source = doc(Jsony.makeObject(Map("a" -> int(1), "b" -> int(2), "c" -> int(3), "z" -> int(26))))
+    val target = doc(Jsony.makeObject(Map("a" -> int(1), "c" -> int(3))))
+
+    val d = source.diff(target)
+
+    expect.eql(Updates.unset(Updates.unset(Updates.empty, "value.b"), "value.z"), d)
+  }
+
+  pureTest("mixed field modifications") {
+    val source = doc(
+      Jsony.makeObject(
+        Map("a" -> int(1), "b" -> int(2), "c" -> int(3), "z" -> Jsony.makeObject(Map("value" -> int(26))))))
+    val target = doc(
+      Jsony.makeObject(
+        Map("a" -> int(1), "c" -> int(3), "d" -> int(4), "z" -> Jsony.makeObject(Map("value" -> int(-1))))))
+
+    val d = source.diff(target)
+
+    expect.eql(
+      Updates.set(Updates.set(Updates.unset(Updates.empty, "value.b"), "value.z.value", int(-1)), "value.d", int(4)),
+      d)
+  }
+
 }

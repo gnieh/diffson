@@ -56,7 +56,9 @@ class MongoDiff[Bson, Update](implicit Bson: Jsony[Bson], Update: Updates[Update
             fieldsDiff(fields1, fields2, path, Update.unset(acc, path.append(fld).mkString_(".")))
         }
       case Nil =>
-        Eval.now(fields2.keys.foldLeft(acc)((acc, fld) => Update.unset(acc, path.append(fld).mkString_("."))))
+        Eval.now(fields2.foldLeft(acc) { case (acc, (fld, value)) =>
+          Update.set(acc, path.append(fld).mkString_("."), value)
+        })
     }
 
   private def arrayDiff(arr1: Vector[Bson], arr2: Vector[Bson], path: Path, acc: Update): Eval[Update] = {
