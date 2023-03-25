@@ -16,6 +16,7 @@
 
 package diffson
 
+import cats.syntax.all._
 import com.mongodb.client.model.PushOptions
 import com.mongodb.client.model.{Updates => JUpdates}
 import org.bson._
@@ -42,13 +43,13 @@ package object bson {
       new BsonDocument(fields.toList.map { case (key, value) => new BsonElement(key, value) }.asJava)
 
     override def fields(json: BsonValue): Option[Map[String, BsonValue]] =
-      Option.when(json.isDocument())(json.asDocument().asScala.toMap)
+      json.isDocument().guard[Option].as(json.asDocument().asScala.toMap)
 
     override def makeArray(values: Vector[BsonValue]): BsonValue =
       new BsonArray(values.asJava)
 
     override def array(json: BsonValue): Option[Vector[BsonValue]] =
-      Option.when(json.isArray())(json.asArray().asScala.toVector)
+      json.isArray().guard[Option].as(json.asArray().asScala.toVector)
 
     override def Null: BsonValue = BsonNull.VALUE
 
