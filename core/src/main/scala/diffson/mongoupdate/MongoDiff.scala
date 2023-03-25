@@ -100,12 +100,12 @@ class MongoDiff[Bson, Update](implicit Bson: Jsony[Bson], Update: Updates[Update
                 // otherwise there are some changes that would conflict, replace the entire array
                 Update.set(acc, path.mkString_("."), JsArray(arr2))
               }
-            } else if (newIdx1 - idx1 == nbAdded && newIdx2 - idx2 == nbAdded) {
+            } else if (newIdx2 - 1 - idx2 == nbAdded) {
               // there is a bigger gap in original array, it must be where the elements are inserted
               // otherwise we stop and replace the entire array
               // if gap is of the right size, check that the rest of the LCS represents the suffix of both arrays
               if (lcs.length == length1 - newIdx1) {
-                Update.pushEach(acc, path.mkString_("."), idx1 + 1, arr2.slice(idx2 + 1, nbAdded).toList)
+                Update.pushEach(acc, path.mkString_("."), idx1 + 1, arr2.slice(idx2 + 1, idx2 + 1 + nbAdded).toList)
               } else {
                 // otherwise there are some changes that would conflict, replace the entire array
                 Update.set(acc, path.mkString_("."), JsArray(arr2))
@@ -114,13 +114,10 @@ class MongoDiff[Bson, Update](implicit Bson: Jsony[Bson], Update: Updates[Update
               // otherwise replace the entire array
               Update.set(acc, path.mkString_("."), JsArray(arr2))
             }
-          case Nil if idx1 == length1 - 1 =>
+          case Nil =>
             // we reached the end of the original array,
             // it means every new element is appended to the end
-            Update.pushEach(acc, path.mkString_("."), arr2.slice(idx2, idx2 + nbAdded).toList)
-          case _ =>
-            // in any other case, just replace the entire array
-            Update.set(acc, path.mkString_("."), JsArray(arr2))
+            Update.pushEach(acc, path.mkString_("."), arr2.slice(idx2 + 1, idx2 + 1 + nbAdded).toList)
         }
       Eval.now(loop(lcs, -1, -1))
     }

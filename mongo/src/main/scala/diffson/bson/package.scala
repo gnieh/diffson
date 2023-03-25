@@ -16,12 +16,14 @@
 
 package diffson
 
-import org.bson._
-import mongoupdate.Updates
-import com.mongodb.client.model.{Updates => JUpdates}
-import scala.jdk.CollectionConverters._
-import org.bson.conversions.Bson
 import com.mongodb.client.model.PushOptions
+import com.mongodb.client.model.{Updates => JUpdates}
+import org.bson._
+import org.bson.conversions.Bson
+
+import scala.jdk.CollectionConverters._
+
+import mongoupdate.Updates
 
 package object bson {
 

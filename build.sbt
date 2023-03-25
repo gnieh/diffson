@@ -6,6 +6,7 @@ val scala3 = "3.2.2"
 
 val scalatestVersion = "3.2.15"
 val scalacheckVersion = "1.17.0"
+val weaverVersion = "0.8.2"
 
 ThisBuild / scalaVersion := scala213
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
@@ -27,7 +28,14 @@ ThisBuild / developers := List(
 
 lazy val commonSettings = Seq(
   description := "Json diff/patch library",
-  homepage := Some(url("https://github.com/gnieh/diffson"))
+  homepage := Some(url("https://github.com/gnieh/diffson")),
+  libraryDependencies ++= List(
+    "org.scalatest" %%% "scalatest" % scalatestVersion % Test,
+    "org.scalacheck" %%% "scalacheck" % scalacheckVersion % Test,
+    "com.disneystreaming" %%% "weaver-cats" % weaverVersion % Test,
+    "com.disneystreaming" %%% "weaver-scalacheck" % weaverVersion % Test
+  ),
+  testFrameworks += new TestFramework("weaver.framework.CatsEffect")
 )
 
 lazy val diffson = tlCrossRootProject.aggregate(core, sprayJson, circe, playJson, mongo, testkit)
@@ -41,9 +49,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     name := "diffson-core",
     libraryDependencies ++= Seq(
       "org.scala-lang.modules" %%% "scala-collection-compat" % "2.9.0",
-      "org.typelevel" %%% "cats-core" % "2.9.0",
-      "org.scalatest" %%% "scalatest" % scalatestVersion % Test,
-      "org.scalacheck" %%% "scalacheck" % scalacheckVersion % Test
+      "org.typelevel" %%% "cats-core" % "2.9.0"
     ),
     mimaBinaryIssueFilters ++= List(
       ProblemFilters.exclude[DirectMissingMethodProblem](
@@ -55,9 +61,15 @@ lazy val testkit = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Full)
   .in(file("testkit"))
   .settings(commonSettings: _*)
-  .settings(name := "diffson-testkit",
-            libraryDependencies ++= Seq("org.scalatest" %%% "scalatest" % scalatestVersion,
-                                        "org.scalacheck" %%% "scalacheck" % scalacheckVersion))
+  .settings(
+    name := "diffson-testkit",
+    libraryDependencies ++= Seq(
+      "org.scalatest" %%% "scalatest" % scalatestVersion,
+      "org.scalacheck" %%% "scalacheck" % scalacheckVersion,
+      "com.disneystreaming" %%% "weaver-cats" % weaverVersion,
+      "com.disneystreaming" %%% "weaver-scalacheck" % weaverVersion
+    )
+  )
   .dependsOn(core)
 
 lazy val sprayJson = project
