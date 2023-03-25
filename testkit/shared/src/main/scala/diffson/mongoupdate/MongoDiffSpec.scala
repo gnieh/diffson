@@ -26,7 +26,7 @@ import lcsdiff._
 abstract class MongoDiffSpec[Update: Eq, Bson](implicit Updates: Updates[Update, Bson], Jsony: Jsony[Bson])
     extends SimpleIOSuite {
 
-  implicit val lcs = new Patience[Bson]
+  implicit val lcs: Lcs[Bson] = new Patience[Bson]
 
   def int(i: Int): Bson
 
