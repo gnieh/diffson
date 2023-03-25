@@ -107,10 +107,13 @@ lazy val mongo = crossProject(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("mongo"))
   .settings(commonSettings)
-  .settings(name := "diffson-mongo",
-            libraryDependencies ++= List(
-              "org.mongodb" % "mongodb-driver-core" % "4.9.0"
-            ))
+  .settings(
+    name := "diffson-mongo",
+    libraryDependencies ++= List(
+      "org.mongodb" % "mongodb-driver-core" % "4.9.0"
+    ),
+    tlVersionIntroduced := Map("2.13" -> "4.5.0", "3" -> "4.5.0", "2.12" -> "4.5.0")
+  )
   .dependsOn(core, testkit % Test)
 
 lazy val benchmarks = crossProject(JVMPlatform)
