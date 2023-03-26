@@ -17,10 +17,10 @@
 package diffson
 package bson
 
-import cats.Show
 import cats.effect.{IO, Resource}
 import cats.syntax.all._
-import com.mongodb.client.model.{Filters, Updates}
+import cats.{Eq, Show}
+import com.mongodb.client.model.Filters
 import de.flapdoodle.embed.mongo.distribution.Version
 import mongo4cats.client.MongoClient
 import mongo4cats.embedded.EmbeddedMongo
@@ -34,9 +34,13 @@ import scala.jdk.CollectionConverters._
 import lcs._
 import mongoupdate.lcsdiff._
 
-object ApplyUpdateSpec extends IOSuite with Checkers {
+abstract class ApplyUpdateSpec[Update, Bson: Jsony](implicit Update: mongoupdate.Updates[Update, Bson])
+    extends IOSuite
+    with Checkers {
 
-  implicit val lcs: Lcs[BsonValue] = new Patience[BsonValue]
+  implicit val lcs: Lcs[Bson] = new Patience[Bson]
+
+  implicit val eq: Eq[BsonDocument] = Eq.fromUniversalEquals
 
   type Res = MongoClient[IO]
 
@@ -78,23 +82,25 @@ object ApplyUpdateSpec extends IOSuite with Checkers {
 
   implicit val showDoc: Show[BsonDocument] = Show.fromToString
 
+  def fromBsonDocument(bson: BsonDocument): Bson
+
+  def toUpdate(diff: Update): conversions.Bson
+
   test("apply updates") { client =>
     forall { (bson1: BsonDocument, bson2: BsonDocument) =>
       val id = new BsonObjectId
       bson1.put("_id", id)
       bson2.put("_id", id)
 
-      val diff = (bson1: BsonValue).diff(bson2)
+      val diff = fromBsonDocument(bson1).diff(fromBsonDocument(bson2))
       for {
         db <- client.getDatabase("testdb")
         coll <- db.getCollection("docs")
         doc = mongo4cats.bson.Document.fromJava(new Document(bson1))
         _ <- coll.insertOne(doc)
-        update = Updates.combine(diff: _*)
-        _ <- coll.updateOne(Filters.eq("_id", id), update)
+        _ <- coll.updateOne(Filters.eq("_id", id), toUpdate(diff))
         foundDoc <- coll.find(Filters.eq("_id", id)).first
-      } yield expect.eql(Some(bson2: BsonValue), foundDoc.map(_.toBsonDocument))
-      IO.pure(expect(true))
+      } yield expect.eql(Some(bson2), foundDoc.map(_.toBsonDocument))
     }
   }
 

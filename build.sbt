@@ -71,6 +71,12 @@ lazy val testkit = crossProject(JSPlatform, JVMPlatform, NativePlatform)
       "com.disneystreaming" %%% "weaver-scalacheck" % weaverVersion
     )
   )
+  .jvmSettings(
+    libraryDependencies ++= List(
+      "io.github.kirill5k" %% "mongo4cats-embedded" % mongo4catsVersion,
+      "io.github.kirill5k" %% "mongo4cats-core" % mongo4catsVersion
+    )
+  )
   .dependsOn(core)
 
 lazy val sprayJson = project
@@ -109,11 +115,9 @@ lazy val mongo = crossProject(JVMPlatform)
   .in(file("mongo"))
   .settings(commonSettings)
   .settings(
-    name := "diffson-mongo",
+    name := "diffson-mongodb-driver",
     libraryDependencies ++= List(
-      "org.mongodb" % "mongodb-driver-core" % "4.9.0",
-      "io.github.kirill5k" %% "mongo4cats-embedded" % mongo4catsVersion % Test,
-      "io.github.kirill5k" %% "mongo4cats-core" % mongo4catsVersion % Test
+      "org.mongodb" % "mongodb-driver-core" % "4.9.0"
     ),
     tlVersionIntroduced := Map("2.13" -> "4.5.0", "3" -> "4.5.0", "2.12" -> "4.5.0")
   )
