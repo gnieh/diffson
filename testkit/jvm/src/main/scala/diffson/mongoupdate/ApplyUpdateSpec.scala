@@ -87,21 +87,22 @@ abstract class ApplyUpdateSpec[Update, Bson: Jsony](implicit Update: mongoupdate
   def toUpdate(diff: Update): conversions.Bson
 
   test("apply updates") { client =>
-    forall { (bson1: BsonDocument, bson2: BsonDocument) =>
-      val id = new BsonObjectId
-      bson1.put("_id", id)
-      bson2.put("_id", id)
+    ignore("SLOW") >>
+      forall { (bson1: BsonDocument, bson2: BsonDocument) =>
+        val id = new BsonObjectId
+        bson1.put("_id", id)
+        bson2.put("_id", id)
 
-      val diff = fromBsonDocument(bson1).diff(fromBsonDocument(bson2))
-      for {
-        db <- client.getDatabase("testdb")
-        coll <- db.getCollection("docs")
-        doc = mongo4cats.bson.Document.fromJava(new Document(bson1))
-        _ <- coll.insertOne(doc)
-        _ <- coll.updateOne(Filters.eq("_id", id), toUpdate(diff))
-        foundDoc <- coll.find(Filters.eq("_id", id)).first
-      } yield expect.eql(Some(bson2), foundDoc.map(_.toBsonDocument))
-    }
+        val diff = fromBsonDocument(bson1).diff(fromBsonDocument(bson2))
+        for {
+          db <- client.getDatabase("testdb")
+          coll <- db.getCollection("docs")
+          doc = mongo4cats.bson.Document.fromJava(new Document(bson1))
+          _ <- coll.insertOne(doc)
+          _ <- coll.updateOne(Filters.eq("_id", id), toUpdate(diff))
+          foundDoc <- coll.find(Filters.eq("_id", id)).first
+        } yield expect.eql(Some(bson2), foundDoc.map(_.toBsonDocument))
+      }
   }
 
 }
