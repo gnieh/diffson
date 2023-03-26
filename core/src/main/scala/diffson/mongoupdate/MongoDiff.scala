@@ -92,16 +92,6 @@ class MongoDiff[Bson, Update](implicit Bson: Jsony[Bson], Update: Updates[Update
             if (newIdx1 == idx1 + 1 && newIdx2 == idx2 + 1) {
               // sequence goes forward in both arrays, continue looping
               loop(rest, newIdx1, newIdx2)
-            } else if (idx1 == -1 && newIdx2 == nbAdded) {
-              // element are added at the beginning, but we must make sure that the rest
-              // of the LCS is the original array itself
-              // this is the case if the LCS length is the array length
-              if (lcs.length == length1) {
-                Update.pushEach(acc, path.mkString_("."), 0, arr2.slice(0, nbAdded).toList)
-              } else {
-                // otherwise there are some changes that would conflict, replace the entire array
-                Update.set(acc, path.mkString_("."), JsArray(arr2))
-              }
             } else if (newIdx2 - 1 - idx2 == nbAdded) {
               // there is a bigger gap in original array, it must be where the elements are inserted
               // otherwise we stop and replace the entire array

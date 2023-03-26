@@ -17,10 +17,8 @@
 package diffson
 package bson
 
-import org.bson.BsonInt32
-import org.bson.BsonString
-import org.bson.BsonValue
 import org.bson.conversions.Bson
+import org.bson.{BsonInt32, BsonString, BsonValue}
 
 import mongoupdate._
 import test._

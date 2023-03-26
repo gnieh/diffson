@@ -54,6 +54,16 @@ abstract class MongoDiffSpec[Update: Eq, Bson](implicit Updates: Updates[Update,
     expect.eql(Updates.pushEach(Updates.empty, "value", List(string("c"), string("d"))), d)
   }
 
+  pureTest("prepend to array") {
+
+    val source = doc(Jsony.makeArray(Vector(string("c"), string("d"))))
+    val target = doc(Jsony.makeArray(Vector(string("a"), string("b"), string("c"), string("d"))))
+
+    val d = source.diff(target)
+
+    expect.eql(Updates.pushEach(Updates.empty, "value", 0, List(string("a"), string("b"))), d)
+  }
+
   pureTest("push in the middle of an array") {
     val source = doc(Jsony.makeArray(Vector(string("a"), string("b"), string("f"))))
     val target =

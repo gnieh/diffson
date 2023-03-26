@@ -17,25 +17,22 @@
 package diffson
 package bson
 
-import lcs._
-import mongoupdate.lcsdiff._
-
 import cats.Show
-import cats.effect.IO
-import cats.effect.Resource
+import cats.effect.{IO, Resource}
 import cats.syntax.all._
+import com.mongodb.client.model.{Filters, Updates}
 import de.flapdoodle.embed.mongo.distribution.Version
 import mongo4cats.client.MongoClient
 import mongo4cats.embedded.EmbeddedMongo
 import org.bson._
-import org.scalacheck.Arbitrary
-import org.scalacheck.Gen
+import org.scalacheck.{Arbitrary, Gen}
 import weaver._
 import weaver.scalacheck._
 
 import scala.jdk.CollectionConverters._
-import com.mongodb.client.model.Filters
-import com.mongodb.client.model.Updates
+
+import lcs._
+import mongoupdate.lcsdiff._
 
 object ApplyUpdateSpec extends IOSuite with Checkers {
 

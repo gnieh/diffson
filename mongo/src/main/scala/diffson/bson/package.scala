@@ -17,8 +17,7 @@
 package diffson
 
 import cats.syntax.all._
-import com.mongodb.client.model.PushOptions
-import com.mongodb.client.model.{Updates => JUpdates}
+import com.mongodb.client.model.{PushOptions, Updates => JUpdates}
 import org.bson._
 import org.bson.conversions.Bson
 
