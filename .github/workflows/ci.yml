@@ -94,11 +94,11 @@ jobs:
 
       - name: Make target directories
         if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main')
-        run: mkdir -p circe/jvm/target testkit/native/target target testkit/js/target .js/target core/.native/target playJson/jvm/target benchmarks/.jvm/target sprayJson/target core/.js/target circe/js/target mongo/.jvm/target core/.jvm/target .jvm/target .native/target circe/native/target playJson/js/target testkit/jvm/target project/target
+        run: mkdir -p mongo4cats/.jvm/target circe/jvm/target testkit/native/target target testkit/js/target .js/target core/.native/target playJson/jvm/target benchmarks/.jvm/target sprayJson/target core/.js/target circe/js/target mongo/.jvm/target core/.jvm/target .jvm/target .native/target circe/native/target playJson/js/target testkit/jvm/target project/target
 
       - name: Compress target directories
         if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main')
-        run: tar cf targets.tar circe/jvm/target testkit/native/target target testkit/js/target .js/target core/.native/target playJson/jvm/target benchmarks/.jvm/target sprayJson/target core/.js/target circe/js/target mongo/.jvm/target core/.jvm/target .jvm/target .native/target circe/native/target playJson/js/target testkit/jvm/target project/target
+        run: tar cf targets.tar mongo4cats/.jvm/target circe/jvm/target testkit/native/target target testkit/js/target .js/target core/.native/target playJson/jvm/target benchmarks/.jvm/target sprayJson/target core/.js/target circe/js/target mongo/.jvm/target core/.jvm/target .jvm/target .native/target circe/native/target playJson/js/target testkit/jvm/target project/target
 
       - name: Upload target directories
         if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main')

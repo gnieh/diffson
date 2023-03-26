@@ -123,6 +123,19 @@ lazy val mongo = crossProject(JVMPlatform)
   )
   .dependsOn(core, testkit % Test)
 
+lazy val mongo4cats = crossProject(JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("mongo4cats"))
+  .settings(commonSettings)
+  .settings(
+    name := "diffson-mongo4cats",
+    libraryDependencies ++= List(
+      "io.github.kirill5k" %% "mongo4cats-core" % mongo4catsVersion
+    ),
+    tlVersionIntroduced := Map("2.13" -> "4.5.0", "3" -> "4.5.0", "2.12" -> "4.5.0")
+  )
+  .dependsOn(core, testkit % Test)
+
 lazy val benchmarks = crossProject(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("benchmarks"))

@@ -30,11 +30,7 @@ package object bson {
   implicit object BsonJsony extends Jsony[BsonValue] {
 
     override def eqv(x: BsonValue, y: BsonValue): Boolean =
-      (x, y) match {
-        case (null, null)          => true
-        case (null, _) | (_, null) => false
-        case _                     => x.equals(y)
-      }
+      x == y
 
     override def show(t: BsonValue): String = t.toString()
 
