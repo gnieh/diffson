@@ -23,6 +23,7 @@ import org.bson.BsonValue
 import org.bson.conversions.Bson
 
 import mongoupdate._
+import test._
 
 object MongoMongoDiffSpec extends MongoDiffSpec[List[Bson], BsonValue] {
 

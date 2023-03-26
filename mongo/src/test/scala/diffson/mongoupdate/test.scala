@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package diffson
+package diffson.mongoupdate
 
 import cats.Eq
 import org.bson.conversions.Bson
 
-package object mongoupdate {
+object test {
 
   implicit val BsonEq: Eq[Bson] = Eq.fromUniversalEquals
 

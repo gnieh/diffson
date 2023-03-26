@@ -7,6 +7,7 @@ val scala3 = "3.2.2"
 val scalatestVersion = "3.2.15"
 val scalacheckVersion = "1.17.0"
 val weaverVersion = "0.8.2"
+val mongo4catsVersion = "0.6.10"
 
 ThisBuild / scalaVersion := scala213
 ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
@@ -110,7 +111,9 @@ lazy val mongo = crossProject(JVMPlatform)
   .settings(
     name := "diffson-mongo",
     libraryDependencies ++= List(
-      "org.mongodb" % "mongodb-driver-core" % "4.9.0"
+      "org.mongodb" % "mongodb-driver-core" % "4.9.0",
+      "io.github.kirill5k" %% "mongo4cats-embedded" % mongo4catsVersion % Test,
+      "io.github.kirill5k" %% "mongo4cats-core" % mongo4catsVersion % Test
     ),
     tlVersionIntroduced := Map("2.13" -> "4.5.0", "3" -> "4.5.0", "2.12" -> "4.5.0")
   )
