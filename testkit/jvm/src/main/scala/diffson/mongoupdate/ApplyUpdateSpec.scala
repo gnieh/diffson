@@ -31,14 +31,11 @@ import weaver.scalacheck._
 
 import scala.jdk.CollectionConverters._
 
-import lcs._
-import mongoupdate.lcsdiff._
+import mongoupdate._
 
 abstract class ApplyUpdateSpec[Update, Bson: Jsony](implicit Update: mongoupdate.Updates[Update, Bson])
     extends IOSuite
     with Checkers {
-
-  implicit val lcs: Lcs[Bson] = new Patience[Bson]
 
   implicit val eq: Eq[BsonDocument] = Eq.fromUniversalEquals
 

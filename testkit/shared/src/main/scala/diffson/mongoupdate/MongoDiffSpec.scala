@@ -20,13 +20,8 @@ package mongoupdate
 import cats.Eq
 import weaver._
 
-import lcs._
-import lcsdiff._
-
 abstract class MongoDiffSpec[Update: Eq, Bson](implicit Updates: Updates[Update, Bson], Jsony: Jsony[Bson])
     extends SimpleIOSuite {
-
-  implicit val lcs: Lcs[Bson] = new Patience[Bson]
 
   def int(i: Int): Bson
 

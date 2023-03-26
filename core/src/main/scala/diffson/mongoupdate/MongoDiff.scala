@@ -21,11 +21,9 @@ import cats.Eval
 import cats.data.Chain
 import cats.syntax.all._
 
-import lcs.Lcs
 import scala.annotation.tailrec
 
-class MongoDiff[Bson, Update](implicit Bson: Jsony[Bson], Update: Updates[Update, Bson], Lcs: Lcs[Bson])
-    extends Diff[Bson, Update] {
+class MongoDiff[Bson, Update](implicit Bson: Jsony[Bson], Update: Updates[Update, Bson]) extends Diff[Bson, Update] {
   private type Path = Chain[String]
 
   override def diff(bson1: Bson, bson2: Bson): Update =
@@ -79,39 +77,44 @@ class MongoDiff[Bson, Update](implicit Bson: Jsony[Bson], Update: Updates[Update
       val nbAdded = length2 - length1
       // there are some additions, and possibly some modifications
       // elements can be added as a block only
-      // the LCS is computed to decide where elements are added
-      // if there is several additions in several places
-      // or a mix of additions and other modifications,
-      // then we just replace the entire array, to avoid conflicts
-      val lcs = Lcs.lcs(arr1.toList, arr2.toList)
 
+      // first we commpute the common prefixes and suffixes
       @tailrec
-      def loop(lcs: List[(Int, Int)], idx1: Int, idx2: Int): Update =
-        lcs match {
-          case (newIdx1, newIdx2) :: rest =>
-            if (newIdx1 == idx1 + 1 && newIdx2 == idx2 + 1) {
-              // sequence goes forward in both arrays, continue looping
-              loop(rest, newIdx1, newIdx2)
-            } else if (newIdx2 - 1 - idx2 == nbAdded) {
-              // there is a bigger gap in original array, it must be where the elements are inserted
-              // otherwise we stop and replace the entire array
-              // if gap is of the right size, check that the rest of the LCS represents the suffix of both arrays
-              if (lcs.length == length1 - newIdx1) {
-                Update.pushEach(acc, path.mkString_("."), idx1 + 1, arr2.slice(idx2 + 1, idx2 + 1 + nbAdded).toList)
-              } else {
-                // otherwise there are some changes that would conflict, replace the entire array
-                Update.set(acc, path.mkString_("."), JsArray(arr2))
-              }
-            } else {
-              // otherwise replace the entire array
-              Update.set(acc, path.mkString_("."), JsArray(arr2))
-            }
-          case Nil =>
-            // we reached the end of the original array,
-            // it means every new element is appended to the end
-            Update.pushEach(acc, path.mkString_("."), arr2.slice(idx2 + 1, idx2 + 1 + nbAdded).toList)
-        }
-      Eval.now(loop(lcs, -1, -1))
+      def commonPrefix(idx: Int): Int =
+        if (idx >= length1)
+          length1
+        else if (arr1(idx) === arr2(idx))
+          commonPrefix(idx + 1)
+        else
+          idx
+      val commonPrefixSize = commonPrefix(0)
+      @tailrec
+      def commonSuffix(idx1: Int, idx2: Int): Int =
+        if (idx1 < 0)
+          length1
+        else if (arr1(idx1) === arr2(idx2))
+          commonSuffix(idx1 - 1, idx2 - 1)
+        else
+          length1 - 1 - idx1
+      val commonSuffixSize = commonSuffix(length1 - 1, length2 - 1)
+
+      val update =
+        if (commonPrefixSize == length1)
+          // all elements are appended
+          Update.pushEach(acc, path.mkString_("."), arr2.drop(length1).toList)
+        else if (commonSuffixSize == length1)
+          // all elements are prepended
+          Update.pushEach(acc, path.mkString_("."), 0, arr2.dropRight(length1).toList)
+        else if (commonPrefixSize + commonSuffixSize == nbAdded)
+          // allements are inserted as a block in the middle
+          Update.pushEach(acc,
+                          path.mkString_("."),
+                          commonPrefixSize,
+                          arr2.slice(commonPrefixSize, length2 - commonSuffixSize).toList)
+        else
+          Update.set(acc, path.mkString_("."), JsArray(arr2))
+
+      Eval.now(update)
     }
   }
 
