@@ -73,7 +73,7 @@ lazy val playJson = crossProject(JSPlatform, JVMPlatform)
   .in(file("playJson"))
   .settings(commonSettings: _*)
   .settings(name := "diffson-play-json",
-            libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.10.0-RC6",
+            libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.10.2",
             tlVersionIntroduced := Map("3" -> "4.3.0"))
   .dependsOn(core, testkit % Test)
 
