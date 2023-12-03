@@ -1,17 +1,15 @@
 import com.typesafe.tools.mima.core._
 
 val scala212 = "2.12.18"
-val scala213 = "2.13.10"
-val scala3 = "3.2.2"
+val scala213 = "2.13.12"
+val scala3 = "3.3.1"
 
-val scalatestVersion = "3.2.15"
+val scalatestVersion = "3.2.17"
 val scalacheckVersion = "1.17.0"
 
+ThisBuild / tlJdkRelease := Some(11)
 ThisBuild / scalaVersion := scala213
-ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
-ThisBuild / tlSkipIrrelevantScalas := true
-
-ThisBuild / tlSonatypeUseLegacyHost := true
+ThisBuild / crossScalaVersions := Seq(elems = scala212, scala213, scala3)
 
 ThisBuild / tlFatalWarnings := false
 
@@ -41,7 +39,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     name := "diffson-core",
     libraryDependencies ++= Seq(
       "org.scala-lang.modules" %%% "scala-collection-compat" % "2.11.0",
-      "org.typelevel" %%% "cats-core" % "2.9.0",
+      "org.typelevel" %%% "cats-core" % "2.10.0",
       "org.scalatest" %%% "scalatest" % scalatestVersion % Test,
       "org.scalacheck" %%% "scalacheck" % scalacheckVersion % Test
     ),
@@ -73,11 +71,11 @@ lazy val playJson = crossProject(JSPlatform, JVMPlatform)
   .in(file("playJson"))
   .settings(commonSettings: _*)
   .settings(name := "diffson-play-json",
-            libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.10.0-RC6",
+            libraryDependencies += "org.playframework" %%% "play-json" % "3.0.1",
             tlVersionIntroduced := Map("3" -> "4.3.0"))
   .dependsOn(core, testkit % Test)
 
-val circeVersion = "0.14.5"
+val circeVersion = "0.14.6"
 lazy val circe = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Full)
   .in(file("circe"))
