@@ -66,7 +66,7 @@ lazy val sprayJson = project
             libraryDependencies += "io.spray" %% "spray-json" % "1.3.6")
   .dependsOn(core.jvm, testkit.jvm % Test)
 
-lazy val playJson = crossProject(JSPlatform, JVMPlatform)
+lazy val playJson = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Full)
   .in(file("playJson"))
   .settings(commonSettings: _*)
