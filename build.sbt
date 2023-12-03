@@ -75,6 +75,7 @@ lazy val playJson = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .settings(name := "diffson-play-json",
             libraryDependencies += "org.playframework" %%% "play-json" % "3.0.1",
             tlVersionIntroduced := Map("3" -> "4.3.0"))
+  .nativeSettings(tlVersionIntroduced := Map("2.12" -> "4.4.1", "2.13" -> "4.4.1", "3" -> "4.4.1"))
   .dependsOn(core, testkit % Test)
 
 val circeVersion = "0.14.6"
