@@ -1,17 +1,15 @@
 import com.typesafe.tools.mima.core._
 
 val scala212 = "2.12.18"
-val scala213 = "2.13.10"
-val scala3 = "3.2.2"
+val scala213 = "2.13.12"
+val scala3 = "3.3.1"
 
-val scalatestVersion = "3.2.15"
+val scalatestVersion = "3.2.17"
 val scalacheckVersion = "1.17.0"
 
+ThisBuild / tlJdkRelease := Some(11)
 ThisBuild / scalaVersion := scala213
-ThisBuild / crossScalaVersions := Seq(scala212, scala213, scala3)
-ThisBuild / tlSkipIrrelevantScalas := true
-
-ThisBuild / tlSonatypeUseLegacyHost := true
+ThisBuild / crossScalaVersions := Seq(elems = scala212, scala213, scala3)
 
 ThisBuild / tlFatalWarnings := false
 
@@ -41,13 +39,14 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     name := "diffson-core",
     libraryDependencies ++= Seq(
       "org.scala-lang.modules" %%% "scala-collection-compat" % "2.11.0",
-      "org.typelevel" %%% "cats-core" % "2.9.0",
+      "org.typelevel" %%% "cats-core" % "2.10.0",
       "org.scalatest" %%% "scalatest" % scalatestVersion % Test,
       "org.scalacheck" %%% "scalacheck" % scalacheckVersion % Test
     ),
     mimaBinaryIssueFilters ++= List(
       ProblemFilters.exclude[DirectMissingMethodProblem](
-        "diffson.jsonpatch.package#simplediff#remembering.JsonDiffDiff")
+        "diffson.jsonpatch.package#simplediff#remembering.JsonDiffDiff"),
+      ProblemFilters.exclude[DirectAbstractMethodProblem]("diffson.lcs.Lcs.savedHashes")
     )
   )
 
@@ -60,24 +59,26 @@ lazy val testkit = crossProject(JSPlatform, JVMPlatform, NativePlatform)
                                         "org.scalacheck" %%% "scalacheck" % scalacheckVersion))
   .dependsOn(core)
 
-lazy val sprayJson = project
+lazy val sprayJson = crossProject(JVMPlatform)
+  .crossType(CrossType.Pure)
   .in(file("sprayJson"))
   .settings(commonSettings: _*)
   .settings(name := "diffson-spray-json",
-            crossScalaVersions := Seq(scala212, scala213),
-            libraryDependencies += "io.spray" %% "spray-json" % "1.3.6")
-  .dependsOn(core.jvm, testkit.jvm % Test)
+            libraryDependencies += "io.spray" %% "spray-json" % "1.3.6",
+            tlVersionIntroduced := Map("3" -> "4.5.0"))
+  .dependsOn(core, testkit % Test)
 
-lazy val playJson = crossProject(JSPlatform, JVMPlatform)
+lazy val playJson = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Full)
   .in(file("playJson"))
   .settings(commonSettings: _*)
   .settings(name := "diffson-play-json",
-            libraryDependencies += "com.typesafe.play" %%% "play-json" % "2.10.0-RC6",
+            libraryDependencies += "org.playframework" %%% "play-json" % "3.0.1",
             tlVersionIntroduced := Map("3" -> "4.3.0"))
+  .nativeSettings(tlVersionIntroduced := Map("2.12" -> "4.5.0", "2.13" -> "4.5.0", "3" -> "4.5.0"))
   .dependsOn(core, testkit % Test)
 
-val circeVersion = "0.14.5"
+val circeVersion = "0.14.6"
 lazy val circe = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Full)
   .in(file("circe"))

@@ -26,7 +26,7 @@ import cats.implicits._
  */
 class HashedLcs[T: Eq](delegate: Lcs[Hashed[T]]) extends Lcs[T] {
 
-  def savedHashes = this
+  override def savedHashes: HashedLcs[T] = this
 
   override def lcs(seq1: List[T], seq2: List[T], low1: Int, high1: Int, low2: Int, high2: Int): List[(Int, Int)] = {
     // wrap all values and delegate to proper implementation
