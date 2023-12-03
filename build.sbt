@@ -45,7 +45,8 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     ),
     mimaBinaryIssueFilters ++= List(
       ProblemFilters.exclude[DirectMissingMethodProblem](
-        "diffson.jsonpatch.package#simplediff#remembering.JsonDiffDiff")
+        "diffson.jsonpatch.package#simplediff#remembering.JsonDiffDiff"),
+      ProblemFilters.exclude[DirectAbstractMethodProblem]("diffson.lcs.Lcs.savedHashes")
     )
   )
 
@@ -58,13 +59,14 @@ lazy val testkit = crossProject(JSPlatform, JVMPlatform, NativePlatform)
                                         "org.scalacheck" %%% "scalacheck" % scalacheckVersion))
   .dependsOn(core)
 
-lazy val sprayJson = project
+lazy val sprayJson = crossProject(JVMPlatform)
+  .crossType(CrossType.Pure)
   .in(file("sprayJson"))
   .settings(commonSettings: _*)
   .settings(name := "diffson-spray-json",
-            crossScalaVersions := Seq(scala212, scala213),
-            libraryDependencies += "io.spray" %% "spray-json" % "1.3.6")
-  .dependsOn(core.jvm, testkit.jvm % Test)
+            libraryDependencies += "io.spray" %% "spray-json" % "1.3.6",
+            tlVersionIntroduced := Map("3" -> "4.4.1"))
+  .dependsOn(core, testkit % Test)
 
 lazy val playJson = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Full)
