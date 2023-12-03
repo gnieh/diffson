@@ -65,7 +65,7 @@ lazy val sprayJson = crossProject(JVMPlatform)
   .settings(commonSettings: _*)
   .settings(name := "diffson-spray-json",
             libraryDependencies += "io.spray" %% "spray-json" % "1.3.6",
-            tlVersionIntroduced := Map("3" -> "4.4.1"))
+            tlVersionIntroduced := Map("3" -> "4.5.0"))
   .dependsOn(core, testkit % Test)
 
 lazy val playJson = crossProject(JSPlatform, JVMPlatform, NativePlatform)
@@ -75,7 +75,7 @@ lazy val playJson = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .settings(name := "diffson-play-json",
             libraryDependencies += "org.playframework" %%% "play-json" % "3.0.1",
             tlVersionIntroduced := Map("3" -> "4.3.0"))
-  .nativeSettings(tlVersionIntroduced := Map("2.12" -> "4.4.1", "2.13" -> "4.4.1", "3" -> "4.4.1"))
+  .nativeSettings(tlVersionIntroduced := Map("2.12" -> "4.5.0", "2.13" -> "4.5.0", "3" -> "4.5.0"))
   .dependsOn(core, testkit % Test)
 
 val circeVersion = "0.14.6"
