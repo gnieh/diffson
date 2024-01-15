@@ -13,7 +13,7 @@ ThisBuild / crossScalaVersions := Seq(elems = scala212, scala213, scala3)
 
 ThisBuild / tlFatalWarnings := false
 
-ThisBuild / tlBaseVersion := "4.4"
+ThisBuild / tlBaseVersion := "4.5"
 
 ThisBuild / organization := "org.gnieh"
 ThisBuild / organizationName := "Lucas Satabin"
