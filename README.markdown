@@ -43,6 +43,7 @@ where `jsonLib` is either:
  - `spray-json`
  - `play-json`
  - `circe`
+ - `ujson` for ujson/upickle
 
 These versions are built for Scala 2.12, 2.13, and 3.
 
