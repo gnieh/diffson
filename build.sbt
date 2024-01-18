@@ -92,6 +92,20 @@ lazy val circe = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   )
   .dependsOn(core, testkit % Test)
 
+lazy val ujson = crossProject(JVMPlatform)
+  .crossType(CrossType.Full)
+  .in(file("ujson"))
+  .settings(commonSettings: _*)
+  .settings(
+    name := "diffson-ujson",
+    libraryDependencies ++= Seq(
+      "com.lihaoyi" %% "ujson" % "3.1.4",
+      "com.lihaoyi" %% "upickle" % "3.1.4"
+    )
+  )
+  .dependsOn(core, testkit % Test)
+
+
 lazy val benchmarks = crossProject(JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("benchmarks"))
