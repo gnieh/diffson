@@ -27,7 +27,7 @@ import upickle.default._
 import scala.util.Try
 
 package object ujson {
-
+  
   implicit val jsonyUjson: Jsony[Value]  = new Jsony[Value] {
 
     def Null: Value = _root_.ujson.Null
@@ -113,37 +113,38 @@ package object ujson {
   implicit val operationEncoder: Writer[Operation[Value]] =
     implicitly[Writer[Value]].comap(operationAsJson)
 
-  def throwFieldExpected(
-    fieldName: String
-  ): PartialFunction[Throwable, Nothing] = {
-    case t: Throwable =>
-      throw new Exception(s"Expected field `$fieldName`, but it is missing", t)
-  }
-
   private def decodeOperation(value: Value): Operation[Value] = {
     def readPointer(value: Value, path: String = "path"): Pointer = {
-      val p = try { value.obj(path) } catch throwFieldExpected(path)
-      read[Pointer](p)
+      val serializedPointer =
+        value.objOpt.flatMap(_.get(path))
+          .getOrElse(throw FieldMissing(path))
+
+      read[Pointer](serializedPointer)
     }
 
-    val op = try value.obj("op").str catch throwFieldExpected("op")
+    val op =
+      value
+        .objOpt.flatMap(_.get("op").flatMap(_.strOpt))
+        .getOrElse(throw FieldMissing("op"))
+
+    def getField(key: String) = {
+      value.objOpt.flatMap(_.get(key))
+        .getOrElse(throw FieldMissing(key))
+    }
 
     op match {
       case "add" =>
         val path = readPointer(value)
-        val v =
-          try value.obj("value")
-          catch throwFieldExpected("value")
+        val v = getField("value")
         Add(path, v)
+
       case "remove" =>
         val path = readPointer(value)
         val old = value.objOpt.flatMap(_.get("old"))
         Remove(path, old)
       case "replace" =>
         val path = readPointer(value)
-        val payload =
-          try value.obj("value")
-          catch throwFieldExpected("value")
+        val payload = getField("value")
         val old = value.objOpt.flatMap(_.get("old"))
         Replace(path, payload, old)
       case "move" =>
@@ -156,9 +157,7 @@ package object ujson {
         Copy(from, path)
       case "test" =>
         val path = readPointer(value)
-        val payload =
-          try value.obj("value")
-          catch throwFieldExpected("value")
+        val payload = getField("value")
         Test(path, payload)
       case other =>
         throw new Exception(s"Expected operation `$other` but it is missing")
