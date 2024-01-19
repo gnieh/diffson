@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Raphael Bosshard
+ * Copyright 2022 Lucas Satabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@
 
 package diffson
 package ujson
-import _root_.ujson._
 
+import _root_.ujson._
 import jsonmergepatch._
 
-class UjsonJsonJsonMergeDiff
-  extends TestJsonMergeDiff[Value] with UjsonTestProtocol
+class UjsonJsonJsonMergeDiff extends TestJsonMergeDiff[Value] with UjsonTestProtocol

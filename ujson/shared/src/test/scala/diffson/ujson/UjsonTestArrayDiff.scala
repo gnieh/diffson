@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Raphael Bosshard
+ * Copyright 2022 Lucas Satabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package diffson
 package ujson
 
 import jsonpatch._
-import _root_.ujson as lihaoyUjson
+import _root_.ujson.Value
 
-class UjsonTestArrayDiff
-  extends TestArrayDiff[lihaoyUjson.Value] with UjsonTestProtocol
+class UjsonTestArrayDiff extends TestArrayDiff[Value] with UjsonTestProtocol

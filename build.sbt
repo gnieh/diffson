@@ -101,11 +101,10 @@ lazy val ujson = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     name := "diffson-ujson",
     libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "ujson" % ujsonVersion,
-      "com.lihaoyi" %%% "upickle" % ujsonVersion,
+      "com.lihaoyi" %%% "upickle" % ujsonVersion
     )
   )
   .dependsOn(core, testkit % Test)
-
 
 lazy val benchmarks = crossProject(JVMPlatform)
   .crossType(CrossType.Pure)

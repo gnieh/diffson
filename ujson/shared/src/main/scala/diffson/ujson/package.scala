@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Raphael Bosshard
+ * Copyright 2022 Lucas Satabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,14 @@ import cats.implicits._
 import diffson.jsonmergepatch.JsonMergePatch
 import diffson.jsonpatch._
 import diffson.jsonpointer.Pointer
-import _root_.ujson as lihaoyUjson
-import lihaoyUjson.{Value, Arr, Obj, Str}
+import _root_.ujson.{Value, Arr, Obj, Str}
 import upickle.default._
 
 import scala.util.Try
 
 package object ujson {
-  
-  implicit val jsonyUjson: Jsony[Value]  = new Jsony[Value] {
+
+  implicit val jsonyUjson: Jsony[Value] = new Jsony[Value] {
 
     def Null: Value = _root_.ujson.Null
 
@@ -64,49 +63,49 @@ package object ujson {
       Obj(
         "op" -> Str("add"),
         "path" -> Str(path.show),
-        "value" -> value,
+        "value" -> value
       )
     case Remove(path, Some(old)) =>
       Obj(
         "op" -> Str("remove"),
         "path" -> Str(path.show),
-        "old" -> old,
+        "old" -> old
       )
     case Remove(path, None) =>
       Obj(
         "op" -> Str("remove"),
-        "path" -> Str(path.show),
+        "path" -> Str(path.show)
       )
     case Replace(path, value, Some(old)) =>
       Obj(
         "op" -> Str("replace"),
         "path" -> Str(path.show),
         "value" -> value,
-        "old" -> old,
+        "old" -> old
       )
     case Replace(path, value, None) =>
       Obj(
         "op" -> Str("replace"),
         "path" -> Str(path.show),
-        "value" -> value,
+        "value" -> value
       )
     case Move(from, path) =>
       Obj(
         "op" -> Str("move"),
         "from" -> Str(from.show),
-        "path" -> Str(path.show),
+        "path" -> Str(path.show)
       )
     case Copy(from, path) =>
       Obj(
         "op" -> Str("copy"),
         "from" -> Str(from.show),
-        "path" -> Str(path.show),
+        "path" -> Str(path.show)
       )
     case Test(path, value) =>
       Obj(
         "op" -> Str("test"),
         "path" -> Str(path.show),
-        "value" -> value,
+        "value" -> value
       )
   }
 
@@ -116,19 +115,21 @@ package object ujson {
   private def decodeOperation(value: Value): Operation[Value] = {
     def readPointer(value: Value, path: String = "path"): Pointer = {
       val serializedPointer =
-        value.objOpt.flatMap(_.get(path))
+        value.objOpt
+          .flatMap(_.get(path))
           .getOrElse(throw FieldMissing(path))
 
       read[Pointer](serializedPointer)
     }
 
     val op =
-      value
-        .objOpt.flatMap(_.get("op").flatMap(_.strOpt))
+      value.objOpt
+        .flatMap(_.get("op").flatMap(_.strOpt))
         .getOrElse(throw FieldMissing("op"))
 
     def getField(key: String) = {
-      value.objOpt.flatMap(_.get(key))
+      value.objOpt
+        .flatMap(_.get(key))
         .getOrElse(throw FieldMissing(key))
     }
 

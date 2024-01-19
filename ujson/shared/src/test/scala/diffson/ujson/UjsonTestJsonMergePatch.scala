@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Raphael Bosshard
+ * Copyright 2022 Lucas Satabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,5 +20,4 @@ package ujson
 import jsonmergepatch._
 import _root_.ujson._
 
-class UjsonTestJsonMergePatch
-  extends TestJsonMergePatch[Value] with UjsonTestProtocol
+class UjsonTestJsonMergePatch extends TestJsonMergePatch[Value] with UjsonTestProtocol

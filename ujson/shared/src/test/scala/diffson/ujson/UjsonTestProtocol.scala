@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Raphael Bosshard
+ * Copyright 2022 Lucas Satabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@
 package diffson
 package ujson
 
-import _root_.ujson.{Arr, Bool,  Str, Value}
+import _root_.ujson.{Arr, Bool, Str, Value}
 import cats.Eq
-import diffson.jsonmergepatch.*
-import diffson.jsonpatch.*
-import upickle.default.*
+import diffson.jsonmergepatch._
+import diffson.jsonpatch._
+import upickle.default._
 
 trait UjsonTestProtocol extends TestProtocol[Value] {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Raphael Bosshard
+ * Copyright 2022 Lucas Satabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,5 +19,4 @@ package ujson
 
 import _root_.ujson._
 
-class UjsonTestSerialization
-  extends TestSerialization[Value] with UjsonTestProtocol
+class UjsonTestSerialization extends TestSerialization[Value] with UjsonTestProtocol
