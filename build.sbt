@@ -28,7 +28,7 @@ lazy val commonSettings = Seq(
   homepage := Some(url("https://github.com/gnieh/diffson"))
 )
 
-lazy val diffson = tlCrossRootProject.aggregate(core, sprayJson, circe, playJson, testkit)
+lazy val diffson = tlCrossRootProject.aggregate(core, sprayJson, circe, playJson, ujson, testkit)
 
 lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Pure)
@@ -92,6 +92,7 @@ lazy val circe = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   )
   .dependsOn(core, testkit % Test)
 
+val ujsonVersion = "3.1.3"
 lazy val ujson = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Full)
   .in(file("ujson"))
@@ -99,8 +100,8 @@ lazy val ujson = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .settings(
     name := "diffson-ujson",
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %% "ujson" % "3.1.4",
-      "com.lihaoyi" %% "upickle" % "3.1.4"
+      "com.lihaoyi" %%% "ujson" % ujsonVersion,
+      "com.lihaoyi" %%% "upickle" % ujsonVersion,
     )
   )
   .dependsOn(core, testkit % Test)
