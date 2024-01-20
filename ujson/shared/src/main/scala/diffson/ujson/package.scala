@@ -54,8 +54,7 @@ package object ujson {
 
   implicit val pointerDecoder: Reader[Pointer] =
     implicitly[Reader[String]].map { str =>
-      import cats.implicits._
-      Pointer.parse[Try](str).get
+      Pointer.parse[Try](str).fold(throw _, identity)
     }
 
   private val operationAsJson: Operation[Value] => Value = {
