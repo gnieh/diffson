@@ -14,6 +14,7 @@ This guide gives you guidelines on how you can contribute to the project.
   - [Feature request](#feature-request)
 - [Submitting new features or bug fixes](#submitting-new-features-or-bug-fixes)
 - [Submitting a Json library update](#submitting-a-json-library-update)
+- [Licensing](#licensing)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -65,3 +66,7 @@ The target version for such upgrades depends on the nature of changes in the Jso
  - in case of total source code compatibility, target the next patch version of diffson ;
  - in the case some code changes are to be made in the internal of diffson, without impacting the API, target the next patch version of diffson ;
  - in the case the external API is impacted by the Json library version upgrade, target the next major version of diffson.
+
+## Licensing
+
+Diffson is licensed under the Apache Software License 2.0. Opening a pull request is to be considered affirmative consent to incorporate your changes into the project, granting an unrestricted license to the diffson project maintainers to distribute and derive new work from your changes, as per the contribution terms of ASL 2.0. You also affirm that you own the rights to the code you are contributing. All contributors retain the copyright to their own work.
