@@ -102,7 +102,8 @@ lazy val ujson = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "ujson" % ujsonVersion,
       "com.lihaoyi" %%% "upickle" % ujsonVersion
-    )
+    ),
+    tlVersionIntroduced := Map("3" -> "4.6.0", "2.13" -> "4.6.0", "2.12" -> "4.6.0")
   )
   .dependsOn(core, testkit % Test)
 
