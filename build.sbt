@@ -4,7 +4,7 @@ val scala212 = "2.12.18"
 val scala213 = "2.13.12"
 val scala3 = "3.3.1"
 
-val scalatestVersion = "3.2.17"
+val scalatestVersion = "3.2.18"
 val scalacheckVersion = "1.17.0"
 
 ThisBuild / tlJdkRelease := Some(11)
