@@ -79,7 +79,7 @@ lazy val playJson = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .nativeSettings(tlVersionIntroduced := Map("2.12" -> "4.5.0", "2.13" -> "4.5.0", "3" -> "4.5.0"))
   .dependsOn(core, testkit % Test)
 
-val circeVersion = "0.14.6"
+val circeVersion = "0.14.7"
 lazy val circe = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Full)
   .in(file("circe"))
