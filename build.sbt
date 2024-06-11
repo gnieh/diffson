@@ -1,7 +1,7 @@
 import com.typesafe.tools.mima.core._
 
 val scala212 = "2.12.19"
-val scala213 = "2.13.12"
+val scala213 = "2.13.14"
 val scala3 = "3.3.3"
 
 val scalatestVersion = "3.2.18"
