@@ -22,7 +22,6 @@ import cats.data.Chain
 
 import scala.util.Try
 
-import scala.collection.compat._
 import scala.collection.compat.immutable.ArraySeq
 
 package object jsonpointer {
