@@ -20,7 +20,6 @@ package circe
 import cats.Eq
 import jsonpatch._
 import jsonmergepatch._
-import cats.implicits._
 import io.circe._
 import io.circe.parser._
 import io.circe.syntax._

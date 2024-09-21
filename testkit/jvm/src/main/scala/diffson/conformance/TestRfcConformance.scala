@@ -18,9 +18,6 @@ package diffson
 package jsonpatch
 package conformance
 
-import cats.implicits._
-
-import org.scalatest._
 import org.scalatest.funsuite.AnyFunSuite
 
 import scala.util.Try

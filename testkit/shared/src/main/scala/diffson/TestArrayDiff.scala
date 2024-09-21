@@ -18,13 +18,11 @@ package diffson
 package jsonpatch
 
 import lcsdiff._
-import cats.implicits._
 import diffson.lcs.Patience
 import org.scalacheck.Properties
 import org.scalacheck.Prop.forAll
 
 import scala.util.Try
-import scala.language.implicitConversions
 
 abstract class TestArrayDiff[Json](implicit Json: Jsony[Json])
     extends Properties("TestArrayDiff")

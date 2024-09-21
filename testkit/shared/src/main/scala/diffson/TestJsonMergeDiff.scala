@@ -17,12 +17,8 @@
 package diffson
 package jsonmergepatch
 
-import cats._
-
-import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 
-import scala.language.implicitConversions
 import org.scalatest.matchers.should.Matchers
 
 abstract class TestJsonMergeDiff[Json](implicit Json: Jsony[Json])

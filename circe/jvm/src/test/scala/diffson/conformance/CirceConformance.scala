@@ -20,7 +20,6 @@ package circe
 import jsonpatch.conformance._
 
 import io.circe._
-import io.circe.syntax._
 import cats.implicits._
 
 import scala.io.Source
