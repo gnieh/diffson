@@ -26,7 +26,7 @@ ThisBuild / developers := List(
 
 // Silence binary compatibility warnings for test-interface in Scala Native 0.5.x series
 // has to include _native suffix due to https://github.com/sbt/sbt/issues/7140
-ThisBuild / libraryDependencySchemes += 
+ThisBuild / libraryDependencySchemes +=
   "org.scala-native" %% "test-interface_native0.5" % VersionScheme.Always
 
 lazy val commonSettings = Seq(
