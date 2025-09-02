@@ -1,11 +1,11 @@
 import com.typesafe.tools.mima.core._
 
 val scala212 = "2.12.20"
-val scala213 = "2.13.14"
-val scala3 = "3.3.3"
+val scala213 = "2.13.16"
+val scala3 = "3.3.6"
 
-val scalatestVersion = "3.2.18"
-val scalacheckVersion = "1.17.1"
+val scalatestVersion = "3.2.19"
+val scalacheckVersion = "1.18.1"
 
 ThisBuild / tlJdkRelease := Some(11)
 ThisBuild / scalaVersion := scala213
@@ -39,8 +39,8 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .settings(
     name := "diffson-core",
     libraryDependencies ++= Seq(
-      "org.scala-lang.modules" %%% "scala-collection-compat" % "2.11.0",
-      "org.typelevel" %%% "cats-core" % "2.10.0",
+      "org.scala-lang.modules" %%% "scala-collection-compat" % "2.13.0",
+      "org.typelevel" %%% "cats-core" % "2.13.0",
       "org.scalatest" %%% "scalatest" % scalatestVersion % Test,
       "org.scalacheck" %%% "scalacheck" % scalacheckVersion % Test
     ),
@@ -57,7 +57,9 @@ lazy val testkit = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .settings(commonSettings: _*)
   .settings(name := "diffson-testkit",
             libraryDependencies ++= Seq("org.scalatest" %%% "scalatest" % scalatestVersion,
-                                        "org.scalacheck" %%% "scalacheck" % scalacheckVersion))
+                                        "org.scalacheck" %%% "scalacheck" % scalacheckVersion),
+            // Silence binary compatibility warnings for test-interface in Scala Native 0.5.x series
+            libraryDependencySchemes += "org.scala-native" % "test-interface_native0.5_2.13" % "always")
   .dependsOn(core)
 
 lazy val sprayJson = crossProject(JVMPlatform)
@@ -74,12 +76,12 @@ lazy val playJson = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("playJson"))
   .settings(commonSettings: _*)
   .settings(name := "diffson-play-json",
-            libraryDependencies += "org.playframework" %%% "play-json" % "3.0.4",
+            libraryDependencies += "org.playframework" %%% "play-json" % "3.1.0-M3",
             tlVersionIntroduced := Map("3" -> "4.3.0"))
   .nativeSettings(tlVersionIntroduced := Map("2.12" -> "4.5.0", "2.13" -> "4.5.0", "3" -> "4.5.0"))
   .dependsOn(core, testkit % Test)
 
-val circeVersion = "0.14.8"
+val circeVersion = "0.14.14"
 lazy val circe = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Full)
   .in(file("circe"))
@@ -93,7 +95,7 @@ lazy val circe = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   )
   .dependsOn(core, testkit % Test)
 
-val ujsonVersion = "3.1.4"
+val ujsonVersion = "3.3.1"
 lazy val ujson = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Full)
   .in(file("ujson"))
