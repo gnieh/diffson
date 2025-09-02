@@ -13,7 +13,7 @@ ThisBuild / crossScalaVersions := Seq(elems = scala212, scala213, scala3)
 
 ThisBuild / tlFatalWarnings := false
 
-ThisBuild / tlBaseVersion := "4.6"
+ThisBuild / tlBaseVersion := "5.0"
 
 ThisBuild / organization := "org.gnieh"
 ThisBuild / organizationName := "Diffson Project"
