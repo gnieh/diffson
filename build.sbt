@@ -24,6 +24,9 @@ ThisBuild / developers := List(
   tlGitHubDev("ybasket", "Yannick Heiber")
 )
 
+// use JDK 17
+ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("17"))
+
 // Silence binary compatibility warnings for test-interface in Scala Native 0.5.x series
 // has to include _native suffix due to https://github.com/sbt/sbt/issues/7140
 ThisBuild / libraryDependencySchemes +=
