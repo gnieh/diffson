@@ -24,6 +24,11 @@ ThisBuild / developers := List(
   tlGitHubDev("ybasket", "Yannick Heiber")
 )
 
+// Silence binary compatibility warnings for test-interface in Scala Native 0.5.x series
+// has to include _native suffix due to https://github.com/sbt/sbt/issues/7140
+ThisBuild / libraryDependencySchemes += 
+  "org.scala-native" %% "test-interface_native0.5" % VersionScheme.Always
+
 lazy val commonSettings = Seq(
   description := "Json diff/patch library",
   homepage := Some(url("https://github.com/gnieh/diffson"))
@@ -57,9 +62,7 @@ lazy val testkit = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .settings(commonSettings: _*)
   .settings(name := "diffson-testkit",
             libraryDependencies ++= Seq("org.scalatest" %%% "scalatest" % scalatestVersion,
-                                        "org.scalacheck" %%% "scalacheck" % scalacheckVersion),
-            // Silence binary compatibility warnings for test-interface in Scala Native 0.5.x series
-            libraryDependencySchemes += "org.scala-native" % "test-interface_native0.5_2.13" % "always")
+                                        "org.scalacheck" %%% "scalacheck" % scalacheckVersion))
   .dependsOn(core)
 
 lazy val sprayJson = crossProject(JVMPlatform)
