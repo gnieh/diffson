@@ -101,7 +101,7 @@ lazy val circe = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   )
   .dependsOn(core, testkit % Test)
 
-val ujsonVersion = "3.3.1"
+val ujsonVersion = "4.3.2"
 lazy val ujson = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Full)
   .in(file("ujson"))
