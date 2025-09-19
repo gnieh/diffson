@@ -13,7 +13,7 @@ ThisBuild / crossScalaVersions := Seq(elems = scala212, scala213, scala3)
 
 ThisBuild / tlFatalWarnings := false
 
-ThisBuild / tlBaseVersion := "5.0"
+ThisBuild / tlBaseVersion := "4.6"
 
 ThisBuild / organization := "org.gnieh"
 ThisBuild / organizationName := "Diffson Project"
@@ -58,6 +58,9 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
       ProblemFilters.exclude[DirectAbstractMethodProblem]("diffson.lcs.Lcs.savedHashes")
     )
   )
+  .nativeSettings(
+    tlVersionIntroduced := Map("3" -> "4.7.0", "2.13" -> "4.7.0", "2.12" -> "4.7.0")
+  )
 
 lazy val testkit = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Full)
@@ -66,6 +69,9 @@ lazy val testkit = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .settings(name := "diffson-testkit",
             libraryDependencies ++= Seq("org.scalatest" %%% "scalatest" % scalatestVersion,
                                         "org.scalacheck" %%% "scalacheck" % scalacheckVersion))
+  .nativeSettings(
+    tlVersionIntroduced := Map("3" -> "4.7.0", "2.13" -> "4.7.0", "2.12" -> "4.7.0")
+  )
   .dependsOn(core)
 
 lazy val sprayJson = crossProject(JVMPlatform)
@@ -84,7 +90,7 @@ lazy val playJson = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .settings(name := "diffson-play-json",
             libraryDependencies += "org.playframework" %%% "play-json" % "3.1.0-M3",
             tlVersionIntroduced := Map("3" -> "4.3.0"))
-  .nativeSettings(tlVersionIntroduced := Map("2.12" -> "4.5.0", "2.13" -> "4.5.0", "3" -> "4.5.0"))
+  .nativeSettings(tlVersionIntroduced := Map("2.12" -> "4.7.0", "2.13" -> "4.7.0", "3" -> "4.7.0"))
   .dependsOn(core, testkit % Test)
 
 val circeVersion = "0.14.14"
@@ -98,6 +104,9 @@ lazy val circe = crossProject(JSPlatform, JVMPlatform, NativePlatform)
       "io.circe" %%% "circe-core" % circeVersion,
       "io.circe" %%% "circe-parser" % circeVersion
     )
+  )
+  .nativeSettings(
+    tlVersionIntroduced := Map("3" -> "4.7.0", "2.13" -> "4.7.0", "2.12" -> "4.7.0")
   )
   .dependsOn(core, testkit % Test)
 
@@ -113,6 +122,9 @@ lazy val ujson = crossProject(JSPlatform, JVMPlatform, NativePlatform)
       "com.lihaoyi" %%% "upickle" % ujsonVersion
     ),
     tlVersionIntroduced := Map("3" -> "4.6.0", "2.13" -> "4.6.0", "2.12" -> "4.6.0")
+  )
+  .nativeSettings(
+    tlVersionIntroduced := Map("3" -> "4.7.0", "2.13" -> "4.7.0", "2.12" -> "4.7.0")
   )
   .dependsOn(core, testkit % Test)
 
