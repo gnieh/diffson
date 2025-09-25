@@ -1,7 +1,7 @@
 import com.typesafe.tools.mima.core._
 
 val scala212 = "2.12.19"
-val scala213 = "2.13.12"
+val scala213 = "2.13.13"
 val scala3 = "3.3.3"
 
 val scalatestVersion = "3.2.18"
@@ -13,7 +13,7 @@ ThisBuild / crossScalaVersions := Seq(elems = scala212, scala213, scala3)
 
 ThisBuild / tlFatalWarnings := false
 
-ThisBuild / tlBaseVersion := "4.5"
+ThisBuild / tlBaseVersion := "4.6"
 
 ThisBuild / organization := "org.gnieh"
 ThisBuild / organizationName := "Diffson Project"
