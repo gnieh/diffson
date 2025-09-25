@@ -48,11 +48,14 @@ class JsonDiff[Json](diffArray: Boolean, rememberOld: Boolean)(implicit J: Jsony
       case (fld, value1) :: fields1 =>
         fields2.get(fld) match {
           case Some(value2) =>
-            Eval.defer(fieldsDiff(fields1, fields2 - fld, path)).flatMap(d => diff(value1, value2, path / fld).map(_ ++ d))
+            Eval
+              .defer(fieldsDiff(fields1, fields2 - fld, path))
+              .flatMap(d => diff(value1, value2, path / fld).map(_ ++ d))
           case None =>
             // field is not in the second object, delete it
-            Eval.defer(fieldsDiff(fields1, fields2, path)).map(
-              _.prepend(Remove(path / fld, if (rememberOld) Some(value1) else None)))
+            Eval
+              .defer(fieldsDiff(fields1, fields2, path))
+              .map(_.prepend(Remove(path / fld, if (rememberOld) Some(value1) else None)))
         }
       case Nil =>
         Eval.now(Chain.fromSeq(fields2.toList).map { case (fld, value) => Add(path / fld, value) })
