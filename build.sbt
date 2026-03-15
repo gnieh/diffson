@@ -1,8 +1,8 @@
 import com.typesafe.tools.mima.core._
 
 val scala212 = "2.12.21"
-val scala213 = "2.13.16"
-val scala3 = "3.3.6"
+val scala213 = "2.13.18"
+val scala3 = "3.3.7"
 
 val scalatestVersion = "3.2.19"
 val scalacheckVersion = "1.19.0"
@@ -93,7 +93,7 @@ lazy val playJson = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .nativeSettings(tlVersionIntroduced := Map("2.12" -> "4.7.0", "2.13" -> "4.7.0", "3" -> "4.7.0"))
   .dependsOn(core, testkit % Test)
 
-val circeVersion = "0.14.14"
+val circeVersion = "0.14.15"
 lazy val circe = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Full)
   .in(file("circe"))
