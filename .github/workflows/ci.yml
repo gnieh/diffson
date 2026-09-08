@@ -28,7 +28,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04]
-        scala: [2.12, 2.13, 3]
+        scala: [2.12.21, 3.9.0, 3.3.8]
         java: [temurin@17]
         project: [diffsonJVM, diffsonJS, diffsonNative]
     runs-on: ${{ matrix.os }}
@@ -127,92 +127,92 @@ jobs:
         if: matrix.java == 'temurin@17' && steps.setup-java-temurin-17.outputs.cache-hit == 'false'
         run: sbt +update
 
-      - name: Download target directories (2.12, diffsonJVM)
+      - name: Download target directories (2.12.21, diffsonJVM)
         uses: actions/download-artifact@v6
         with:
-          name: target-${{ matrix.os }}-${{ matrix.java }}-2.12-diffsonJVM
+          name: target-${{ matrix.os }}-${{ matrix.java }}-2.12.21-diffsonJVM
 
-      - name: Inflate target directories (2.12, diffsonJVM)
+      - name: Inflate target directories (2.12.21, diffsonJVM)
         run: |
           tar xf targets.tar
           rm targets.tar
 
-      - name: Download target directories (2.12, diffsonJS)
+      - name: Download target directories (2.12.21, diffsonJS)
         uses: actions/download-artifact@v6
         with:
-          name: target-${{ matrix.os }}-${{ matrix.java }}-2.12-diffsonJS
+          name: target-${{ matrix.os }}-${{ matrix.java }}-2.12.21-diffsonJS
 
-      - name: Inflate target directories (2.12, diffsonJS)
+      - name: Inflate target directories (2.12.21, diffsonJS)
         run: |
           tar xf targets.tar
           rm targets.tar
 
-      - name: Download target directories (2.12, diffsonNative)
+      - name: Download target directories (2.12.21, diffsonNative)
         uses: actions/download-artifact@v6
         with:
-          name: target-${{ matrix.os }}-${{ matrix.java }}-2.12-diffsonNative
+          name: target-${{ matrix.os }}-${{ matrix.java }}-2.12.21-diffsonNative
 
-      - name: Inflate target directories (2.12, diffsonNative)
+      - name: Inflate target directories (2.12.21, diffsonNative)
         run: |
           tar xf targets.tar
           rm targets.tar
 
-      - name: Download target directories (2.13, diffsonJVM)
+      - name: Download target directories (3.9.0, diffsonJVM)
         uses: actions/download-artifact@v6
         with:
-          name: target-${{ matrix.os }}-${{ matrix.java }}-2.13-diffsonJVM
+          name: target-${{ matrix.os }}-${{ matrix.java }}-3.9.0-diffsonJVM
 
-      - name: Inflate target directories (2.13, diffsonJVM)
+      - name: Inflate target directories (3.9.0, diffsonJVM)
         run: |
           tar xf targets.tar
           rm targets.tar
 
-      - name: Download target directories (2.13, diffsonJS)
+      - name: Download target directories (3.9.0, diffsonJS)
         uses: actions/download-artifact@v6
         with:
-          name: target-${{ matrix.os }}-${{ matrix.java }}-2.13-diffsonJS
+          name: target-${{ matrix.os }}-${{ matrix.java }}-3.9.0-diffsonJS
 
-      - name: Inflate target directories (2.13, diffsonJS)
+      - name: Inflate target directories (3.9.0, diffsonJS)
         run: |
           tar xf targets.tar
           rm targets.tar
 
-      - name: Download target directories (2.13, diffsonNative)
+      - name: Download target directories (3.9.0, diffsonNative)
         uses: actions/download-artifact@v6
         with:
-          name: target-${{ matrix.os }}-${{ matrix.java }}-2.13-diffsonNative
+          name: target-${{ matrix.os }}-${{ matrix.java }}-3.9.0-diffsonNative
 
-      - name: Inflate target directories (2.13, diffsonNative)
+      - name: Inflate target directories (3.9.0, diffsonNative)
         run: |
           tar xf targets.tar
           rm targets.tar
 
-      - name: Download target directories (3, diffsonJVM)
+      - name: Download target directories (3.3.8, diffsonJVM)
         uses: actions/download-artifact@v6
         with:
-          name: target-${{ matrix.os }}-${{ matrix.java }}-3-diffsonJVM
+          name: target-${{ matrix.os }}-${{ matrix.java }}-3.3.8-diffsonJVM
 
-      - name: Inflate target directories (3, diffsonJVM)
+      - name: Inflate target directories (3.3.8, diffsonJVM)
         run: |
           tar xf targets.tar
           rm targets.tar
 
-      - name: Download target directories (3, diffsonJS)
+      - name: Download target directories (3.3.8, diffsonJS)
         uses: actions/download-artifact@v6
         with:
-          name: target-${{ matrix.os }}-${{ matrix.java }}-3-diffsonJS
+          name: target-${{ matrix.os }}-${{ matrix.java }}-3.3.8-diffsonJS
 
-      - name: Inflate target directories (3, diffsonJS)
+      - name: Inflate target directories (3.3.8, diffsonJS)
         run: |
           tar xf targets.tar
           rm targets.tar
 
-      - name: Download target directories (3, diffsonNative)
+      - name: Download target directories (3.3.8, diffsonNative)
         uses: actions/download-artifact@v6
         with:
-          name: target-${{ matrix.os }}-${{ matrix.java }}-3-diffsonNative
+          name: target-${{ matrix.os }}-${{ matrix.java }}-3.3.8-diffsonNative
 
-      - name: Inflate target directories (3, diffsonNative)
+      - name: Inflate target directories (3.3.8, diffsonNative)
         run: |
           tar xf targets.tar
           rm targets.tar
@@ -274,7 +274,7 @@ jobs:
       - name: Submit Dependencies
         uses: scalacenter/sbt-dependency-submission@v2
         with:
-          modules-ignore: diffsonjvm_2.12 diffsonjvm_2.13 diffsonjvm_3 diffsonjs_2.12 diffsonjs_2.13 diffsonjs_3 diffson-benchmarks_2.12 diffson-benchmarks_2.13 diffson-benchmarks_3 diffsonnative_2.12 diffsonnative_2.13 diffsonnative_3
+          modules-ignore: diffsonjvm_2.12 diffsonjvm_3 diffsonjvm_3 diffsonjs_2.12 diffsonjs_3 diffsonjs_3 diffson-benchmarks_2.12 diffson-benchmarks_3 diffson-benchmarks_3 diffsonnative_2.12 diffsonnative_3 diffsonnative_3
           configs-ignore: test scala-tool scala-doc-tool test-internal
 
   validate-steward:
