@@ -37,7 +37,7 @@ package object jsonpointer {
     def evaluate[F[_], Json](json: Json)(implicit F: MonadError[F, Throwable], Json: Jsony[Json]): F[Json] =
       F.tailRecM((json, Pointer(parts), Pointer.Root)) {
         case (JsObject(obj), Inner(elem, tl), parent) =>
-          val fieldName = elem.fold(identity, _.toString())
+          val fieldName = elem.fold(identity, Integer.toString(_))
           F.pure(Left((obj.getOrElse(fieldName, Json.Null), tl, parent / fieldName)))
         case (JsArray(arr), Inner(Right(idx), tl), parent) =>
           if (idx >= arr.size)
