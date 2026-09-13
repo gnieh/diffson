@@ -17,7 +17,7 @@
 package diffson
 package jsonpointer
 
-import cats.implicits._
+import cats.syntax.all._
 
 import org.scalatest.flatspec.AnyFlatSpec
 
@@ -98,6 +98,10 @@ abstract class TestJsonPointer[Json](implicit Json: Jsony[Json])
     val max = Int.MaxValue
     parsePointer(s"/$max") should be(Pointer.Root / max)
     parsePointer("/123456789012") should be(Pointer.Root / "123456789012")
+  }
+
+  it should "access the object field if applied to an obkect" in {
+    parsePointer("/0").evaluate[Try, Json](parseJson("""{"0": "value"}""")).get should be("value": Json)
   }
 
 }

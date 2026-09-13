@@ -16,13 +16,12 @@
 
 package diffson
 
-import cats._
-import cats.syntax.all._
 import cats.data.Chain
-
-import scala.util.Try
+import cats.syntax.all.*
+import cats.{MonadError, Show}
 
 import scala.collection.compat.immutable.ArraySeq
+import scala.util.Try
 
 package object jsonpointer {
 
@@ -37,19 +36,20 @@ package object jsonpointer {
 
     def evaluate[F[_], Json](json: Json)(implicit F: MonadError[F, Throwable], Json: Jsony[Json]): F[Json] =
       F.tailRecM((json, Pointer(parts), Pointer.Root)) {
-        case (JsObject(obj), Inner(Left(elem), tl), parent) =>
-          F.pure(Left((obj.getOrElse(elem, Json.Null), tl, parent / elem)))
+        case (JsObject(obj), Inner(elem, tl), parent) =>
+          val fieldName = elem.fold(identity, Integer.toString(_))
+          F.pure(Left((obj.getOrElse(fieldName, Json.Null), tl, parent / fieldName)))
         case (JsArray(arr), Inner(Right(idx), tl), parent) =>
           if (idx >= arr.size)
             // we know (by construction) that the index is greater or equal to zero
             F.raiseError(new PointerException(show"element $idx does not exist at path $parent"))
           else
             F.pure(Left((arr(idx), tl, parent / idx)))
-        case (value, Pointer.Root, _) =>
-          F.pure(Right(value))
         case (_, Inner(elem, _), parent) =>
           val elems = elem.fold(identity, _.toString)
           F.raiseError(new PointerException(show"element $elems does not exist at path $parent"))
+        case (value, _, _) =>
+          F.pure(Right(value))
       }
 
   }
