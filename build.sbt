@@ -2,7 +2,7 @@ import com.typesafe.tools.mima.core._
 
 val scala212 = "2.12.21"
 val scala213 = "2.13.18"
-val scala3 = "3.3.8"
+val scala3 = "3.9.0"
 
 val scalatestVersion = "3.2.20"
 val scalacheckVersion = "1.20.0"
